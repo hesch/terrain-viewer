@@ -14,6 +14,7 @@ namespace MarchingCubesProject
         public Material m_material;
 
         public MARCHING_MODE mode = MARCHING_MODE.CUBES;
+	public int resolution = 3;
 
         public int seed = 0;
 
@@ -21,7 +22,8 @@ namespace MarchingCubesProject
 
         void Start()
         {
-
+	    foreach(GameObject o in meshes) { o.transform.parent = null; Destroy(o); }
+	    meshes = new List<GameObject>();
             INoise perlin = new PerlinNoise(seed, 2.0f);
             FractalNoise fractal = new FractalNoise(perlin, 3, 1.0f);
 
@@ -39,26 +41,25 @@ namespace MarchingCubesProject
             marching.Surface = 0.0f;
 
             //The size of voxel array.
-            int width = 32;
-            int height = 32;
-            int length = 32;
+            int width = 32 * resolution;
+            int height = 32 * resolution;
+            int length = 32 * resolution;
 
             float[] voxels = new float[width * height * length];
 
             //Fill voxels with values. Im using perlin noise but any method to create voxels will work.
             for (int x = 0; x < width; x++)
             {
-                for (int y = 0; y < height; y++)
+                for (int z = 0; z < length; z++)
                 {
-                    for (int z = 0; z < length; z++)
-                    {
                         float fx = x / (width - 1.0f);
-                        float fy = y / (height - 1.0f);
                         float fz = z / (length - 1.0f);
 
+                        float value = fractal.Sample2D(fx, fz);
+                    for (int y = 0; y < height; y++)
+                    {
                         int idx = x + y * width + z * width * height;
-
-                        voxels[idx] = fractal.Sample3D(fx, fy, fz);
+			  voxels[idx] = y < (value+1.0f)/2.0f*height ? 1 : -1;
                     }
                 }
             }
@@ -107,7 +108,8 @@ namespace MarchingCubesProject
                 go.AddComponent<MeshRenderer>();
                 go.GetComponent<Renderer>().material = m_material;
                 go.GetComponent<MeshFilter>().mesh = mesh;
-                go.transform.localPosition = new Vector3(-width / 2, -height / 2, -length / 2);
+                go.transform.localPosition = new Vector3(-width/resolution / 2, -height/resolution / 2, -length/resolution / 2);
+		go.transform.localScale = new Vector3(1.0f/resolution, 1.0f/resolution, 1.0f/resolution);
 
                 meshes.Add(go);
             }
@@ -116,8 +118,11 @@ namespace MarchingCubesProject
 
         void Update()
         {
-            transform.Rotate(Vector3.up, 10.0f * Time.deltaTime);
+//            transform.Rotate(Vector3.up, 10.0f * Time.deltaTime);
         }
+        void OnValidate() {
+	  Start();
+	}
 
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ProceduralNoiseProject;
 
 public class test : MonoBehaviour
 {
@@ -8,6 +9,18 @@ public class test : MonoBehaviour
     void Start()
     {
       Debug.Log("test");
+      int width = 10;
+      List<float> voxels = new List<float>();
+      Noise noiseGenerator = new PerlinNoise(1337, 1.0f, 1.0f);
+      for(int x = 0; x < width; x++) {
+        for(int y = 0; y < width; y++) {
+          for(int z = 0; z < width; z++) {
+             float value = noiseGenerator.Sample3D(x,y,z);
+	     voxels.Add(value);
+          }
+        }
+      }
+	
       gameObject.AddComponent<MeshFilter>();
         gameObject.AddComponent<MeshRenderer>();
         Mesh mesh = GetComponent<MeshFilter>().mesh;
