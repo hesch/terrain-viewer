@@ -22,11 +22,9 @@ namespace NodeEditorFramework.Standard
 		public Rect canvasRect { get { return screenSize ? screenRect : specifiedCanvasRect; } }
 		private Rect screenRect { get { return new Rect(0, 0, Screen.width, Screen.height); } }
 
-		private RectTransform rt;
 
 		private void Start () 
 		{
-			rt = transform as RectTransform;
 			NormalReInit();
 		}
 
@@ -63,14 +61,6 @@ namespace NodeEditorFramework.Standard
 
 		private void OnGUI ()
 		{
-			Vector3[] corners = new Vector3[4];
-                        rt.GetWorldCorners(corners);
-			Vector3 topLeft = corners[1];
-			topLeft.y = Screen.height - topLeft.y;
-			Rect myRect = new Rect(topLeft.x, topLeft.y, corners[2].x-corners[0].x, corners[2].y-corners[0].y);
-			specifiedCanvasRect = myRect;
-			specifiedRootRect = myRect;
-		  
 			// Initiation
 			NodeEditor.checkInit(true);
 			if (NodeEditor.InitiationError)
