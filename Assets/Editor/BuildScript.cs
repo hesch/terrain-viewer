@@ -11,8 +11,8 @@ public class BuildScript : MonoBehaviour
     public static void MyBuild()
     {
 	PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
-        PlayerSettings.defaultScreenHeight = 768;
-        PlayerSettings.defaultScreenWidth = 1024;
+        PlayerSettings.defaultScreenHeight = 1000;
+        PlayerSettings.defaultScreenWidth = 1600;
         PlayerSettings.runInBackground = true;
 	PlayerSettings.displayResolutionDialog = ResolutionDialogSetting.Disabled;
 	PlayerSettings.resizableWindow = true;
