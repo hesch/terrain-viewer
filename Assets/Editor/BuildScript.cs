@@ -10,10 +10,17 @@ public class BuildScript : MonoBehaviour
     [MenuItem("Build/Build Linux")]
     public static void MyBuild()
     {
+	PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
+        PlayerSettings.defaultScreenHeight = 768;
+        PlayerSettings.defaultScreenWidth = 1024;
+        PlayerSettings.runInBackground = true;
+	PlayerSettings.displayResolutionDialog = ResolutionDialogSetting.Disabled;
+	PlayerSettings.resizableWindow = true;
+
         BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
         buildPlayerOptions.scenes = new[] { "Assets/Scenes/World.unity"};
-        buildPlayerOptions.locationPathName = "linux-build";
-        buildPlayerOptions.target = BuildTarget.StandaloneLinux64;
+        buildPlayerOptions.locationPathName = "build/terrain-viewer";
+        buildPlayerOptions.target = selectBuildTarget();
         buildPlayerOptions.options = BuildOptions.None;
 
         BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
@@ -31,5 +38,16 @@ public class BuildScript : MonoBehaviour
         {
             UnityEngine.Debug.Log("Build failed");
         }
+    }
+
+    private static BuildTarget selectBuildTarget() {
+      if(Application.platform == RuntimePlatform.LinuxEditor) {
+	return BuildTarget.StandaloneLinux64;
+      } else if(Application.platform == RuntimePlatform.WindowsEditor) {
+	return BuildTarget.StandaloneWindows64;
+      } else if(Application.platform == RuntimePlatform.OSXEditor) {
+	return BuildTarget.StandaloneOSX;
+      }
+      return BuildTarget.WebGL;
     }
 }
