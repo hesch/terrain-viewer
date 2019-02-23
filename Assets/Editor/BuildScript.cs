@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 public class BuildScript : MonoBehaviour
 {
-    [MenuItem("Build/Build Linux")]
+    [MenuItem("Build/Build&Run Standalone")]
     public static void MyBuild()
     {
 	PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
@@ -30,7 +30,7 @@ public class BuildScript : MonoBehaviour
         {
             UnityEngine.Debug.Log("Build succeeded: " + summary.totalSize + " bytes");
 	    Process proc = new Process();
-	    proc.StartInfo.FileName = buildPlayerOptions.locationPathName;
+	    proc.StartInfo.FileName = buildPlayerOptions.locationPathName + (buildPlayerOptions.target == BuildTarget.StandaloneOSX ? ".app" : "");
 	    proc.Start();
         }
 
