@@ -11,12 +11,16 @@ public class Noise3DNode : Node
 	public override string Title { get { return "Noise"; } }
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
+	private INoise perlin = new PerlinNoise(1337, 2.0f);
+
 	[ValueConnectionKnob("X", Direction.In, "Int")]
 		public ValueConnectionKnob xConnection;
 	[ValueConnectionKnob("Y", Direction.In, "Int")]
 		public ValueConnectionKnob yConnection;
 	[ValueConnectionKnob("Z", Direction.In, "Int")]
 		public ValueConnectionKnob zConnection;
+	[ValueConnectionKnob("Noise", Direction.Out, "Float")]
+		public ValueConnectionKnob outputConnection;
 
 	public override void NodeGUI () 
 	{
@@ -27,10 +31,12 @@ public class Noise3DNode : Node
 	}
 
 	public override bool Calculate() {
-		xConnection.SetValue<int>(value.x);
-		yConnection.SetValue<int>(value.y);
-		zConnection.SetValue<int>(value.z);
-		return true;
+	  int x = xConnection.getValue<Int>();
+	  int y = yConnection.getValue<Int>();
+	  int z = zConnection.getValue<Int>();
+	  float noiseValue = perlin.sample3D(x, y, z);
+	  outputConnection.setValue<Float>(noiseValue);
+	  return true;
 	}
 }
 
