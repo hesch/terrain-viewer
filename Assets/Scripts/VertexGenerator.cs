@@ -124,7 +124,6 @@ public class VertexGenerator : MonoBehaviour
 	}
 
 	void OnDestroy() {
-		Debug.Log("OnDestroy called");
 		Delete();
 	}
 
