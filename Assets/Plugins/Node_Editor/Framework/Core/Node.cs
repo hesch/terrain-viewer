@@ -26,8 +26,8 @@ namespace NodeEditorFramework
 		[NonSerialized] public List<ConnectionKnob> outputKnobs = new List<ConnectionKnob> ();
 
 		// Calculation graph
-		[HideInInspector] [NonSerialized]
-		internal bool calculated = true;
+		[NonSerialized]
+		public bool calculated = true;
 
 		// Internal
 		internal Vector2 contentOffset = Vector2.zero;
