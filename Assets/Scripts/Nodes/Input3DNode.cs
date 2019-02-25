@@ -11,13 +11,13 @@ public class Input3DNode : Node
 	public override string Title { get { return "Input Node"; } }
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
-	public Vector3Int value = Vector3Int.zero;
+	public Vector3 value = Vector3.zero;
 
-	[ValueConnectionKnob("X", Direction.Out, "Int")]
+	[ValueConnectionKnob("X", Direction.Out, "Float")]
 		public ValueConnectionKnob xConnection;
-	[ValueConnectionKnob("Y", Direction.Out, "Int")]
+	[ValueConnectionKnob("Y", Direction.Out, "Float")]
 		public ValueConnectionKnob yConnection;
-	[ValueConnectionKnob("Z", Direction.Out, "Int")]
+	[ValueConnectionKnob("Z", Direction.Out, "Float")]
 		public ValueConnectionKnob zConnection;
 
 	public override void NodeGUI () 
@@ -29,9 +29,9 @@ public class Input3DNode : Node
 	}
 
 	public override bool Calculate() {
-		xConnection.SetValue<int>(value.x);
-		yConnection.SetValue<int>(value.y);
-		zConnection.SetValue<int>(value.z);
+		xConnection.SetValue<float>(value.x);
+		yConnection.SetValue<float>(value.y);
+		zConnection.SetValue<float>(value.z);
 		return true;
 	}
 }

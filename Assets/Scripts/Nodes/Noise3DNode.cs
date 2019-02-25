@@ -12,30 +12,42 @@ public class Noise3DNode : Node
 	public override string Title { get { return "Noise"; } }
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
-	private INoise perlin = new PerlinNoise(1337, 2.0f);
+	private INoise perlin;
+	private FractalNoise fractal;
 
-	[ValueConnectionKnob("X", Direction.In, "Int")]
+	[ValueConnectionKnob("X", Direction.In, "Float")]
 		public ValueConnectionKnob xConnection;
-	[ValueConnectionKnob("Y", Direction.In, "Int")]
+	[ValueConnectionKnob("Y", Direction.In, "Float")]
 		public ValueConnectionKnob yConnection;
-	[ValueConnectionKnob("Z", Direction.In, "Int")]
+	[ValueConnectionKnob("Z", Direction.In, "Float")]
 		public ValueConnectionKnob zConnection;
 	[ValueConnectionKnob("Noise", Direction.Out, "Float")]
 		public ValueConnectionKnob outputConnection;
 
-	public override void NodeGUI () 
-	{
-		name = RTEditorGUI.TextField (name);
-
-		foreach (ValueConnectionKnob knob in connectionKnobs) 
-			knob.DisplayLayout ();
+	public Noise3DNode() {
+	  perlin = new PerlinNoise(1337, 2.0f);
+	  fractal = new FractalNoise(perlin, 3, 1.0f);
 	}
 
+	/*public override void NodeGUI () 
+	{
+		GUILayout.BeginHorizontal();
+		GUILayout.BeginVertical();
+		xConnection.DisplayLayout ();
+		yConnection.DisplayLayout ();
+		zConnection.DisplayLayout ();
+		GUILayout.EndVertical();
+		outputConnection.DisplayLayout();
+		GUILayout.EndHorizontal ();
+	}*/
+
 	public override bool Calculate() {
-	  int x = xConnection.GetValue<int>();
-	  int y = yConnection.GetValue<int>();
-	  int z = zConnection.GetValue<int>();
-	  float noiseValue = perlin.Sample3D(x, y, z);
+	  float x = xConnection.GetValue<float>();
+	  float y = yConnection.GetValue<float>();
+	  float z = zConnection.GetValue<float>();
+	  float noiseValue = fractal.Sample3D(x, y, z);
+	  Debug.Log("inputs: " + x + ", " + y + ", " + z);
+	  Debug.Log("Calculated noise: " + noiseValue);
 	  outputConnection.SetValue<float>(noiseValue);
 	  return true;
 	}

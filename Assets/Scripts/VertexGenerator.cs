@@ -12,17 +12,14 @@ public class VertexGenerator : MonoBehaviour
 	public Material m_material;
 
 	public MARCHING_MODE mode = MARCHING_MODE.CUBES;
-	public int resolution = 3;
+	public int resolution = 1;
 
-	public int seed = 0;
+	public VoxelGenerator generator;
 
 	List<GameObject> meshes = new List<GameObject>();
 
-	void Awake()
+	public void Generate()
 	{
-		INoise perlin = new PerlinNoise(seed, 2.0f);
-		FractalNoise fractal = new FractalNoise(perlin, 3, 1.0f);
-
 		//Set the mode used to create the mesh.
 		//Cubes is faster and creates less verts, tetrahedrons is slower and creates more verts but better represents the mesh surface.
 		Marching marching = null;
@@ -34,31 +31,18 @@ public class VertexGenerator : MonoBehaviour
 		//Surface is the value that represents the surface of mesh
 		//For example the perlin noise has a range of -1 to 1 so the mid point is where we want the surface to cut through.
 		//The target value does not have to be the mid point it can be any value with in the range.
-		marching.Surface = 0.0f;
+		marching.Surface = 0.5f;
 
 		//The size of voxel array.
-		int width = 32 * resolution;
-		int height = 32 * resolution;
-		int length = 32 * resolution;
+		int width = generator.GetWidth() * resolution;
+		int height = generator.GetHeight() * resolution;
+		int length = generator.GetLength() * resolution;
 
-		float[] voxels = new float[width * height * length];
-
-		//Fill voxels with values. Im using perlin noise but any method to create voxels will work.
-		for (int x = 0; x < width; x++)
-		{
-			for (int z = 0; z < length; z++)
-			{
-				float fx = x / (width - 1.0f);
-				float fz = z / (length - 1.0f);
-
-				float value = fractal.Sample2D(fx, fz);
-				for (int y = 0; y < height; y++)
-				{
-					int idx = x + y * width + z * width * height;
-					voxels[idx] = y < (value+1.0f)/2.0f*height ? 1 : -1;
-				}
-			}
-		}
+		float[] voxels = generator.GetVoxels();
+		Debug.Log(voxels.Length);
+		Debug.Log(width);
+		Debug.Log(height);
+		Debug.Log(length);
 
 		List<Vector3> verts = new List<Vector3>();
 		List<int> indices = new List<int>();
@@ -116,10 +100,16 @@ public class VertexGenerator : MonoBehaviour
 	{
 		//            transform.Rotate(Vector3.up, 10.0f * Time.deltaTime);
 	}
+
+	public void Regen() {
+	  Delete();
+	  Generate();
+	}
+
 	void OnValidate() {
 		if (meshes.Any()) {
 			Delete();
-			Awake();
+			Generate();
 		}
 	}
 
