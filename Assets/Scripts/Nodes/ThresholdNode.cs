@@ -3,7 +3,7 @@ using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 
-[Node (false, "Scripts/Nodes/ThresholdNode")]
+[Node (false, "Noise")]
 public class ThresholdNode : Node 
 {
 	public const string ID = "Threshold";

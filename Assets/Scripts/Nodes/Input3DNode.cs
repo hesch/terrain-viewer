@@ -2,7 +2,7 @@
 using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
 
-[Node (false, "Scripts/Node/Input3DNode")]
+[Node (false, "Noise")]
 public class Input3DNode : Node 
 {
 	public const string ID = "Input3D";

@@ -34,8 +34,7 @@ public class VoxelGenerator : MonoBehaviour {
     
     float output = 0.0f;
 
-    foreach(Node outputNode in outputNodes) {
-      UnityEngine.Debug.Log("selecting " + outputNode.name + " as output");
+    /*foreach(Node outputNode in outputNodes) {
       output = (outputNode.outputKnobs[0] as ValueConnectionKnob).GetValue<float>();
       string outString = outputNode.name + ": ";
       List<ConnectionKnob> knobs = outputNode.outputKnobs;
@@ -44,7 +43,9 @@ public class VoxelGenerator : MonoBehaviour {
 	outString += knob.styleID + " " + knob.name + " = " + knobValue + "; ";
       }
       UnityEngine.Debug.Log(outString);
-    }
+    }*/
+
+    output = (outputNodes[0].outputKnobs[0] as ValueConnectionKnob).GetValue<float>();
 
     return output;
   }
@@ -76,7 +77,7 @@ public class VoxelGenerator : MonoBehaviour {
     return voxels;
   }
 
-  private int size = 16;
+  private int size = 32;
 
   public int GetWidth() {
     return size;

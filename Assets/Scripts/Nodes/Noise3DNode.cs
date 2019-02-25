@@ -3,7 +3,7 @@ using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 
-[Node (false, "Scripts/Node/Noise3DNode")]
+[Node (false, "Noise")]
 public class Noise3DNode : Node 
 {
 	public const string ID = "Noise3D";
@@ -46,8 +46,6 @@ public class Noise3DNode : Node
 	  float y = yConnection.GetValue<float>();
 	  float z = zConnection.GetValue<float>();
 	  float noiseValue = fractal.Sample3D(x, y, z);
-	  Debug.Log("inputs: " + x + ", " + y + ", " + z);
-	  Debug.Log("Calculated noise: " + noiseValue);
 	  outputConnection.SetValue<float>(noiseValue);
 	  return true;
 	}

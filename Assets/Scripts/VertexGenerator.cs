@@ -39,10 +39,6 @@ public class VertexGenerator : MonoBehaviour
 		int length = generator.GetLength() * resolution;
 
 		float[] voxels = generator.GetVoxels();
-		Debug.Log(voxels.Length);
-		Debug.Log(width);
-		Debug.Log(height);
-		Debug.Log(length);
 
 		List<Vector3> verts = new List<Vector3>();
 		List<int> indices = new List<int>();

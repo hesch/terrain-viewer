@@ -12,14 +12,14 @@ public class NoiseCanvasType : NodeCanvas
 
   protected override void OnCreate () 
   {
-    Traversal = new CanvasCalculator (this);
+    Traversal = new NoiseTraversal (this);
     rootNode = Node.Create (rootNodeID, Vector2.zero) as Input3DNode;
   }
 
   private void OnEnable () 
   {
     if (Traversal == null)
-      Traversal = new CanvasCalculator (this);
+      Traversal = new NoiseTraversal (this);
     // Register to other callbacks
     //NodeEditorCallbacks.OnDeleteNode += CheckDeleteNode;
   }
@@ -27,7 +27,7 @@ public class NoiseCanvasType : NodeCanvas
   protected override void ValidateSelf ()
   {
     if (Traversal == null)
-      Traversal = new CanvasCalculator (this);
+      Traversal = new NoiseTraversal (this);
     if (rootNode == null && (rootNode = nodes.Find ((Node n) => n.GetID == rootNodeID) as Input3DNode) == null)
       rootNode = Node.Create (rootNodeID, Vector2.zero) as Input3DNode;
   }
@@ -40,5 +40,4 @@ public class NoiseCanvasType : NodeCanvas
     return true;
   }
 
-  
 }
