@@ -17,6 +17,10 @@ public class NoiseTraversal : NodeCanvasTraversal
   /// </summary>
   public override void TraverseAll () 
   {
+    if(cache.Any()) {
+      cache.ForEach(n => n.Calculate());
+      return;
+    }
     workList = new List<Node> ();
     for (int i = 0; i < nodeCanvas.nodes.Count; i++) 
     {
@@ -35,10 +39,9 @@ public class NoiseTraversal : NodeCanvasTraversal
   /// </summary>
   public override void OnChange (Node node) 
   {
+    //repopulate cache on change
     cache = new List<Node>();
-    node.ClearCalculation ();
-    workList = new List<Node> { node };
-    StartCalculation ();
+    TraverseAll();
   }
 
   /// <summary>
@@ -46,10 +49,6 @@ public class NoiseTraversal : NodeCanvasTraversal
   /// </summary>
   private void StartCalculation () 
   {
-    if(cache.Any()) {
-      cache.ForEach(n => n.Calculate());
-      return;
-    }
     if (workList == null || workList.Count == 0)
       return;
 

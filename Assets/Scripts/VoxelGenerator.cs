@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,40 +15,42 @@ public class VoxelGenerator : MonoBehaviour {
   }
 
 
-  public float CalculateCanvas(float x, float y, float z) {
+  public Func<float, float, float, float> CalculateCanvas() {
     canvas = GetComponent<NoiseNodeEditor>().GetCanvas();
     AssertCanvas();
     NodeEditor.checkInit(false);
     canvas.Validate();
 
-    List<Node> inputNodes = canvas.nodes.Where((Node node) => node.isInput()).ToList();
+    List<Input3DNode> inputNodes = canvas.nodes
+      .Where((Node node) => node.isInput())
+      .OfType<Input3DNode>()
+      .ToList();
     List<Node> outputNodes = canvas.nodes.Where((Node node) => node.isOutput()).ToList();
 
-    foreach(Node inputNode in inputNodes) {
-      if(inputNode is Input3DNode) {
-	Input3DNode input = inputNode as Input3DNode;
-	input.value = new Vector3(x, y, z);
+    return (float x, float y, float z) => {
+      foreach(Input3DNode inputNode in inputNodes) {
+	inputNode.value = new Vector3(x, y, z);
       }
-    }
 
-    canvas.TraverseAll();
-    
-    float output = 0.0f;
+      canvas.TraverseAll();
 
-    /*foreach(Node outputNode in outputNodes) {
-      output = (outputNode.outputKnobs[0] as ValueConnectionKnob).GetValue<float>();
-      string outString = outputNode.name + ": ";
-      List<ConnectionKnob> knobs = outputNode.outputKnobs;
-      foreach(ValueConnectionKnob knob in knobs.OfType<ValueConnectionKnob>()) {
+      float output = 0.0f;
+
+      /*foreach(Node outputNode in outputNodes) {
+	output = (outputNode.outputKnobs[0] as ValueConnectionKnob).GetValue<float>();
+	string outString = outputNode.name + ": ";
+	List<ConnectionKnob> knobs = outputNode.outputKnobs;
+	foreach(ValueConnectionKnob knob in knobs.OfType<ValueConnectionKnob>()) {
 	string knobValue = knob.IsValueNull ? "NULL" : knob.GetValue().ToString();
 	outString += knob.styleID + " " + knob.name + " = " + knobValue + "; ";
-      }
-      UnityEngine.Debug.Log(outString);
-    }*/
+	}
+	UnityEngine.Debug.Log(outString);
+	}*/
 
-    output = (outputNodes[0].outputKnobs[0] as ValueConnectionKnob).GetValue<float>();
+      output = (outputNodes[0].outputKnobs[0] as ValueConnectionKnob).GetValue<float>();
 
-    return output;
+      return output;
+    };
   }
 
   public float[] GetVoxels() {
@@ -56,6 +59,7 @@ public class VoxelGenerator : MonoBehaviour {
     int length = GetLength();
 
     Stopwatch stopwatch = Stopwatch.StartNew();
+    Func<float, float, float, float> calcFunction = CalculateCanvas();
     float[] voxels = new float[width * height * length];
     for (int x = 0; x < width; x++)
     {
@@ -67,7 +71,7 @@ public class VoxelGenerator : MonoBehaviour {
 	  float fy = y / (height - 1.0f);
 	  float fz = z / (length - 1.0f);
 	  int idx = x + y * width + z * width * height;
-	  float value = CalculateCanvas(fx, fy, fz);
+	  float value = calcFunction(fx, fy, fz);
 	  voxels[idx] = value;
 	}
       }
@@ -77,7 +81,7 @@ public class VoxelGenerator : MonoBehaviour {
     return voxels;
   }
 
-  private int size = 32;
+  private int size = 64;
 
   public int GetWidth() {
     return size;
