@@ -204,7 +204,9 @@ namespace NodeEditorFramework.Utilities
 			}
 
 			if (close || inRect < 2 || (Event.current.type == EventType.MouseDown && inRect < 3)) 
+			{
 				OverlayGUI.ClosePopup ();
+			}
 
 			NodeEditor.RepaintClients ();
 		}

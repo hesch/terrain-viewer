@@ -3,6 +3,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections;
 
 using Object = UnityEngine.Object;
 
@@ -652,14 +653,35 @@ namespace NodeEditorFramework.Utilities
 			return EnumPopup (new GUIContent (label), selected);
 		}
 
-		public static System.Enum EnumPopup (GUIContent label, System.Enum selected) 
+		public static T EnumPopup<T> (GUIContent label, T selected) where T : System.Enum
 		{
+		  T oldSelected = selected;
 			#if UNITY_EDITOR
 			if (!Application.isPlaying)
-				return UnityEditor.EditorGUILayout.EnumPopup (label, selected);
+				return (T) UnityEditor.EditorGUILayout.EnumPopup (label, selected);
 			#endif
 			label.text += ": " + selected.ToString ();
 			GUILayout.Label (label);
+			
+			if (GUILayout.Button(label)) {
+			  PopupMenu menu = new PopupMenu();
+			  T[] values = (T[])Enum.GetValues(selected.GetType());
+			  Array.ForEach(values, e => {menu.AddItem(new GUIContent(Enum.GetName(selected.GetType(), e)), true, () => { Debug.Log("executing handler"); selected = e; });});
+
+			  Vector2 mousePos = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+			  Debug.Log(mousePos);
+			  Debug.Log("showing Menu");
+			  menu.Show(new Vector2(mousePos.x + 1, mousePos.y + 1));
+			}
+			if(Event.current.type == EventType.MouseDown) {
+			  Debug.Log("MouseDown");
+			}
+			//buttonRect = GUILayoutUtility.GetLastRect();
+			if(!Object.Equals(oldSelected, selected)) {
+			  Debug.Log("changing selected");
+			Debug.Log(oldSelected);
+			Debug.Log(selected);
+			}
 			return selected;
 		}
 
