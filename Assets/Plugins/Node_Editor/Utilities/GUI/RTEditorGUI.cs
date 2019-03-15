@@ -663,15 +663,16 @@ namespace NodeEditorFramework.Utilities
 			label.text += ": " + selected.ToString ();
 			GUILayout.Label (label);
 			
-			if (GUILayout.Button(label)) {
+			Rect buttonRect = GUILayoutUtility.GetRect(label, new GUIStyle(GUI.skin.button));
+			if (GUI.Button(buttonRect, label)) {
 			  PopupMenu menu = new PopupMenu();
 			  T[] values = (T[])Enum.GetValues(selected.GetType());
 			  Array.ForEach(values, e => {menu.AddItem(new GUIContent(Enum.GetName(selected.GetType(), e)), true, () => { Debug.Log("executing handler"); selected = e; });});
 
-			  Vector2 mousePos = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+			  Vector2 mousePos = GUIUtility.GUIToScreenPoint(new Vector2(buttonRect.x, buttonRect.y + buttonRect.height));
 			  Debug.Log(mousePos);
 			  Debug.Log("showing Menu");
-			  menu.Show(new Vector2(mousePos.x + 1, mousePos.y + 1));
+			  menu.Show(new Vector2(mousePos.x + 1, mousePos.y + 1), buttonRect.width);
 			}
 			if(Event.current.type == EventType.MouseDown) {
 			  Debug.Log("MouseDown");
