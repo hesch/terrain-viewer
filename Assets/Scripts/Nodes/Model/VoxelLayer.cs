@@ -1,0 +1,3 @@
+class VoxelLayer {
+  Voxel[][] layer;
+}

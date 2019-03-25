@@ -1,0 +1,3 @@
+class Voxel {
+  float data;
+}
