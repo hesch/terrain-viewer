@@ -19,9 +19,13 @@ public class BuildScript : MonoBehaviour
 
         BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
         buildPlayerOptions.scenes = new[] { "Assets/Scenes/World.unity"};
-        buildPlayerOptions.locationPathName = "build/terrain-viewer";
         buildPlayerOptions.target = selectBuildTarget();
+        buildPlayerOptions.locationPathName = "build/terrain-viewer";
         buildPlayerOptions.options = BuildOptions.None;
+
+	if(buildPlayerOptions.target == BuildTarget.StandaloneWindows64) {
+	  buildPlayerOptions.locationPathName += ".exe";
+	}
 
         BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
         BuildSummary summary = report.summary;
