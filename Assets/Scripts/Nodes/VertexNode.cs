@@ -3,10 +3,10 @@ using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 
-public enum MARCHING_MODE {  CUBES, TETRAHEDRON };
+public enum MarchingMode {  Cubes, Tetrahedron };
 
 [Node (false, "Vertex")]
-public class Noise3DNode : Node 
+public class VertexNode : Node 
 {
 	public const string ID = "Vertex";
 	public override string GetID { get { return ID; } }
@@ -17,7 +17,7 @@ public class Noise3DNode : Node
 	[ValueConnectionKnob("Input", Direction.In, "Block")]
 		public ValueConnectionKnob input;
 
-	private MARCHING_MODE mode = MARCHING_MODE.CUBES;
+	private MarchingMode mode = MarchingMode.Cubes;
 
 	public override void NodeGUI () 
 	{
@@ -26,7 +26,7 @@ public class Noise3DNode : Node
 		input.DisplayLayout ();
 		GUILayout.EndVertical();
 		GUILayout.EndHorizontal ();
-		mode = (MARCHING_MODE)RTEditorGUI.EnumPopup (new GUIContent ("Vertex Generation", "The type of Vertex generation"), mode);
+		mode = (MarchingMode)RTEditorGUI.EnumPopup (new GUIContent ("Vertex Generation", "The type of Vertex generation"), mode);
 	}
 
 	public override bool Calculate() {

@@ -1,3 +1,3 @@
-class Voxel {
+public class Voxel {
   float data;
 }
