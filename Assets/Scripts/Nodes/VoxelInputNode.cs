@@ -11,7 +11,7 @@ public class VoxelInputNode : InputNode<Voxel>
 	public override string Title { get { return "Input Node"; } }
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
-	protected override VoxelBlock<Voxel> InitBlock() {
+	protected override VoxelBlock<Voxel> InitBlock(VoxelBlock<Voxel> block) {
 	  int size = 64;
 	  VoxelLayer<Voxel>[] layers = new VoxelLayer<Voxel>[64];
 	  for(int y = 0; y < size; y++) {
@@ -26,6 +26,7 @@ public class VoxelInputNode : InputNode<Voxel>
 	    }
 	    layers[y] = new VoxelLayer<Voxel>(voxelLayer);
 	  }
-	  return new VoxelBlock<Voxel>(layers);
+	  block.Layers = layers;
+	  return block;
 	}
 }

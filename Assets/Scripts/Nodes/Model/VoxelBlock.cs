@@ -24,6 +24,9 @@ public class VoxelBlock<T> where T : Voxel {
   public int OffsetX { get; set; }
   public int OffsetY { get; set; }
 
+  public VoxelBlock() {
+  }
+  
   public VoxelBlock(VoxelLayer<T>[] layers) {
     this.Layers = layers;
   }

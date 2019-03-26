@@ -7,10 +7,16 @@ public abstract class InputNode<T> : Node where T : Voxel
 	[ValueConnectionKnob("Output", Direction.Out, "Block")]
 		public ValueConnectionKnob output;
 
-	protected abstract VoxelBlock<T> InitBlock();
+	public int OffsetX { get; set; }
+	public int OffsetY { get; set; }
+
+	protected abstract VoxelBlock<T> InitBlock(VoxelBlock<T> block);
 
 	public override bool Calculate() {
-	  output.SetValue(InitBlock());
-		return true;
+	  VoxelBlock<T> block = new VoxelBlock<T>();
+	  block.OffsetX = OffsetX;
+	  block.OffsetY = OffsetY;
+	  output.SetValue(InitBlock(block));
+	  return true;
 	}
 }
