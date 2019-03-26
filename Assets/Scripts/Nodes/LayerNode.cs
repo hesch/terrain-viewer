@@ -16,7 +16,7 @@ public abstract class LayerNode<T> : Node where T: Voxel
 
 	public override bool Calculate() {
 	  VoxelBlock<T> block = input.GetValue<VoxelBlock<T>>();
-	  if(block == null) {
+	  if(block == null || block.Layers == null) {
 	    return false;
 	  }
 

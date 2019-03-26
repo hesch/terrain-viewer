@@ -31,9 +31,9 @@ public class Noise2DNode : VoxelNode<Voxel>
 	}
 
 	protected override bool CalculateVoxel(Voxel voxel, int x, int y, int z) {
-	  float noiseValue = fractal.Sample2D(x/width, z/length);
+	  float noiseValue = fractal.Sample2D(x/(float)width, z/(float)length);
 	  float normalizedNoise = 1-(noiseValue+1)/2;
-	  voxel.Data = y/height > normalizedNoise ? 0.0f : 1.0f;
+	  voxel.Data = y/(float)height > normalizedNoise ? 0.0f : 1.0f;
 	  return true;
 	}
 }
