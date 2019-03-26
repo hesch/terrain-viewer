@@ -3,13 +3,13 @@ using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 
-[Node (false, "Noise")]
+[Node (false, "Noise3D")]
 public class Noise3DNode : Node 
 {
 	public const string ID = "Noise3D";
 	public override string GetID { get { return ID; } }
 
-	public override string Title { get { return "Noise"; } }
+	public override string Title { get { return "Noise3D"; } }
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
 	private INoise perlin;

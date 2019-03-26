@@ -16,7 +16,7 @@ public class VoxelGenerator : MonoBehaviour {
 
 
   public Func<float, float, float, float> CalculateCanvas() {
-    canvas = GetComponent<NoiseNodeEditor>().GetCanvas();
+   /* canvas = GetComponent<NoiseNodeEditor>().GetCanvas();
     AssertCanvas();
     NodeEditor.checkInit(false);
     canvas.Validate();
@@ -26,11 +26,11 @@ public class VoxelGenerator : MonoBehaviour {
       .OfType<Input3DNode>()
       .ToList();
     List<Node> outputNodes = canvas.nodes.Where((Node node) => node.isOutput()).ToList();
-
+*/
     return (float x, float y, float z) => {
-      foreach(Input3DNode inputNode in inputNodes) {
+      /*foreach(Input3DNode inputNode in inputNodes) {
 	inputNode.value = new Vector3(x, y, z);
-      }
+      }*/
 
       canvas.TraverseAll();
 
@@ -47,7 +47,7 @@ public class VoxelGenerator : MonoBehaviour {
 	UnityEngine.Debug.Log(outString);
 	}*/
 
-      output = (outputNodes[0].outputKnobs[0] as ValueConnectionKnob).GetValue<float>();
+      // output = (outputNodes[0].outputKnobs[0] as ValueConnectionKnob).GetValue<float>();
 
       return output;
     };

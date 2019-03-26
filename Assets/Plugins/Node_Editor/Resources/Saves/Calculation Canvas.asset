@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   editorStates:
   - {fileID: 11482305}
-  saveName: Assets\Plugins\Node_Editor\Resources\Saves\Calculation Canvas
-  savePath: Assets\Plugins\Node_Editor\Resources\Saves\Calculation Canvas.asset
+  saveName: Calculation Canvas
+  savePath: Assets/Plugins/Node_Editor/Resources/Saves/Calculation Canvas.asset
   livesInScene: 0
   nodes:
   - {fileID: 11496963}

@@ -7,13 +7,14 @@ public class NoiseCanvasType : NodeCanvas
 {
   public override string canvasName { get { return "Noise"; } }
 
-  private string rootNodeID { get { return "Input3D"; } }
-  public Input3DNode rootNode;
+  private string rootNodeID { get { return "VoxelInput"; } }
+  // TODO: make this more generic
+  public VoxelInputNode rootNode;
 
   protected override void OnCreate () 
   {
     Traversal = new NoiseTraversal (this);
-    rootNode = Node.Create (rootNodeID, Vector2.zero) as Input3DNode;
+    rootNode = Node.Create (rootNodeID, Vector2.zero) as VoxelInputNode;
   }
 
   private void OnEnable () 
@@ -28,8 +29,8 @@ public class NoiseCanvasType : NodeCanvas
   {
     if (Traversal == null)
       Traversal = new NoiseTraversal (this);
-    if (rootNode == null && (rootNode = nodes.Find ((Node n) => n.GetID == rootNodeID) as Input3DNode) == null)
-      rootNode = Node.Create (rootNodeID, Vector2.zero) as Input3DNode;
+    if (rootNode == null && (rootNode = nodes.Find ((Node n) => n.GetID == rootNodeID) as VoxelInputNode) == null)
+      rootNode = Node.Create (rootNodeID, Vector2.zero) as VoxelInputNode;
   }
 
   public override bool CanAddNode (string nodeID)

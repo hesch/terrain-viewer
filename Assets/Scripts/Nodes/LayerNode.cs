@@ -10,15 +10,18 @@ public abstract class LayerNode<T> : Node where T: Voxel
 	[ValueConnectionKnob("Output", Direction.Out, "Block")]
 		public ValueConnectionKnob output;
 
-	protected virtual void CalculationSetup() {}
+	protected virtual void CalculationSetup(VoxelBlock<T> block) {}
 	protected virtual void CalculationTeardown() {}
 	protected abstract bool CalculateLayer(VoxelLayer<T> layer, int index);
 
 	public override bool Calculate() {
 	  VoxelBlock<T> block = input.GetValue<VoxelBlock<T>>();
+	  if(block == null) {
+	    return false;
+	  }
 
-	  CalculationSetup();
-	  bool success = block.Layers.Select((layer, i) => CalculateLayer(layer, i)).All(x => x);
+	  CalculationSetup(block);
+	  bool success = block.Layers.AsParallel().Select((layer, i) => CalculateLayer(layer, i)).All(x => x);
 	  CalculationTeardown();
 
 	  output.SetValue(block);

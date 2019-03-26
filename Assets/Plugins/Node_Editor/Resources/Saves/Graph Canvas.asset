@@ -15,7 +15,7 @@ MonoBehaviour:
   editorStates:
   - {fileID: 11432404}
   saveName: Graph Canvas
-  savePath: Assets/Node_Editor/Resources/Saves/Graph Canvas.asset
+  savePath: Assets/Plugins/Node_Editor/Resources/Saves/Graph Canvas.asset
   livesInScene: 0
   nodes:
   - {fileID: 11412686}

@@ -1,3 +1,7 @@
 public class Voxel {
-  float data;
+  public float Data { get; set; }
+
+  public virtual float GetValue() {
+    return Data;
+  }
 }
