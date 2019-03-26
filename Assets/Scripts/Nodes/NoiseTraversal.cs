@@ -39,9 +39,11 @@ public class NoiseTraversal : NodeCanvasTraversal
   /// </summary>
   public override void OnChange (Node node) 
   {
+    (nodeCanvas as NoiseCanvasType).StopComputation();
     //repopulate cache on change
     cache = new List<Node>();
     TraverseAll();
+    (nodeCanvas as NoiseCanvasType).StartComputation(cache);
   }
 
   /// <summary>

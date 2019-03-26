@@ -51,6 +51,7 @@ public class VertexNode: Node
 	}
 
 	public override bool Calculate() {
+	  Debug.Log("Starting Vertex Calculation");
 	  Meshes = new List<GameObject>();
 	  VoxelBlock<Voxel> block = input.GetValue<VoxelBlock<Voxel>>();
 
@@ -104,6 +105,7 @@ public class VertexNode: Node
 	  int maxVertsPerMesh = 30000; //must be divisible by 3, ie 3 verts == 1 triangle
 	  int numMeshes = verts.Count / maxVertsPerMesh + 1;
 
+	  Debug.Log("Starting Mesh Generation");
 	  for (int i = 0; i < numMeshes; i++)
 	  {
 
@@ -125,24 +127,27 @@ public class VertexNode: Node
 	    splitVerts = verts;
 	    splitIndices = indices;
 
+	    VertexDisplay.PushNewMeshForOffset((parentTransform, material) => {
 	    Mesh mesh = new Mesh();
 	    mesh.SetVertices(splitVerts);
 	    mesh.SetTriangles(splitIndices, 0);
 	    mesh.RecalculateBounds();
 	    mesh.RecalculateNormals();
 
-	    GameObject go = new GameObject("Mesh");
-	    // go.transform.parent = transform;
-	    go.AddComponent<MeshFilter>();
-	    go.AddComponent<MeshRenderer>();
-	    // go.GetComponent<Renderer>().material = m_material;
-	    go.GetComponent<MeshFilter>().mesh = mesh;
-	    go.transform.localPosition = new Vector3(-width / 2, -height / 2, -length / 2);
-	    go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+		GameObject go = new GameObject("Mesh");
+		// go.transform.parent = transform;
+		go.AddComponent<MeshFilter>();
+		go.AddComponent<MeshRenderer>();
+		// go.GetComponent<Renderer>().material = m_material;
+		go.GetComponent<MeshFilter>().mesh = mesh;
+		go.transform.localPosition = new Vector3(block.OffsetX*width-width / 2, -height / 2, block.OffsetY*length-length / 2);
+		go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
 
-	    Meshes.Add(go);
+		Debug.Log("returning new Mesh");
+
+		return go;
+	    }, block.OffsetX, block.OffsetY);
 	  }
-	  VertexDisplay.RenderNewMeshes(Meshes);
 	  return true;
 	}
 }

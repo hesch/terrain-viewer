@@ -5,18 +5,24 @@ public class VoxelBlock<T> where T : Voxel {
   public VoxelLayer<T>[] Layers { get; set; }
   public int Width {
     get {
+      if (Layers == null || Layers[0] == null || Layers[0].Layer == null)
+	return 0;
       return Layers[0].Layer.GetLength(0);
     }
   }
   
   public int Height {
     get {
+      if (Layers == null)
+	return 0;
       return Layers.Length;
     }
   }
   
   public int Length {
     get {
+      if (Layers == null || Layers[0] == null || Layers[0].Layer == null)
+	return 0;
       return Layers[0].Layer.GetLength(1);
     }
   }

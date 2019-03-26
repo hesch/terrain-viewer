@@ -1,31 +1,31 @@
 ﻿using UnityEngine;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 public class VertexDisplay : MonoBehaviour
 {
   public Material m_material;
 
-  private List<GameObject> meshes;
+  private GameObject[,] Meshes = new GameObject[10,10];
+  private static ConcurrentQueue<(Func<Transform, Material, GameObject>, int, int)> meshQueue = new ConcurrentQueue<(Func<Transform, Material, GameObject>, int, int)>();
 
   private static List<VertexDisplay> _instances = new List<VertexDisplay>();
-  public static void RenderNewMeshes(List<GameObject> meshes) {
-    foreach(VertexDisplay instance in _instances) {
-      instance.Render(meshes);
-    }
+  public static void PushNewMeshForOffset(Func<Transform, Material, GameObject> meshAction, int x, int y) {
+    meshQueue.Enqueue((meshAction, x, y));
   }
 
   public void OnEnable() {
     _instances.Add(this);
   }
 
-  public void Render(List<GameObject> newMeshes)
-  {
-    Debug.Log("Got new meshes to render");
-    Delete();
-    meshes = newMeshes;
-    foreach(GameObject mesh in meshes) {
-      mesh.transform.parent = transform;
-      mesh.GetComponent<Renderer>().material = m_material;
+  public void Update() {
+    (Func<Transform, Material, GameObject>, int, int) tuple;
+    if(meshQueue.TryDequeue(out tuple)) {
+      if(Meshes[tuple.Item2, tuple.Item3] != null) {
+	  Destroy(Meshes[tuple.Item2, tuple.Item3]);
+      }
+      Meshes[tuple.Item2, tuple.Item3] = tuple.Item1(transform, m_material);
     }
   }
 
@@ -34,9 +34,9 @@ public class VertexDisplay : MonoBehaviour
   }
 
   void Delete() {
-    if (meshes == null) return;
-    foreach(GameObject o in meshes) { Destroy(o); }
-    meshes = new List<GameObject>();
+    //if (meshes == null) return;
+    //foreach(GameObject o in meshes) { Destroy(o); }
+    //meshes = new List<GameObject>();
   }
 
 }
