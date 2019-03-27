@@ -55,38 +55,51 @@ public class NoiseCanvasType : NodeCanvas
     CancellationToken token = tokenSource.Token;
     Action taskAction = () => {
       token.ThrowIfCancellationRequested();
-      for(int x = 0; x < 2; x++) {
-	for(int y = 0; y < 2; y++) {
-	  Debug.Log("rendering meshes at offset: " + x + ", " + y);
-	  rootNode.OffsetX = x;
-	  rootNode.OffsetY = y;
-	  Debug.Log("Nodes in cache: " + cache.Count);
+      foreach((int, int) tuple in Spiral(6)) {
+	  rootNode.OffsetX = tuple.Item1;
+	  rootNode.OffsetY = tuple.Item2;
 	  cache.ForEach(n => {
-	      Debug.Log("starting thread calculation");
-	      Debug.Log("calculating node" + n.GetID);
+	      if (n.isInput() && n is VoxelInputNode) {
+		VoxelInputNode n2 = n as VoxelInputNode;
+		n2.OffsetX = tuple.Item1;
+		n2.OffsetY = tuple.Item2;
+	      }
 	      n.Calculate();
-	      Debug.Log("calculating node end");
 	      token.ThrowIfCancellationRequested();
-	      Debug.Log("throw node end");
 	      });
-	  Debug.Log("after mesh rendering");
 	}
-      }
     };
     task = Task.Factory.StartNew(taskAction,token);
-    Debug.Log("Task started");
   }
 
   public void StopComputation() {
     if(tokenSource == null)
       return;
-    Debug.Log("stopping task");
     tokenSource.Cancel();
     try {
       task.Wait();
     } catch(AggregateException _) {
     } finally {
       tokenSource.Dispose();
+    }
+  }
+
+  private IEnumerable<(int, int)> Spiral(int radius) {
+    int x = 0;
+    int y = 0;
+    int dx = 0;
+    int dy = -1;
+    int maxI = radius * radius;
+    for(int i=0; i < maxI; i++) {
+        if ((-radius/2 < x && x <= radius/2) && (-radius/2 < y && y <= radius/2))
+            yield return (x, y);
+        if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1-y)) {
+	  int t = dx;
+            dx = -dy;
+	    dy = t;
+	}
+        x += dx;
+	y += dy;
     }
   }
 }

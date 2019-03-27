@@ -13,13 +13,11 @@ public abstract class InputNode<T> : Node where T : Voxel
 	protected abstract VoxelBlock<T> InitBlock(VoxelBlock<T> block);
 
 	public override bool Calculate() {
-	  Debug.Log("Calculating Input Node");
 	  VoxelBlock<T> block = new VoxelBlock<T>();
 	  block.OffsetX = OffsetX;
 	  block.OffsetY = OffsetY;
-	  Debug.Log("Before SetValue");
 	  output.SetValue(InitBlock(block));
-	  Debug.Log("After SetValue");
+	  Debug.Log("Block offset (" + block.OffsetX + ", " + block.OffsetY);
 	  return true;
 	}
 }

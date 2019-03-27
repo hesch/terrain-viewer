@@ -7,12 +7,12 @@ public class VertexDisplay : MonoBehaviour
 {
   public Material m_material;
 
-  private GameObject[,] Meshes = new GameObject[10,10];
-  private static ConcurrentQueue<(Func<Transform, Material, GameObject>, int, int)> meshQueue = new ConcurrentQueue<(Func<Transform, Material, GameObject>, int, int)>();
+  private Dictionary<(int,int), List<GameObject>> Meshes = new Dictionary<(int,int), List<GameObject>>();
+  private static ConcurrentQueue<(Func<Transform, Material, List<GameObject>>, (int, int))> meshQueue = new ConcurrentQueue<(Func<Transform, Material, List<GameObject>>, (int, int))>();
 
   private static List<VertexDisplay> _instances = new List<VertexDisplay>();
-  public static void PushNewMeshForOffset(Func<Transform, Material, GameObject> meshAction, int x, int y) {
-    meshQueue.Enqueue((meshAction, x, y));
+  public static void PushNewMeshForOffset(Func<Transform, Material, List<GameObject>> meshAction, int x, int y) {
+    meshQueue.Enqueue((meshAction, (x, y)));
   }
 
   public void OnEnable() {
@@ -20,12 +20,15 @@ public class VertexDisplay : MonoBehaviour
   }
 
   public void Update() {
-    (Func<Transform, Material, GameObject>, int, int) tuple;
+    (Func<Transform, Material, List<GameObject>>, (int, int)) tuple;
     if(meshQueue.TryDequeue(out tuple)) {
-      if(Meshes[tuple.Item2, tuple.Item3] != null) {
-	  Destroy(Meshes[tuple.Item2, tuple.Item3]);
+      if(Meshes.ContainsKey(tuple.Item2)) {
+	  Meshes[tuple.Item2].ForEach(m => Destroy(m));
       }
-      Meshes[tuple.Item2, tuple.Item3] = tuple.Item1(transform, m_material);
+      Debug.Log("setting new Mesh at: " + tuple.Item2);
+      Debug.Log(transform);
+      Debug.Log(m_material);
+      Meshes[tuple.Item2] = tuple.Item1(transform, m_material);
     }
   }
 

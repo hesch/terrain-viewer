@@ -105,49 +105,49 @@ public class VertexNode: Node
 	  int maxVertsPerMesh = 30000; //must be divisible by 3, ie 3 verts == 1 triangle
 	  int numMeshes = verts.Count / maxVertsPerMesh + 1;
 
-	  Debug.Log("Starting Mesh Generation");
-	  for (int i = 0; i < numMeshes; i++)
-	  {
-
-	    List<Vector3> splitVerts = new List<Vector3>();
-	    List<int> splitIndices = new List<int>();
-
-	    for (int j = 0; j < maxVertsPerMesh; j++)
-	    {
-	      int idx = i * maxVertsPerMesh + j;
-
-	      if (idx < verts.Count)
-	      {
-		splitVerts.Add(verts[idx]);
-		splitIndices.Add(j);
-	      }
-	    }
-
-	    if (splitVerts.Count == 0) continue;
-	    splitVerts = verts;
-	    splitIndices = indices;
-
+	  Debug.Log("Block offset (" + block.OffsetX + ", " + block.OffsetY);
 	    VertexDisplay.PushNewMeshForOffset((parentTransform, material) => {
-	    Mesh mesh = new Mesh();
-	    mesh.SetVertices(splitVerts);
-	    mesh.SetTriangles(splitIndices, 0);
-	    mesh.RecalculateBounds();
-	    mesh.RecalculateNormals();
+		List<GameObject> meshes = new List<GameObject>();
+	      for (int i = 0; i < numMeshes; i++)
+    	      {
+    
+    	        List<Vector3> splitVerts = new List<Vector3>();
+    	        List<int> splitIndices = new List<int>();
+    
+    	        for (int j = 0; j < maxVertsPerMesh; j++)
+    	        {
+    	          int idx = i * maxVertsPerMesh + j;
+    
+    	          if (idx < verts.Count)
+    	          {
+    	            splitVerts.Add(verts[idx]);
+    	            splitIndices.Add(j);
+    	          }
+    	        }
+    
+    	        if (splitVerts.Count == 0) continue;
+		splitVerts = verts;
+		splitIndices = indices;
+    
+    	        Mesh mesh = new Mesh();
+    	        mesh.SetVertices(splitVerts);
+    	        mesh.SetTriangles(splitIndices, 0);
+    	        mesh.RecalculateBounds();
+    	        mesh.RecalculateNormals();
 
 		GameObject go = new GameObject("Mesh");
-		// go.transform.parent = transform;
+		go.transform.parent = parentTransform;
 		go.AddComponent<MeshFilter>();
 		go.AddComponent<MeshRenderer>();
-		// go.GetComponent<Renderer>().material = m_material;
+		go.GetComponent<Renderer>().material = material;
 		go.GetComponent<MeshFilter>().mesh = mesh;
 		go.transform.localPosition = new Vector3(block.OffsetX*width-width / 2, -height / 2, block.OffsetY*length-length / 2);
 		go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
 
-		Debug.Log("returning new Mesh");
-
-		return go;
+		meshes.Add(go);
+	      }
+	      return meshes;
 	    }, block.OffsetX, block.OffsetY);
-	  }
 	  return true;
 	}
 }

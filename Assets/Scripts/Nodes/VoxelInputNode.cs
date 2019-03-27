@@ -12,8 +12,8 @@ public class VoxelInputNode : InputNode<Voxel>
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
 	protected override VoxelBlock<Voxel> InitBlock(VoxelBlock<Voxel> block) {
-	  Debug.Log("InitBlock start");
 	  int size = 64;
+	  Debug.Log("Block offset (" + block.OffsetX + ", " + block.OffsetY);
 	  VoxelLayer<Voxel>[] layers = new VoxelLayer<Voxel>[64];
 	  for(int y = 0; y < size; y++) {
 	    Voxel[,] voxelLayer = new Voxel[size, size];
