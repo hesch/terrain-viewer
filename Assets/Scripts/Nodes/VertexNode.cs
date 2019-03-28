@@ -4,6 +4,7 @@ using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 using MarchingCubesProject;
 using System.Collections.Generic;
+using System.Linq;
 
 public enum MarchingMode {  Cubes, Tetrahedron };
 
@@ -31,6 +32,22 @@ public class VertexNode: Node
 		GUILayout.EndVertical();
 		GUILayout.EndHorizontal ();
 		mode = (MarchingMode)RTEditorGUI.EnumPopup (new GUIContent ("Vertex Generation", "The type of Vertex generation"), mode);
+	}
+
+	private void weldVertices(List<Vector3> verts, List<int> indices) {
+	  Dictionary<Vector3, int> indexMap = new Dictionary<Vector3, int>();
+	  for(int i = 0; i < verts.Count; i++) {
+	      if (!indexMap.ContainsKey(verts[i])) {
+		indexMap.Add(verts[i], indexMap.Count);
+	      }
+	  }
+
+	  for(int i = 0; i < indices.Count; i++) {
+	    indices[i] = indexMap[verts[indices[i]]];
+	  }
+
+	  verts.Clear();
+	  verts.InsertRange(0, indexMap.OrderBy(kv => kv.Value).Select(kv => kv.Key));
 	}
 
 	public override bool Calculate() {
@@ -74,6 +91,13 @@ public class VertexNode: Node
 	  //Would need to weld vertices for better quality mesh.
 	  marching.Generate(voxels, width, height, length, verts, indices);
 
+	  int generatedVerts = verts.Count;
+	  int generatedIndices = indices.Count;
+	  weldVertices(verts, indices);
+	  Debug.Log("Vertex Welding: " + generatedVerts + "=>" + verts.Count);
+	  Debug.Log("Vertex Welding indices: " + generatedIndices + "=>" + indices.Count);
+	  Debug.LogError("Out of Bounds: " + indices.Find(i => i >= verts.Count));
+
 	  //A mesh in unity can only be made up of 65000 verts.
 	  //Need to split the verts between multiple meshes.
 
@@ -98,6 +122,8 @@ public class VertexNode: Node
 	    }
 
 	    if (splitVerts.Count == 0) continue;
+	    splitVerts = verts;
+	    splitIndices = indices;
 
 	    Mesh mesh = new Mesh();
 	    mesh.SetVertices(splitVerts);
