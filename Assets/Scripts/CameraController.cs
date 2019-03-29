@@ -50,10 +50,10 @@ public class CameraController : MonoBehaviour
 
       if (!Input.GetMouseButton(0)) return;
 
-      Vector3 pivot = controlledCamera.ScreenToWorldPoint(new Vector3(Screen.width/2, Screen.height/2, 100));
       transform.localPosition = oldLocalPosition;
       transform.localRotation = oldLocalRotation;
-      transform.RotateAround(pivot, Vector3.Cross(pivot-transform.position, Input.mousePosition - origin), (Input.mousePosition - origin).magnitude);
+      Vector3 pivot = transform.position + transform.forward * 50;
+      transform.RotateAround(pivot, Vector3.Cross(Input.mousePosition - origin, pivot-transform.position), (Input.mousePosition - origin).magnitude);
     }
 
     private void handleZoom() {

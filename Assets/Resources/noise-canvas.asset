@@ -10,18 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a088d17ace7488fdca4bf0087a3cacd6, type: 3}
-  m_Name: noise-canvas
+  m_Name: New Noise
   m_EditorClassIdentifier: 
   editorStates:
-  - {fileID: 114701537809622950}
+  - {fileID: 114367160910335390}
   saveName: noise-canvas
   savePath: Assets/Resources/noise-canvas.asset
   livesInScene: 0
   nodes:
-  - {fileID: 114582504078912554}
-  - {fileID: 114713560592420024}
+  - {fileID: 114245604820082370}
+  - {fileID: 114621681160327554}
+  - {fileID: 114114887578129264}
   groups: []
-  rootNode: {fileID: 114713560592420024}
+  rootNode: {fileID: 0}
 --- !u!114 &114067186356892634
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -41,49 +42,7 @@ MonoBehaviour:
   xConnection: {fileID: 0}
   yConnection: {fileID: 0}
   zConnection: {fileID: 0}
---- !u!114 &114423209098576276
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 017e2c7fd038ecb46b317c1e003f31dc, type: 3}
-  m_Name: Output
-  m_EditorClassIdentifier: 
-  body: {fileID: 114713560592420024}
-  direction: 2
-  maxConnectionCount: 1
-  styleID: Block
-  _connections:
-  - {fileID: 114491337171383482}
-  side: 2
-  sidePosition: 30
-  sideOffset: 0
---- !u!114 &114491337171383482
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 017e2c7fd038ecb46b317c1e003f31dc, type: 3}
-  m_Name: Input
-  m_EditorClassIdentifier: 
-  body: {fileID: 114582504078912554}
-  direction: 1
-  maxConnectionCount: 0
-  styleID: Block
-  _connections:
-  - {fileID: 114423209098576276}
-  side: 4
-  sidePosition: 28
-  sideOffset: 0
---- !u!114 &114582504078912554
+--- !u!114 &114114887578129264
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -95,11 +54,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 310253656d01f84868fa20bd334fa975, type: 3}
   m_Name: Vertex Generation
   m_EditorClassIdentifier: 
-  position: {x: 81, y: -160.5}
+  position: {x: -20.75, y: 68.5}
   dynamicConnectionPorts: []
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
-  input: {fileID: 114491337171383482}
---- !u!114 &114701537809622950
+  input: {fileID: 114663667676376128}
+--- !u!114 &114245604820082370
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 860120967253140a2a47c006fcfa8887, type: 3}
+  m_Name: Input Node
+  m_EditorClassIdentifier: 
+  position: {x: -127, y: -232}
+  dynamicConnectionPorts: []
+  backgroundColor: {r: 1, g: 1, b: 1, a: 1}
+  output: {fileID: 114420654384994738}
+--- !u!114 &114367160910335390
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -113,10 +88,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvas: {fileID: 0}
   parentEditor: {fileID: 0}
-  selectedNode: {fileID: 0}
-  panOffset: {x: -1, y: 0}
+  selectedNode: {fileID: 114114887578129264}
+  panOffset: {x: 0, y: 0}
   zoom: 1
---- !u!114 &114713560592420024
+--- !u!114 &114420654384994738
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -125,10 +100,95 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 860120967253140a2a47c006fcfa8887, type: 3}
-  m_Name: Input Node
+  m_Script: {fileID: 11500000, guid: 017e2c7fd038ecb46b317c1e003f31dc, type: 3}
+  m_Name: Output
   m_EditorClassIdentifier: 
-  position: {x: -166, y: -162}
+  body: {fileID: 114245604820082370}
+  direction: 2
+  maxConnectionCount: 1
+  styleID: Block
+  _connections:
+  - {fileID: 114734441659039282}
+  side: 2
+  sidePosition: 33
+  sideOffset: 0
+--- !u!114 &114621681160327554
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccf0254e0ca8293a08e47de0fdf0c8c6, type: 3}
+  m_Name: Noise2D
+  m_EditorClassIdentifier: 
+  position: {x: -30.75, y: -81.5}
   dynamicConnectionPorts: []
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
-  output: {fileID: 114423209098576276}
+  input: {fileID: 114734441659039282}
+  output: {fileID: 114626651022885560}
+--- !u!114 &114626651022885560
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 017e2c7fd038ecb46b317c1e003f31dc, type: 3}
+  m_Name: Output
+  m_EditorClassIdentifier: 
+  body: {fileID: 114621681160327554}
+  direction: 2
+  maxConnectionCount: 1
+  styleID: Block
+  _connections:
+  - {fileID: 114663667676376128}
+  side: 2
+  sidePosition: 29
+  sideOffset: 0
+--- !u!114 &114663667676376128
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 017e2c7fd038ecb46b317c1e003f31dc, type: 3}
+  m_Name: Input
+  m_EditorClassIdentifier: 
+  body: {fileID: 114114887578129264}
+  direction: 1
+  maxConnectionCount: 0
+  styleID: Block
+  _connections:
+  - {fileID: 114626651022885560}
+  side: 4
+  sidePosition: 29
+  sideOffset: 0
+--- !u!114 &114734441659039282
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 017e2c7fd038ecb46b317c1e003f31dc, type: 3}
+  m_Name: Input
+  m_EditorClassIdentifier: 
+  body: {fileID: 114621681160327554}
+  direction: 1
+  maxConnectionCount: 0
+  styleID: Block
+  _connections:
+  - {fileID: 114420654384994738}
+  side: 4
+  sidePosition: 29
+  sideOffset: 0
