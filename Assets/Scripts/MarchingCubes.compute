@@ -1,0 +1,34 @@
+#pragma kernel computeSizes
+
+#define GROUP_SIZE 8
+
+RWStructuredBuffer<float> buffer;
+
+groupshared float s_data1[GROUP_SIZE]
+groupshared float s_data2[GROUP_SIZE]
+
+[numthreads(GROUP_SIZE,1,1)]
+void computeSizes(
+  uint3 thread_id: SV_GroupThreadID,
+  uint3 group_id: SV_GroupID
+) {
+ unsigned int tid = thread_id.x;
+ unsigned int i = group_id.x*GROUP_SIZE + tid;
+ s_data1[tid] = buffer[i];
+ GroupMemoryBarrierWithGroupSync();
+
+ bool write_to_two = true;
+ for(unsigned int s = GROUP_SIZE/2; s > 0; s >>= 1) {
+   if(tid < GROUP_SIZE - s) {
+     if(write_to_two) {
+      s_data2[tid] = s_data1[tid] + s_data1[tid + s];
+     } else {
+      s_data1[tid] = s_data2[tid] + s_data2[tid + s];
+     }
+     write_to_two = !write_to_two;
+   }
+   GroupMemoryBarrierWithGroupSync();
+ }
+ buffer1[i] = s_data[tid];
+}
+
