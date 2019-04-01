@@ -4,8 +4,8 @@
 
 RWStructuredBuffer<int> buffer;
 
-int s_data1[GROUP_SIZE];
-int s_data2[GROUP_SIZE];
+static int s_data1[GROUP_SIZE];
+static int s_data2[GROUP_SIZE];
 
 [numthreads(GROUP_SIZE,1,1)]
 void computeSizes(
@@ -17,15 +17,12 @@ void computeSizes(
  s_data1[tid] = buffer[i];
  GroupMemoryBarrierWithGroupSync();
 
- bool write_to_two = true;
  for(unsigned int s = GROUP_SIZE/2; s > 0; s >>= 1) {
    if(tid < GROUP_SIZE - s) {
-     if(write_to_two) {
-      s_data2[tid] = s_data1[tid] + s_data1[tid + s];
-     } else {
-      s_data1[tid] = s_data2[tid] + s_data2[tid + s];
-     }
-     write_to_two = !write_to_two;
+     s_data2[tid] = s_data1[tid] + s_data1[tid + s];
+     int tmp[] = s_data1;
+     s_data1 = s_data2;
+     s_data2 = tmp;
    }
    GroupMemoryBarrierWithGroupSync();
  }
