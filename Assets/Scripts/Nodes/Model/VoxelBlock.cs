@@ -30,4 +30,8 @@ public class VoxelBlock<T> where T : Voxel {
   public VoxelBlock(VoxelLayer<T>[] layers) {
     this.Layers = layers;
   }
+
+  public T this[int x, int y, int z] {
+    get { return Layers[y][x,z]; }
+  }
 }
