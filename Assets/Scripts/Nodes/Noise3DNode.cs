@@ -4,7 +4,7 @@ using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 
 [Node (false, "Noise3D")]
-public class Noise3DNode : Node 
+public class Noise3DNode : VoxelNode<Voxel> 
 {
 	public const string ID = "Noise3D";
 	public override string GetID { get { return ID; } }
@@ -15,38 +15,25 @@ public class Noise3DNode : Node
 	private INoise perlin;
 	private FractalNoise fractal;
 
-	[ValueConnectionKnob("X", Direction.In, "Float")]
-		public ValueConnectionKnob xConnection;
-	[ValueConnectionKnob("Y", Direction.In, "Float")]
-		public ValueConnectionKnob yConnection;
-	[ValueConnectionKnob("Z", Direction.In, "Float")]
-		public ValueConnectionKnob zConnection;
-	[ValueConnectionKnob("Noise", Direction.Out, "Float")]
-		public ValueConnectionKnob outputConnection;
+	private int width = 0;
+	private int height = 0;
+	private int length = 0;
 
 	public Noise3DNode() {
 	  perlin = new PerlinNoise(1337, 2.0f);
 	  fractal = new FractalNoise(perlin, 3, 1.0f);
 	}
 
-	/*public override void NodeGUI () 
-	{
-		GUILayout.BeginHorizontal();
-		GUILayout.BeginVertical();
-		xConnection.DisplayLayout ();
-		yConnection.DisplayLayout ();
-		zConnection.DisplayLayout ();
-		GUILayout.EndVertical();
-		outputConnection.DisplayLayout();
-		GUILayout.EndHorizontal ();
-	}*/
+	protected override void CalculationSetup(VoxelBlock<Voxel> block) {
+	 width = block.Width;
+	 height = block.Height;
+	 length = block.Length;
+	}
 
-	public override bool Calculate() {
-	  float x = xConnection.GetValue<float>();
-	  float y = yConnection.GetValue<float>();
-	  float z = zConnection.GetValue<float>();
-	  float noiseValue = fractal.Sample3D(x, y, z);
-	  outputConnection.SetValue<float>(noiseValue);
+	protected override bool CalculateVoxel(Voxel voxel, int x, int y, int z) {
+	  float noiseValue = fractal.Sample3D(x/(float)width, y/(float)height, z/(float)length);
+	  float normalizedNoise = 1-(noiseValue+1)/2;
+	  voxel.Data = normalizedNoise;
 	  return true;
 	}
 }
