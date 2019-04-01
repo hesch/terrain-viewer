@@ -80,6 +80,9 @@ public class VertexNode: Node
 	      for(int z = 0; z < length; z++) {
 		int idx = x + y * width + z * width * height;
 		voxels[idx] = voxelLayer[x,z].GetValue();
+		if(x == 10 && z == 10) {
+		  Debug.Log(voxels[idx]);
+		}
 	      }
 	    }
 	  }
@@ -94,9 +97,6 @@ public class VertexNode: Node
 	  int generatedVerts = verts.Count;
 	  int generatedIndices = indices.Count;
 	  weldVertices(verts, indices);
-	  Debug.Log("Vertex Welding: " + generatedVerts + "=>" + verts.Count);
-	  Debug.Log("Vertex Welding indices: " + generatedIndices + "=>" + indices.Count);
-	  Debug.LogError("Out of Bounds: " + indices.Find(i => i >= verts.Count));
 
 	  //A mesh in unity can only be made up of 65000 verts.
 	  //Need to split the verts between multiple meshes.
