@@ -3,8 +3,8 @@ using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 
-[Node (false, "Noise")]
-public class ThresholdNode : Node 
+[Node (false, "Threshold")]
+public class ThresholdNode : VoxelNode<Voxel>
 {
 	public const string ID = "Threshold";
 	public override string GetID { get { return ID; } }
@@ -12,20 +12,15 @@ public class ThresholdNode : Node
 	public override string Title { get { return "Threshold"; } }
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
-	[ValueConnectionKnob("Input", Direction.In, "Float")]
-		public ValueConnectionKnob inputConnection;
 	[ValueConnectionKnob("Threshold", Direction.In, "Float")]
 		public ValueConnectionKnob thresholdConnection;
-	[ValueConnectionKnob("Noise", Direction.Out, "Float")]
-		public ValueConnectionKnob outputConnection;
 
 	private float threshold = 0.5f;
 	public override void NodeGUI () 
 	{
+	  base.NodeGUI();
 	  GUILayout.BeginHorizontal ();
 	  GUILayout.BeginVertical ();
-
-	  inputConnection.DisplayLayout();
 
 	  // First input
 	  if (thresholdConnection.connected ())
@@ -35,24 +30,17 @@ public class ThresholdNode : Node
 	  thresholdConnection.SetPosition ();
 
 	  GUILayout.EndVertical ();
-	  GUILayout.BeginVertical ();
-
-	  // Output
-	  outputConnection.DisplayLayout ();
-
-	  GUILayout.EndVertical ();
 	  GUILayout.EndHorizontal ();
 
 	  if (GUI.changed)
 	    NodeEditor.curNodeCanvas.OnNodeChange (this);
 	}
 
-	public override bool Calculate() {
-	  float input = inputConnection.GetValue<float>();
+	protected override bool CalculateVoxel(Voxel voxel, int x, int y, int z) {
 	  if(thresholdConnection.connected()) {
 	    threshold = thresholdConnection.GetValue<float>();
 	  }
-	  outputConnection.SetValue<float>(input > threshold ? 0.0f : 1.0f);
+	  voxel.Data = voxel.Data > threshold ? 1.0f : 0.0f;
 	  return true;
 	}
 }
