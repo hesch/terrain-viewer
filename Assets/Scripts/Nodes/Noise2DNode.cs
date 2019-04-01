@@ -4,7 +4,7 @@ using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 
 [Node (false, "Noise2D")]
-public class Noise2DNode : VoxelNode<Voxel> 
+public class Noise2DNode : HeightMapNode<Voxel> 
 {
 	public const string ID = "Noise2D";
 	public override string GetID { get { return ID; } }
@@ -25,15 +25,16 @@ public class Noise2DNode : VoxelNode<Voxel>
 	}
 
 	protected override void CalculationSetup(VoxelBlock<Voxel> block) {
+	  base.CalculationSetup(block);
 	 width = block.Width;
 	 height = block.Height;
 	 length = block.Length;
 	}
 
-	protected override bool CalculateVoxel(Voxel voxel, int x, int y, int z) {
+	protected override bool CalculateHeight(out float height, int x, int z) {
 	  float noiseValue = fractal.Sample2D(x/(float)width, z/(float)length);
 	  float normalizedNoise = 1-(noiseValue+1)/2;
-	  voxel.Data = y/(float)height > normalizedNoise ? 0.0f : 1.0f;
+	  height = normalizedNoise;
 	  return true;
 	}
 }

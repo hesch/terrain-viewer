@@ -1,4 +1,3 @@
-using UnityEngine;
 using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
 using System.Linq;

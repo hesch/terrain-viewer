@@ -1,7 +1,3 @@
-using UnityEngine;
-using NodeEditorFramework;
-using NodeEditorFramework.Utilities;
-
 public abstract class VoxelNode<T> : LayerNode<T> where T : Voxel
 {
   protected abstract bool CalculateVoxel(T voxel, int x, int y, int z);

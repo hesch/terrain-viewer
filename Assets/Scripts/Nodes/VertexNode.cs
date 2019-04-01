@@ -80,9 +80,6 @@ public class VertexNode: Node
 	      for(int z = 0; z < length; z++) {
 		int idx = x + y * width + z * width * height;
 		voxels[idx] = voxelLayer[x,z].GetValue();
-		if(x == 10 && z == 10) {
-		  Debug.Log(voxels[idx]);
-		}
 	      }
 	    }
 	  }
