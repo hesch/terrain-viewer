@@ -655,7 +655,6 @@ namespace NodeEditorFramework.Utilities
 
 		public static T EnumPopup<T> (GUIContent label, T selected) where T : System.Enum
 		{
-		  T oldSelected = selected;
 			#if UNITY_EDITOR
 			if (!Application.isPlaying)
 				return (T) UnityEditor.EditorGUILayout.EnumPopup (label, selected);
@@ -663,27 +662,29 @@ namespace NodeEditorFramework.Utilities
 			label.text += ": " + selected.ToString ();
 			GUILayout.Label (label);
 			
+			//buttonRect = GUILayoutUtility.GetLastRect();
+			return selected;
+		}
+
+		public static void EnumPopup<T>(GUIContent label, T selected, Action<T> callback) where T : System.Enum
+		{
+			label.text += ": " + selected.ToString ();
 			Rect buttonRect = GUILayoutUtility.GetRect(label, new GUIStyle(GUI.skin.button));
 			if (GUI.Button(buttonRect, label)) {
 			  PopupMenu menu = new PopupMenu();
 			  T[] values = (T[])Enum.GetValues(selected.GetType());
-			  Array.ForEach(values, e => {menu.AddItem(new GUIContent(Enum.GetName(selected.GetType(), e)), true, () => { Debug.Log("executing handler"); selected = e; });});
+			  Array.ForEach(values, e => {menu.AddItem(new GUIContent(Enum.GetName(selected.GetType(), e)), true, () => callback(e));});
 
-			  Vector2 mousePos = GUIUtility.GUIToScreenPoint(new Vector2(buttonRect.x, buttonRect.y + buttonRect.height));
-			  Debug.Log(mousePos);
-			  Debug.Log("showing Menu");
-			  menu.Show(new Vector2(mousePos.x + 1, mousePos.y + 1), buttonRect.width);
+			  Vector2 buttonPos = Event.current.mousePosition; //new Vector2(buttonRect.x, buttonRect.y + buttonRect.height);
+			  buttonPos -= NodeEditor.curEditorState.zoomPanAdjust;
+			  buttonPos /= NodeEditor.curEditorState.zoom;
+			  buttonPos += NodeEditor.curEditorState.zoomPanAdjust;
+
+			  //buttonPos = GUIScaleUtility.ScaledToGUISpace(buttonPos);
+			  buttonPos = GUIUtility.GUIToScreenPoint(buttonPos);
+			  Debug.Log(buttonPos);
+			  menu.Show(new Vector2(buttonPos.x + 1, buttonPos.y + 1), buttonRect.width);
 			}
-			if(Event.current.type == EventType.MouseDown) {
-			  Debug.Log("MouseDown");
-			}
-			//buttonRect = GUILayoutUtility.GetLastRect();
-			if(!Object.Equals(oldSelected, selected)) {
-			  Debug.Log("changing selected");
-			Debug.Log(oldSelected);
-			Debug.Log(selected);
-			}
-			return selected;
 		}
 
 		public static int Popup (GUIContent label, int selected, string[] displayedOptions) 

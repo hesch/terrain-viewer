@@ -31,7 +31,7 @@ public class VertexNode: Node
 		input.DisplayLayout ();
 		GUILayout.EndVertical();
 		GUILayout.EndHorizontal ();
-		mode = (MarchingMode)RTEditorGUI.EnumPopup (new GUIContent ("Vertex Generation", "The type of Vertex generation"), mode);
+		RTEditorGUI.EnumPopup (new GUIContent ("Marching", "The type of Vertex generation"), mode, m => mode = m);
 	}
 
 	private void weldVertices(List<Vector3> verts, List<int> indices) {
