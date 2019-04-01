@@ -2,10 +2,10 @@
 
 #define GROUP_SIZE 8
 
-RWStructuredBuffer<float> buffer;
+RWStructuredBuffer<int> buffer;
 
-groupshared float s_data1[GROUP_SIZE]
-groupshared float s_data2[GROUP_SIZE]
+int s_data1[GROUP_SIZE];
+int s_data2[GROUP_SIZE];
 
 [numthreads(GROUP_SIZE,1,1)]
 void computeSizes(
@@ -29,6 +29,6 @@ void computeSizes(
    }
    GroupMemoryBarrierWithGroupSync();
  }
- buffer1[i] = s_data[tid];
+ buffer[i] = s_data1[tid];
 }
 
