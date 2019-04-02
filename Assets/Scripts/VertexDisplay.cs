@@ -29,7 +29,7 @@ public class VertexDisplay : MonoBehaviour
 	  Destroy(oldMesh);
       }
 
-      if(vertices.length > UInt16.MaxValue) {
+      if(vertices.Count > UInt16.MaxValue) {
 	Debug.LogError("too many vertices");
 	return;
       }
