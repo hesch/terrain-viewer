@@ -13,7 +13,6 @@ public class VoxelInputNode : InputNode<Voxel>
 
 	protected override VoxelBlock<Voxel> InitBlock(VoxelBlock<Voxel> block) {
 	  int size = 64;
-	  Debug.Log("Block offset (" + block.OffsetX + ", " + block.OffsetY);
 	  VoxelLayer<Voxel>[] layers = new VoxelLayer<Voxel>[64];
 	  for(int y = 0; y < size; y++) {
 	    Voxel[,] voxelLayer = new Voxel[size, size];
@@ -28,7 +27,6 @@ public class VoxelInputNode : InputNode<Voxel>
 	    layers[y] = new VoxelLayer<Voxel>(voxelLayer);
 	  }
 	  block.Layers = layers;
-	  Debug.Log("InitBlock End");
 	  return block;
 	}
 }

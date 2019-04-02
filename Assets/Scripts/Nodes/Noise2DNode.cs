@@ -19,8 +19,7 @@ public class Noise2DNode : HeightMapNode<Voxel>
 	private int height = 0;
 	private int length = 0;
 
-	private int offsetX = 0;
-	private int offsetY = 0;
+	private Vector2Int offset;
 
 	public Noise2DNode() {
 	  perlin = new PerlinNoise(1337, 2.0f);
@@ -32,12 +31,11 @@ public class Noise2DNode : HeightMapNode<Voxel>
 	 width = block.Width;
 	 height = block.Height;
 	 length = block.Length;
-	 offsetX = block.OffsetX;
-	 offsetY = block.OffsetY;
+	 offset = block.Offset;
 	}
 
 	protected override bool CalculateHeight(out float height, int x, int z) {
-	  float noiseValue = fractal.Sample2D(x/(float)width, z/(float)length);
+	  float noiseValue = fractal.Sample2D(offset.x+x/(float)width, offset.y + z/(float)length);
 	  float normalizedNoise = 1-(noiseValue+1)/2;
 	  height = normalizedNoise;
 	  return true;

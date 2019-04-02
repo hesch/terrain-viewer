@@ -56,7 +56,6 @@ public class VertexNode: Node
 	}
 
 	public override bool Calculate() {
-	  Debug.Log("Starting Vertex Calculation");
 	  Meshes = new List<GameObject>();
 	  VoxelBlock<Voxel> block = input.GetValue<VoxelBlock<Voxel>>();
 
@@ -74,9 +73,10 @@ public class VertexNode: Node
 	  marching.Surface = 0.5f;
 
 	  //The size of voxel array.
-	  int width = block.Width;
-	  int height = block.Height;
-	  int length = block.Length;
+	  Vector3Int count = block.VoxelCount;
+	  int width = count.x;
+	  int height = count.y;
+	  int length = count.z;
 
 	  float[] voxels = new float[width * height * length];
 
@@ -99,7 +99,6 @@ public class VertexNode: Node
 
 	  weldVertices(verts, indices);
 
-	  Debug.Log("Block offset (" + block.OffsetX + ", " + block.OffsetY);
 	  VertexDisplay.PushNewMeshForOffset(verts, indices, block);
 
 	  return true;

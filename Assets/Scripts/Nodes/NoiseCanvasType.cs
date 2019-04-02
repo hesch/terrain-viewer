@@ -56,13 +56,11 @@ public class NoiseCanvasType : NodeCanvas
     Action taskAction = () => {
       token.ThrowIfCancellationRequested();
       foreach((int, int) tuple in Spiral(6)) {
-	  rootNode.OffsetX = tuple.Item1;
-	  rootNode.OffsetY = tuple.Item2;
+	  rootNode.Offset = new Vector2Int(tuple.Item1, tuple.Item2);
 	  cache.ForEach(n => {
 	      if (n.isInput() && n is VoxelInputNode) {
 		VoxelInputNode n2 = n as VoxelInputNode;
-		n2.OffsetX = tuple.Item1;
-		n2.OffsetY = tuple.Item2;
+		n2.Offset = rootNode.Offset;
 	      }
 	      n.Calculate();
 	      token.ThrowIfCancellationRequested();

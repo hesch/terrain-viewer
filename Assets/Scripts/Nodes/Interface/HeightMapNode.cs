@@ -24,14 +24,16 @@ public abstract class HeightMapNode<T> : Node where T: Voxel
 
     CalculationSetup(block);
 
-    float[,] heightMap = new float[block.Width, block.Length];
-    bool success = Enumerable.Range(0, block.Width)
-      .SelectMany(_ => Enumerable.Range(0, block.Length), (x, z) => (x: x, z: z))
+    Vector3Int voxelCount = block.VoxelCount;
+
+    float[,] heightMap = new float[voxelCount.x, voxelCount.z];
+    bool success = Enumerable.Range(-block.Overlap, voxelCount.x)
+      .SelectMany(_ => Enumerable.Range(-block.Overlap, voxelCount.z), (x, z) => (x: x, z: z))
       .AsParallel()
       .Select(coord => {
 	  float height;
 	  bool s = CalculateHeight(out height, coord.x, coord.z);
-	  heightMap[coord.x, coord.z] = height;
+	  heightMap[coord.x+block.Overlap, coord.z+block.Overlap] = height;
 	  return s;
 	  })
     .All(s => s);
@@ -41,11 +43,11 @@ public abstract class HeightMapNode<T> : Node where T: Voxel
       return false;
     }
 
-    for(int x = 0; x < block.Width; x++) {
-      for(int y = 0; y < block.Height; y++) {
-	for(int z = 0; z < block.Length; z++) {
+    for(int x = -block.Overlap; x < voxelCount.x-block.Overlap; x++) {
+      for(int y = -block.Overlap; y < voxelCount.y-block.Overlap; y++) {
+	for(int z = -block.Overlap; z < voxelCount.z-block.Overlap; z++) {
 	  float voxelHeight = y/(float)block.Height;
-	  float calculatedHeight = heightMap[x, z];
+	  float calculatedHeight = heightMap[x+block.Overlap, z+block.Overlap];
 
 	  if (calculatedHeight > voxelHeight) {
 	    float nextVoxelHeight = (y+1)/(float)block.Height;

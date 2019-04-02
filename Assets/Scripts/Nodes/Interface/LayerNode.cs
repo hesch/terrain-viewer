@@ -20,7 +20,7 @@ public abstract class LayerNode<T> : Node where T: Voxel
 	  }
 
 	  CalculationSetup(block);
-	  bool success = block.Layers.AsParallel().Select((layer, i) => CalculateLayer(layer, i)).All(x => x);
+	  bool success = block.Layers.AsParallel().Select((layer, i) => CalculateLayer(layer, i-block.Overlap)).All(x => x);
 	  CalculationTeardown();
 
 	  output.SetValue(block);
