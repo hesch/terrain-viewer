@@ -17,6 +17,7 @@ public abstract class InputNode<T> : Node where T : Voxel
 	  block.OffsetX = OffsetX;
 	  block.OffsetY = OffsetY;
 	  output.SetValue(InitBlock(block));
+	  Debug.Log("Block offset (" + block.OffsetX + ", " + block.OffsetY);
 	  return true;
 	}
 }

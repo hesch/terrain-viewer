@@ -56,6 +56,7 @@ public class VertexNode: Node
 	}
 
 	public override bool Calculate() {
+	  Debug.Log("Starting Vertex Calculation");
 	  Meshes = new List<GameObject>();
 	  VoxelBlock<Voxel> block = input.GetValue<VoxelBlock<Voxel>>();
 
@@ -96,55 +97,11 @@ public class VertexNode: Node
 	  //Would need to weld vertices for better quality mesh.
 	  marching.Generate(voxels, width, height, length, verts, indices);
 
-	  int generatedVerts = verts.Count;
-	  int generatedIndices = indices.Count;
 	  weldVertices(verts, indices);
 
-	  //A mesh in unity can only be made up of 65000 verts.
-	  //Need to split the verts between multiple meshes.
+	  Debug.Log("Block offset (" + block.OffsetX + ", " + block.OffsetY);
+	  VertexDisplay.PushNewMeshForOffset(verts, indices, block);
 
-	  int maxVertsPerMesh = 30000; //must be divisible by 3, ie 3 verts == 1 triangle
-	  int numMeshes = verts.Count / maxVertsPerMesh + 1;
-
-	  for (int i = 0; i < numMeshes; i++)
-	  {
-
-	    List<Vector3> splitVerts = new List<Vector3>();
-	    List<int> splitIndices = new List<int>();
-
-	    for (int j = 0; j < maxVertsPerMesh; j++)
-	    {
-	      int idx = i * maxVertsPerMesh + j;
-
-	      if (idx < verts.Count)
-	      {
-		splitVerts.Add(verts[idx]);
-		splitIndices.Add(j);
-	      }
-	    }
-
-	    if (splitVerts.Count == 0) continue;
-	    splitVerts = verts;
-	    splitIndices = indices;
-
-	    Mesh mesh = new Mesh();
-	    mesh.SetVertices(splitVerts);
-	    mesh.SetTriangles(splitIndices, 0);
-	    mesh.RecalculateBounds();
-	    mesh.RecalculateNormals();
-
-	    GameObject go = new GameObject("Mesh");
-	    // go.transform.parent = transform;
-	    go.AddComponent<MeshFilter>();
-	    go.AddComponent<MeshRenderer>();
-	    // go.GetComponent<Renderer>().material = m_material;
-	    go.GetComponent<MeshFilter>().mesh = mesh;
-	    go.transform.localPosition = new Vector3(-width / 2, -height / 2, -length / 2);
-	    go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-
-	    Meshes.Add(go);
-	  }
-	  VertexDisplay.RenderNewMeshes(Meshes);
 	  return true;
 	}
 }

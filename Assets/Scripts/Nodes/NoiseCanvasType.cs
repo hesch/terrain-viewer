@@ -2,6 +2,11 @@
 using NodeEditorFramework;
 using NodeEditorFramework.Standard;
 
+using System.Collections.Generic;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 [NodeCanvasType("Noise Canvas")]
 public class NoiseCanvasType : NodeCanvas
 {
@@ -41,4 +46,60 @@ public class NoiseCanvasType : NodeCanvas
     return true;
   }
 
+  private CancellationTokenSource tokenSource;
+  private Task task;
+
+  public void StartComputation(List<Node> cache) {
+    Debug.Log("starting task");
+    tokenSource = new CancellationTokenSource();
+    CancellationToken token = tokenSource.Token;
+    Action taskAction = () => {
+      token.ThrowIfCancellationRequested();
+      foreach((int, int) tuple in Spiral(6)) {
+	  rootNode.OffsetX = tuple.Item1;
+	  rootNode.OffsetY = tuple.Item2;
+	  cache.ForEach(n => {
+	      if (n.isInput() && n is VoxelInputNode) {
+		VoxelInputNode n2 = n as VoxelInputNode;
+		n2.OffsetX = tuple.Item1;
+		n2.OffsetY = tuple.Item2;
+	      }
+	      n.Calculate();
+	      token.ThrowIfCancellationRequested();
+	      });
+	}
+    };
+    task = Task.Factory.StartNew(taskAction,token);
+  }
+
+  public void StopComputation() {
+    if(tokenSource == null)
+      return;
+    tokenSource.Cancel();
+    try {
+      task.Wait();
+    } catch(AggregateException _) {
+    } finally {
+      tokenSource.Dispose();
+    }
+  }
+
+  private IEnumerable<(int, int)> Spiral(int radius) {
+    int x = 0;
+    int y = 0;
+    int dx = 0;
+    int dy = -1;
+    int maxI = radius * radius;
+    for(int i=0; i < maxI; i++) {
+        if ((-radius/2 < x && x <= radius/2) && (-radius/2 < y && y <= radius/2))
+            yield return (x, y);
+        if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1-y)) {
+	  int t = dx;
+            dx = -dy;
+	    dy = t;
+	}
+        x += dx;
+	y += dy;
+    }
+  }
 }
