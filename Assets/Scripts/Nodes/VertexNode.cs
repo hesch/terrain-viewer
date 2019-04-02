@@ -19,16 +19,26 @@ public class VertexNode: Node
 
 	[ValueConnectionKnob("Input", Direction.In, "Block")]
 		public ValueConnectionKnob input;
+	[ValueConnectionKnob("Surface", Direction.In, "Float")]
+		public ValueConnectionKnob surfaceConnection;
 
 	private MarchingMode mode = MarchingMode.Cubes;
-
-	public List<GameObject> Meshes { get; set; }
+	private float surface = 0.5f;
 
 	public override void NodeGUI () 
 	{
 		GUILayout.BeginHorizontal();
 		GUILayout.BeginVertical();
 		input.DisplayLayout ();
+
+		GUILayout.BeginHorizontal();
+		GUILayout.Label (surfaceConnection.name);
+		if (!surfaceConnection.connected ())
+		  surface = RTEditorGUI.FloatField (GUIContent.none, surface);
+
+		surfaceConnection.SetPosition ();
+		GUILayout.EndHorizontal();
+		
 		GUILayout.EndVertical();
 		GUILayout.EndHorizontal ();
 		RTEditorGUI.EnumPopup (new GUIContent ("Marching", "The type of Vertex generation"), mode, m => {
@@ -37,6 +47,10 @@ public class VertexNode: Node
 		      NodeEditor.curNodeCanvas.OnNodeChange(this);
 		    }
 		});
+
+		if (GUI.changed) {
+		  NodeEditor.curNodeCanvas.OnNodeChange(this);
+		}
 	}
 
 	private void weldVertices(List<Vector3> verts, List<int> indices) {
@@ -56,8 +70,10 @@ public class VertexNode: Node
 	}
 
 	public override bool Calculate() {
-	  Meshes = new List<GameObject>();
 	  VoxelBlock<Voxel> block = input.GetValue<VoxelBlock<Voxel>>();
+	  if (surfaceConnection.connected()) {
+	    surface = surfaceConnection.GetValue<float>();
+	  }
 
 	  Marching marching = null;
 	  if(mode == MarchingMode.Tetrahedron)
@@ -70,7 +86,7 @@ public class VertexNode: Node
 	  //The target value does not have to be the mid point it can be any value with in the range.
 	  //
 	  //This should be accesible by an input
-	  marching.Surface = 0.5f;
+	  marching.Surface = surface;
 
 	  //The size of voxel array.
 	  Vector3Int count = block.VoxelCount;
@@ -93,8 +109,6 @@ public class VertexNode: Node
 	  List<Vector3> verts = new List<Vector3>();
 	  List<int> indices = new List<int>();
 
-	  //The mesh produced is not optimal. There is one vert for each index.
-	  //Would need to weld vertices for better quality mesh.
 	  marching.Generate(voxels, width, height, length, verts, indices);
 
 	  weldVertices(verts, indices);

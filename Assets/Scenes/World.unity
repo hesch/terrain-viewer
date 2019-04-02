@@ -142,6 +142,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_material: {fileID: 2100000, guid: 91b23ef8618f53579a87ee4ef62f935a, type: 2}
+  selectionMaterial: {fileID: 2100000, guid: 5fc4b8612d4cec0aea1618d6844b6935, type: 2}
+  cube: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &82345057
 Transform:
   m_ObjectHideFlags: 0
