@@ -92,62 +92,11 @@ public class VertexNode: Node
 	  //Would need to weld vertices for better quality mesh.
 	  marching.Generate(voxels, width, height, length, verts, indices);
 
-	  int generatedVerts = verts.Count;
-	  int generatedIndices = indices.Count;
 	  weldVertices(verts, indices);
-	  Debug.Log("Vertex Welding: " + generatedVerts + "=>" + verts.Count);
-	  Debug.Log("Vertex Welding indices: " + generatedIndices + "=>" + indices.Count);
-	  Debug.LogError("Out of Bounds: " + indices.Find(i => i >= verts.Count));
-
-	  //A mesh in unity can only be made up of 65000 verts.
-	  //Need to split the verts between multiple meshes.
-
-	  int maxVertsPerMesh = 30000; //must be divisible by 3, ie 3 verts == 1 triangle
-	  int numMeshes = verts.Count / maxVertsPerMesh + 1;
 
 	  Debug.Log("Block offset (" + block.OffsetX + ", " + block.OffsetY);
-	    VertexDisplay.PushNewMeshForOffset((parentTransform, material) => {
-		List<GameObject> meshes = new List<GameObject>();
-	      for (int i = 0; i < numMeshes; i++)
-    	      {
-    
-    	        List<Vector3> splitVerts = new List<Vector3>();
-    	        List<int> splitIndices = new List<int>();
-    
-    	        for (int j = 0; j < maxVertsPerMesh; j++)
-    	        {
-    	          int idx = i * maxVertsPerMesh + j;
-    
-    	          if (idx < verts.Count)
-    	          {
-    	            splitVerts.Add(verts[idx]);
-    	            splitIndices.Add(j);
-    	          }
-    	        }
-    
-    	        if (splitVerts.Count == 0) continue;
-		splitVerts = verts;
-		splitIndices = indices;
-    
-    	        Mesh mesh = new Mesh();
-    	        mesh.SetVertices(splitVerts);
-    	        mesh.SetTriangles(splitIndices, 0);
-    	        mesh.RecalculateBounds();
-    	        mesh.RecalculateNormals();
+	  VertexDisplay.PushNewMeshForOffset(verts, indices, block);
 
-		GameObject go = new GameObject("Mesh");
-		go.transform.parent = parentTransform;
-		go.AddComponent<MeshFilter>();
-		go.AddComponent<MeshRenderer>();
-		go.GetComponent<Renderer>().material = material;
-		go.GetComponent<MeshFilter>().mesh = mesh;
-		go.transform.localPosition = new Vector3(block.OffsetX*width-width / 2, -height / 2, block.OffsetY*length-length / 2);
-		go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-
-		meshes.Add(go);
-	      }
-	      return meshes;
-	    }, block.OffsetX, block.OffsetY);
 	  return true;
 	}
 }
