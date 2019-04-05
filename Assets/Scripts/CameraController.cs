@@ -6,7 +6,9 @@ public class CameraController : MonoBehaviour
 {
   float dragSpeed = 2.0f;
   float rotationSpeed = 0.5f;
-  float zoomSpeed = 2.0f;
+  float zoomSpeed = 3.0f;
+
+  float pivotDistance = 75.0f;
   private Vector3 origin;
   private Vector3 oldLocalPosition;
   private Quaternion oldLocalRotation;
@@ -51,6 +53,15 @@ public class CameraController : MonoBehaviour
 	origin = Input.mousePosition;
 	oldLocalPosition = controlledCamera.transform.localPosition;
 	oldLocalRotation = controlledCamera.transform.localRotation;
+
+	RaycastHit hit;
+	Ray ray = controlledCamera.ViewportPointToRay(new Vector2(0.5f, 0.5f));
+
+	pivotDistance = 75.0f;
+	if(Physics.Raycast(ray, out hit, 500.0f)) {
+	  pivotDistance = hit.distance;
+	}
+
 	return;
       }
 
@@ -58,7 +69,7 @@ public class CameraController : MonoBehaviour
 
       controlledCamera.transform.localPosition = oldLocalPosition;
       controlledCamera.transform.localRotation = oldLocalRotation;
-      Vector3 pivot = controlledCamera.transform.position + controlledCamera.transform.forward * 75;
+      Vector3 pivot = controlledCamera.transform.position + controlledCamera.transform.forward * pivotDistance;
       controlledCamera.transform.RotateAround(pivot, Vector3.Cross(pivot-controlledCamera.transform.position, Input.mousePosition - origin), (Input.mousePosition - origin).magnitude*rotationSpeed);
     }
 
