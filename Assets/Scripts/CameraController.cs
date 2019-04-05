@@ -11,17 +11,18 @@ public class CameraController : MonoBehaviour
   private Vector3 oldLocalPosition;
   private Quaternion oldLocalRotation;
   public Camera controlledCamera;
-  private RectTransform parentRect;
     // Start is called before the first frame update
     void Start()
     {
-      parentRect = GetComponent<RectTransform>();
+      if (!controlledCamera) {
+	controlledCamera = GetComponent<Camera>();
+      }
     }
 
     // Update is called once per frame
     void Update()
     {
-      if (!RectTransformUtility.RectangleContainsScreenPoint(parentRect, Input.mousePosition))
+      if (!controlledCamera.pixelRect.Contains(Input.mousePosition))
 	return;
 
       handleZoom();
