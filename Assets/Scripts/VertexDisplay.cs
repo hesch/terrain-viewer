@@ -36,10 +36,12 @@ public class VertexDisplay : MonoBehaviour
     TryAddBlock();
 
     RaycastHit hit;
-    Ray r = raycastCamera.ScreenPointToRay(new Vector3(raycastCamera.pixelWidth/2, raycastCamera.pixelHeight/2, 0));
+    Ray r = raycastCamera.ScreenPointToRay(Input.mousePosition);
     Debug.DrawRay(r.origin, r.direction * 1000, Color.yellow);
     if (Physics.Raycast(r, out hit)) {
-      selection.transform.localPosition = hit.collider.gameObject.transform.localPosition + selection.transform.localScale/2;
+      IVoxelBlock block = hit.collider.gameObject.GetComponent<BlockInfo>().Block;
+      selection.transform.localScale = new Vector3(block.Width, block.Height, block.Length);
+      selection.transform.localPosition = hit.collider.transform.localPosition + selection.transform.localScale/2;
       selection.SetActive(true);
     } else {
       selection.SetActive(false);
@@ -72,8 +74,10 @@ public class VertexDisplay : MonoBehaviour
       go.AddComponent<MeshFilter>();
       go.AddComponent<MeshRenderer>();
       go.AddComponent<BoxCollider>();
+      go.AddComponent<BlockInfo>();
       go.GetComponent<Renderer>().material = m_material;
       go.GetComponent<MeshFilter>().mesh = mesh;
+      go.GetComponent<BlockInfo>().Block = block;
       go.transform.localPosition = new Vector3((block.Offset.x - 0.5f)*block.Width, -block.Height / 2, (block.Offset.y - 0.5f)*block.Length);
       go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
       go.GetComponent<BoxCollider>().center = new Vector3(block.Width/2, block.Height/2, block.Length/2);
