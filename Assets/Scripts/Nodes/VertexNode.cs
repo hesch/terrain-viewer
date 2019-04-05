@@ -6,7 +6,11 @@ using MarchingCubesProject;
 using System.Collections.Generic;
 using System.Linq;
 
-public enum MarchingMode {  Cubes, Tetrahedron };
+public enum VerteGenerationMode {
+  Cubes,
+  Tetrahedron,
+  Voxel
+};
 
 [Node (false, "Vertex")]
 public class VertexNode: Node
@@ -22,7 +26,7 @@ public class VertexNode: Node
 	[ValueConnectionKnob("Surface", Direction.In, "Float")]
 		public ValueConnectionKnob surfaceConnection;
 
-	private MarchingMode mode = MarchingMode.Cubes;
+	private VerteGenerationMode mode = VerteGenerationMode.Cubes;
 	private float surface = 0.5f;
 
 	public override void NodeGUI () 
@@ -41,7 +45,7 @@ public class VertexNode: Node
 		
 		GUILayout.EndVertical();
 		GUILayout.EndHorizontal ();
-		RTEditorGUI.EnumPopup (new GUIContent ("Marching", "The type of Vertex generation"), mode, m => {
+		RTEditorGUI.EnumPopup (new GUIContent ("Generation", "The type of Vertex generation"), mode, m => {
 		    if (mode != m) {
 		      mode = m;
 		      NodeEditor.curNodeCanvas.OnNodeChange(this);
@@ -76,10 +80,17 @@ public class VertexNode: Node
 	  }
 
 	  Marching marching = null;
-	  if(mode == MarchingMode.Tetrahedron)
-	    marching = new MarchingTertrahedron();
-	  else
-	    marching = new MarchingCubes();
+	  switch (mode) {
+	    case VerteGenerationMode.Tetrahedron:
+	      marching = new MarchingTertrahedron();
+	      break;
+	    case VerteGenerationMode.Cubes:
+	      marching = new MarchingCubes();
+	      break;
+	    case VerteGenerationMode.Voxel:
+	      marching = new VoxelGeneration();
+	      break;
+	  }
 
 	  //Surface is the value that represents the surface of mesh
 	  //For example the perlin noise has a range of -1 to 1 so the mid point is where we want the surface to cut through.
