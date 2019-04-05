@@ -12,7 +12,8 @@ public class Noise2DNode : HeightMapNode<Voxel>
 	public override string Title { get { return "Noise2D"; } }
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
-	private INoise perlin;
+	private NoiseType noiseType;
+	private INoise noiseFunction;
 	private FractalNoise fractal;
 
 	private int width = 0;
@@ -22,16 +23,44 @@ public class Noise2DNode : HeightMapNode<Voxel>
 	private Vector2Int offset;
 
 	public Noise2DNode() {
-	  perlin = new PerlinNoise(1337, 2.0f);
-	  fractal = new FractalNoise(perlin, 3, 1.0f);
+	  noiseFunction = new PerlinNoise(1337, 2.0f);
+	  fractal = new FractalNoise(noiseFunction, 3, 1.0f);
+	}
+
+	public override void NodeGUI() {
+	  base.NodeGUI();
+	  RTEditorGUI.EnumPopup (new GUIContent ("Noise", "The noise type to use"), noiseType, n => {
+	      if (noiseType != n) {
+	      noiseType = n;
+	      switch (noiseType) {
+	      case NoiseType.Perlin:
+		noiseFunction = new PerlinNoise(1337, 2.0f);
+	      break;
+	      case NoiseType.Simplex:
+		noiseFunction = new SimplexNoise(1337, 2.0f);
+	      break;
+	      case NoiseType.Value:
+		noiseFunction = new ValueNoise(1337, 2.0f);
+	      break;
+	      case NoiseType.Voronoi:
+		noiseFunction = new VoronoiNoise(1337, 2.0f);
+	      break;
+	      case NoiseType.Worley:
+		noiseFunction = new WorleyNoise(1337, 2.0f, 1.0f);
+	      break;
+	      }
+	      fractal = new FractalNoise(noiseFunction, 3, 1.0f);
+	      NodeEditor.curNodeCanvas.OnNodeChange(this);
+	    }
+	  });
 	}
 
 	protected override void CalculationSetup(VoxelBlock<Voxel> block) {
 	  base.CalculationSetup(block);
-	 width = block.Width;
-	 height = block.Height;
-	 length = block.Length;
-	 offset = block.Offset;
+	  width = block.Width;
+	  height = block.Height;
+	  length = block.Length;
+	  offset = block.Offset;
 	}
 
 	protected override bool CalculateHeight(out float height, int x, int z) {
