@@ -15,6 +15,8 @@ public class VertexDisplay : MonoBehaviour
   private Dictionary<Vector2Int, GameObject> Meshes = new Dictionary<Vector2Int, GameObject>();
   private static ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)> meshQueue = new ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)>();
 
+  private bool gridlinesVisible = true;
+
   public static void PushNewMeshForOffset(List<Vector3> meshVertices, List<int> meshIndices, IVoxelBlock block) {
     meshQueue.Enqueue((meshVertices, meshIndices, block));
   }
@@ -43,6 +45,13 @@ public class VertexDisplay : MonoBehaviour
       selection.SetActive(false);
     }
   }
+
+  public void setGridlinesVisible(bool visible) {
+    gridlinesVisible = visible;
+    foreach(GameObject mesh in Meshes.Values) {
+      mesh.GetComponent<LineRenderer>().enabled = visible;
+    }
+  } 
 
   private void TryAddBlock() {
     (List<Vector3>, List<int>, IVoxelBlock) tuple;
@@ -85,6 +94,7 @@ public class VertexDisplay : MonoBehaviour
       boundingBoxRenderer.positionCount = points.Length;
       boundingBoxRenderer.useWorldSpace = false;
       boundingBoxRenderer.SetPositions(points);
+      boundingBoxRenderer.enabled = gridlinesVisible;
 
       Meshes[block.Offset] = go;
     }
