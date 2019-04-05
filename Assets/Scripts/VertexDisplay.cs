@@ -8,7 +8,6 @@ public class VertexDisplay : MonoBehaviour
 {
   public Material m_material;
   public Material selectionMaterial;
-  public Mesh cube;
   public Camera raycastCamera;
 
   private GameObject selection;
@@ -21,14 +20,11 @@ public class VertexDisplay : MonoBehaviour
   }
 
   public void Start() {
-    selection = new GameObject("Selection");
+    selection = GameObject.CreatePrimitive(PrimitiveType.Cube);
+    selection.name = "Selection";
     selection.transform.parent = transform;
-    selection.AddComponent<MeshFilter>();
-    selection.AddComponent<MeshRenderer>();
     selection.GetComponent<Renderer>().material = selectionMaterial;
-    selection.GetComponent<MeshFilter>().mesh = cube;
-    selection.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
-    selection.transform.localScale = new Vector3(64.0f, 64.0f, 64.0f);
+    Destroy(selection.GetComponent<BoxCollider>());
   }
 
 
@@ -38,7 +34,7 @@ public class VertexDisplay : MonoBehaviour
     RaycastHit hit;
     Ray r = raycastCamera.ScreenPointToRay(Input.mousePosition);
     Debug.DrawRay(r.origin, r.direction * 1000, Color.yellow);
-    if (Physics.Raycast(r, out hit)) {
+    if (Physics.Raycast(r, out hit) && hit.collider.gameObject.GetComponent<BlockInfo>()) {
       IVoxelBlock block = hit.collider.gameObject.GetComponent<BlockInfo>().Block;
       selection.transform.localScale = new Vector3(block.Width, block.Height, block.Length);
       selection.transform.localPosition = hit.collider.transform.localPosition + selection.transform.localScale/2;
