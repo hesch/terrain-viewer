@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,7 +11,10 @@ public class VertexDisplay : MonoBehaviour
   public Material selectionMaterial;
   public Camera raycastCamera;
 
+  public Text blockPositon;
+
   private GameObject selection;
+  private GameObject selectedObject;
 
   private Dictionary<Vector2Int, GameObject> Meshes = new Dictionary<Vector2Int, GameObject>();
   private static ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)> meshQueue = new ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)>();
@@ -35,15 +39,20 @@ public class VertexDisplay : MonoBehaviour
 
     RaycastHit hit;
     Ray r = raycastCamera.ScreenPointToRay(Input.mousePosition);
-    Debug.DrawRay(r.origin, r.direction * 1000, Color.yellow);
     if (Physics.Raycast(r, out hit) && hit.collider.gameObject.GetComponent<BlockInfo>()) {
       IVoxelBlock block = hit.collider.gameObject.GetComponent<BlockInfo>().Block;
       selection.transform.localScale = new Vector3(block.Width, block.Height, block.Length);
       selection.transform.localPosition = hit.collider.transform.localPosition + selection.transform.localScale/2;
+      selectedObject = hit.collider.gameObject;
       selection.SetActive(true);
     } else {
       selection.SetActive(false);
     }
+
+    if (selectedObject) {
+      IVoxelBlock block = selectedObject.GetComponent<BlockInfo>().Block;
+      blockPositon.text = String.Format("Block position: {0}", block.Offset.ToString());
+    } 
   }
 
   public void setGridlinesVisible(bool visible) {

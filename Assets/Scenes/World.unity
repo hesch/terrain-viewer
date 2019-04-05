@@ -144,6 +144,7 @@ MonoBehaviour:
   m_material: {fileID: 2100000, guid: 91b23ef8618f53579a87ee4ef62f935a, type: 2}
   selectionMaterial: {fileID: 2100000, guid: 5fc4b8612d4cec0aea1618d6844b6935, type: 2}
   raycastCamera: {fileID: 1385311346}
+  blockPositon: {fileID: 1864640141}
 --- !u!4 &82345057
 Transform:
   m_ObjectHideFlags: 0
@@ -295,7 +296,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000030517578, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &659031544
@@ -982,7 +983,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000030517578, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 81.56, y: 20}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1671100591
@@ -1076,7 +1077,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -0.000030517578, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 30}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1864640141
