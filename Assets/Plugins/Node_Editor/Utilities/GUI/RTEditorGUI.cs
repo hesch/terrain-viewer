@@ -653,6 +653,9 @@ namespace NodeEditorFramework.Utilities
 			return EnumPopup (new GUIContent (label), selected);
 		}
 
+		public static Object o = null;
+		public static Object sel;
+
 		public static T EnumPopup<T> (GUIContent label, T selected) where T : System.Enum
 		{
 			#if UNITY_EDITOR
@@ -673,7 +676,17 @@ namespace NodeEditorFramework.Utilities
 			if (GUI.Button(buttonRect, label)) {
 			  PopupMenu menu = new PopupMenu();
 			  T[] values = (T[])Enum.GetValues(selected.GetType());
-			  Array.ForEach(values, e => {menu.AddItem(new GUIContent(Enum.GetName(selected.GetType(), e)), true, () => callback(e));});
+			  Object a = new Object();
+			  o = a;
+			  Array.ForEach(values, e => {
+			      menu.AddItem(new GUIContent(Enum.GetName(selected.GetType(), e)), true, () => {
+				// callback(e);
+				if (o == a) {
+				  sel = selected;
+				}
+			      }
+			    );
+			  });
 
 			  Vector2 buttonPos = Event.current.mousePosition; //new Vector2(buttonRect.x, buttonRect.y + buttonRect.height);
 			  buttonPos -= NodeEditor.curEditorState.zoomPanAdjust;
