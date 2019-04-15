@@ -79,6 +79,7 @@ public class NoiseCanvasType : NodeCanvas
     } catch(AggregateException _) {
     } finally {
       tokenSource.Dispose();
+      tokenSource = null;
     }
   }
 

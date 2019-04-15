@@ -61,9 +61,12 @@ public class VoxelBlock<T> : IVoxelBlock where T : Voxel {
   }
   
   private void setLayerOverlap(int val) {
-      Array.ForEach(layers, layer => {
-	  layer.Overlap = val;
-      });
+    if (layers == null) {
+      return;
+    }
+    Array.ForEach(layers, layer => {
+      layer.Overlap = val;
+    });
   }
 
   public VoxelBlock() {
@@ -75,8 +78,13 @@ public class VoxelBlock<T> : IVoxelBlock where T : Voxel {
   }
 
   public VoxelBlock(VoxelBlock<T> b) {
+    if (b == null) {
+      return;
+    }
     this.Offset = b.Offset;
-    this.Layers = b.Layers.Select(l => new VoxelLayer<T>(l)).ToArray();
+    if (b.Layers != null) {
+      this.Layers = b.Layers.Select(l => new VoxelLayer<T>(l)).ToArray();
+    }
     this.Overlap = b.Overlap;
   }
     

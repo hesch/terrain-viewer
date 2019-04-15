@@ -74,7 +74,7 @@ public class VertexNode: Node
 	}
 
 	public override bool Calculate() {
-	  VoxelBlock<Voxel> block = input.GetValue<VoxelBlock<Voxel>>();
+	  VoxelBlock<Voxel> block = new VoxelBlock<Voxel>(input.GetValue<VoxelBlock<Voxel>>());
 	  if (surfaceConnection.connected()) {
 	    surface = surfaceConnection.GetValue<float>();
 	  }

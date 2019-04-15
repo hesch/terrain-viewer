@@ -63,8 +63,8 @@ public class CombinerNode : Node {
     if(!block1Connection.connected() || !block2Connection.connected()) {
       return false;
     }
-    VoxelBlock<Voxel> block1 = block1Connection.GetValue<VoxelBlock<Voxel>>();
-    VoxelBlock<Voxel> block2 = block2Connection.GetValue<VoxelBlock<Voxel>>();
+    VoxelBlock<Voxel> block1 = new VoxelBlock<Voxel>(block1Connection.GetValue<VoxelBlock<Voxel>>());
+    VoxelBlock<Voxel> block2 = new VoxelBlock<Voxel>(block2Connection.GetValue<VoxelBlock<Voxel>>());
 
     bool success = false;
     switch (mode) {

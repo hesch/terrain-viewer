@@ -17,7 +17,7 @@ public abstract class HeightMapNode<T> : Node where T: Voxel
   protected abstract bool CalculateHeight(out float height, int x, int z);
   
   public override bool Calculate() {
-    VoxelBlock<T> block = input.GetValue<VoxelBlock<T>>();
+    VoxelBlock<T> block = new VoxelBlock<T>(input.GetValue<VoxelBlock<T>>());
     if(block == null || block.Layers == null) {
       return false;
     }
