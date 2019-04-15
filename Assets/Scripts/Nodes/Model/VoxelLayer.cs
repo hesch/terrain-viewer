@@ -27,6 +27,16 @@ public class VoxelLayer<T> where T : Voxel {
     this.Layer = layer;
   }
 
+  public VoxelLayer(VoxelLayer<T> l) {
+    this.Overlap = l.Overlap;
+    this.Layer = new T[l.Layer.GetLength(0), l.Layer.GetLength(1)];
+    for(int x = 0; x < l.Layer.GetLength(0); x++) {
+      for(int z = 0; z < l.Layer.GetLength(1); z++) {
+	this.Layer[x,z] = (T) l.Layer[x,z].Clone();
+      }
+    }
+  }
+
   public T this[int x, int z] {
     get { return Layer[x+Overlap, z+Overlap]; }
   }

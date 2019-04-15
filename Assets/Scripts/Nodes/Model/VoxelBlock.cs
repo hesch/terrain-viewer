@@ -1,5 +1,6 @@
 using System.Collections;
 using System;
+using System.Linq;
 using UnityEngine;
 
 public class VoxelBlock<T> : IVoxelBlock where T : Voxel {
@@ -11,7 +12,7 @@ public class VoxelBlock<T> : IVoxelBlock where T : Voxel {
     }
     set {
       layers = value;
-      Overlap = overlap;
+      setLayerOverlap(this.Overlap);
     }
   }
 
@@ -55,18 +56,30 @@ public class VoxelBlock<T> : IVoxelBlock where T : Voxel {
     }
     set {
       overlap = value;
-      Array.ForEach(layers, layer => {
-	  layer.Overlap = overlap;
-      });
+      setLayerOverlap(overlap);
     }
+  }
+  
+  private void setLayerOverlap(int val) {
+      Array.ForEach(layers, layer => {
+	  layer.Overlap = val;
+      });
   }
 
   public VoxelBlock() {
   }
   
   public VoxelBlock(VoxelLayer<T>[] layers) {
-    this.Layers = layers;
+    this.layers = layers;
+    this.Overlap = 1;
   }
+
+  public VoxelBlock(VoxelBlock<T> b) {
+    this.Offset = b.Offset;
+    this.Layers = b.Layers.Select(l => new VoxelLayer<T>(l)).ToArray();
+    this.Overlap = b.Overlap;
+  }
+    
 
   public T this[int x, int y, int z] {
     get { return Layers[y+Overlap][x,z]; }

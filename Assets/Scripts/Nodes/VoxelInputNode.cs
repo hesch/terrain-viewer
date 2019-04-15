@@ -13,7 +13,7 @@ public class VoxelInputNode : InputNode<Voxel>
 
 	protected override VoxelBlock<Voxel> InitBlock(VoxelBlock<Voxel> block) {
 	  int size = 64;
-	  VoxelLayer<Voxel>[] layers = new VoxelLayer<Voxel>[64];
+	  VoxelLayer<Voxel>[] layers = new VoxelLayer<Voxel>[size];
 	  for(int y = 0; y < size; y++) {
 	    Voxel[,] voxelLayer = new Voxel[size, size];
 	    for(int x = 0; x < size; x++) {
