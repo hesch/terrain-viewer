@@ -62,6 +62,36 @@ public class VertexDisplay : MonoBehaviour
     }
   } 
 
+  private List<(List<int>, int)> splitIndices(List<int> indices, int limit) {
+    List<(List<int>, int)> resultList = new List<(List<int>, int)>();
+    List<int> indicesLeft = indices;
+    int currentOffset = 0;
+
+    while(indicesLeft.Any()) {
+      int offset = indicesLeft.Min(i => i);
+      indicesLeft = indicesLeft.Select(i => i - offset).ToList();
+      currentOffset += offset;
+
+      List<int> belowLimit = new List<int>();
+      List<int> aboveLimit = new List<int>();
+      for(int i = 0; i < indicesLeft.Count(); i += 3) {
+	List<int> addToList = indicesLeft[i] < limit || indicesLeft[i+1] < limit || indicesLeft[i+2] < limit
+	  ? belowLimit
+	  : aboveLimit;
+
+	addToList.Add(indicesLeft[i]);
+	addToList.Add(indicesLeft[i+1]);
+	addToList.Add(indicesLeft[i+2]);
+      }
+
+      indicesLeft = aboveLimit;
+      resultList.Add((belowLimit, currentOffset));
+    }
+
+    return resultList;
+  }
+
+
   private void TryAddBlock() {
     (List<Vector3>, List<int>, IVoxelBlock) tuple;
     if(meshQueue.TryDequeue(out tuple)) {
@@ -72,14 +102,15 @@ public class VertexDisplay : MonoBehaviour
 	  Destroy(oldMesh);
       }
 
-      if(vertices.Count > UInt16.MaxValue) {
-	Debug.LogError("too many vertices");
-	return;
-      }
+      int limit = UInt16.MaxValue;
 
+      List<(List<int>, int)> triangles = splitIndices(indices, limit);
       Mesh mesh = new Mesh();
       mesh.SetVertices(vertices);
-      mesh.SetTriangles(indices, 0);
+      mesh.subMeshCount = triangles.Count();
+      for(int i = 0; i < triangles.Count(); i++) {
+	mesh.SetTriangles(triangles[i].Item1, i, true, triangles[i].Item2);
+      }
       mesh.RecalculateBounds();
       mesh.RecalculateNormals();
 
@@ -89,7 +120,7 @@ public class VertexDisplay : MonoBehaviour
       go.AddComponent<MeshRenderer>();
       go.AddComponent<BoxCollider>();
       go.AddComponent<BlockInfo>();
-      go.GetComponent<Renderer>().material = m_material;
+      go.GetComponent<Renderer>().materials = Enumerable.Range(0, triangles.Count()).Select(i => m_material).ToArray();
       go.GetComponent<MeshFilter>().mesh = mesh;
       go.GetComponent<BlockInfo>().Block = block;
       go.transform.localPosition = new Vector3((block.Offset.x - 0.5f)*block.Width, -block.Height / 2, (block.Offset.y - 0.5f)*block.Length);
