@@ -20,6 +20,7 @@ public class VertexDisplay : MonoBehaviour
   private static ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)> meshQueue = new ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)>();
 
   private bool gridlinesVisible = true;
+  private bool examineMode = false;
 
   public static void PushNewMeshForOffset(List<Vector3> meshVertices, List<int> meshIndices, IVoxelBlock block) {
     meshQueue.Enqueue((meshVertices, meshIndices, block));
@@ -36,23 +37,40 @@ public class VertexDisplay : MonoBehaviour
 
   public void Update() {
     TryAddBlock();
+    if (selectedObject && examineMode) {
 
-    RaycastHit hit;
-    Ray r = raycastCamera.ScreenPointToRay(Input.mousePosition);
-    if (Physics.Raycast(r, out hit) && hit.collider.gameObject.GetComponent<BlockInfo>()) {
-      IVoxelBlock block = hit.collider.gameObject.GetComponent<BlockInfo>().Block;
-      selection.transform.localScale = new Vector3(block.Width, block.Height, block.Length);
-      selection.transform.localPosition = hit.collider.transform.localPosition + selection.transform.localScale/2;
-      selectedObject = hit.collider.gameObject;
-      selection.SetActive(true);
     } else {
-      selection.SetActive(false);
+      handleSelection();
+    }
+  }
+
+  private void handleSelection() {
+    if (Input.GetMouseButtonUp(0)) {  
+      RaycastHit hit;
+      Ray r = raycastCamera.ScreenPointToRay(Input.mousePosition);
+      if (Physics.Raycast(r, out hit) && hit.collider.gameObject.GetComponent<BlockInfo>()) {
+	IVoxelBlock block = hit.collider.gameObject.GetComponent<BlockInfo>().Block;
+	selection.transform.localScale = new Vector3(block.Width, block.Height, block.Length);
+	selection.transform.localPosition = hit.collider.transform.localPosition + selection.transform.localScale/2;
+	selectedObject = hit.collider.gameObject;
+	selection.SetActive(true);
+      } else {
+	selection.SetActive(false);
+      }
     }
 
     if (selectedObject) {
       IVoxelBlock block = selectedObject.GetComponent<BlockInfo>().Block;
       blockPositon.text = String.Format("Block position: {0}", block.Offset.ToString());
-    } 
+    }
+  }
+
+  public void setExamineMode(bool enabled) {
+    examineMode = enabled;
+    foreach(GameObject mesh in Meshes.Values) {
+      if (mesh == selectedObject) continue;
+      mesh.SetActive(!enabled);
+    }
   }
 
   public void setGridlinesVisible(bool visible) {

@@ -17,10 +17,26 @@ public class NoiseTraversal : NodeCanvasTraversal
   /// </summary>
   public override void TraverseAll () 
   {
+    PopulateCache();
     if(cache.Any()) {
       cache.ForEach(n => n.Calculate());
       return;
     }
+  }
+
+  /// <summary>
+  /// Recalculate from the specified node
+  /// </summary>
+  public override void OnChange (Node node) 
+  {
+    (nodeCanvas as NoiseCanvasType).StopComputation();
+    //repopulate cache on change
+    cache = new List<Node>();
+    PopulateCache();
+    (nodeCanvas as NoiseCanvasType).StartComputation(cache);
+  }
+
+  private void PopulateCache() {
     workList = new List<Node> ();
     for (int i = 0; i < nodeCanvas.nodes.Count; i++) 
     {
@@ -34,21 +50,6 @@ public class NoiseTraversal : NodeCanvasTraversal
     StartCalculation ();
   }
 
-  /// <summary>
-  /// Recalculate from the specified node
-  /// </summary>
-  public override void OnChange (Node node) 
-  {
-    (nodeCanvas as NoiseCanvasType).StopComputation();
-    //repopulate cache on change
-    cache = new List<Node>();
-    TraverseAll();
-    (nodeCanvas as NoiseCanvasType).StartComputation(cache);
-  }
-
-  /// <summary>
-  /// Iteratively calculates all nodes from the worklist, including child nodes, until no further calculation is possible
-  /// </summary>
   private void StartCalculation () 
   {
     if (workList == null || workList.Count == 0)
@@ -72,11 +73,6 @@ public class NoiseTraversal : NodeCanvasTraversal
     }
   }
 
-  /// <summary>
-  /// Recursively calculates this node and it's children
-  /// All nodes that could not be calculated in the current state are added to the workList for later calculation
-  /// Returns whether calculation could advance at all
-  /// </summary>
   private bool ContinueCalculation (Node node) 
   {
     if (node.calculated && !node.AllowRecursion)
@@ -84,7 +80,7 @@ public class NoiseTraversal : NodeCanvasTraversal
       workList.Remove (node);
       return true;
     }
-    if (node.ancestorsCalculated () && node.Calculate ())
+    if (node.ancestorsCalculated ())
     { // Calculation was successful
       node.calculated = true;
       cache.Add(node);

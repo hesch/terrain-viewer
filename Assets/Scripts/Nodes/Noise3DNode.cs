@@ -26,6 +26,19 @@ public class Noise3DNode : VoxelNode<Voxel>
 	  fractal = new FractalNoise(noiseFunction, 3, 1.0f);
 	}
 
+	private float normalize(float val) {
+	  switch(noiseType) {
+	    case NoiseType.Perlin:
+	    case NoiseType.Simplex:
+	    case NoiseType.Value:
+	    case NoiseType.Voronoi:
+	      return 1-(val+1)/2;
+	    case NoiseType.Worley:
+	      return 1-val;
+	  }
+	  return val;
+	}
+
 	public override void NodeGUI() {
 	  base.NodeGUI();
 	  RTEditorGUI.EnumPopup (new GUIContent ("Noise", "The noise type to use"), noiseType, n => {
@@ -63,8 +76,7 @@ public class Noise3DNode : VoxelNode<Voxel>
 
 	protected override bool CalculateVoxel(Voxel voxel, int x, int y, int z) {
 	  float noiseValue = fractal.Sample3D(offset.x + x/(float)width, y/(float)height, offset.y + z/(float)length);
-	  float normalizedNoise = 1-(noiseValue+1)/2;
-	  voxel.Data = normalizedNoise;
+	  voxel.Data = normalize(noiseValue);
 	  return true;
 	}
 }

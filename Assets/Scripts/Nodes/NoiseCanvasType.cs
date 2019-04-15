@@ -50,7 +50,6 @@ public class NoiseCanvasType : NodeCanvas
   private Task task;
 
   public void StartComputation(List<Node> cache) {
-    Debug.Log("starting task");
     tokenSource = new CancellationTokenSource();
     CancellationToken token = tokenSource.Token;
     Action taskAction = () => {
