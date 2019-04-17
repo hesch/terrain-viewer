@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor.Build.Reporting;
 using System.Diagnostics;
+using System.IO;
 
 // Output the build size or a failure depending on BuildPlayer.
 
@@ -34,7 +35,8 @@ public class BuildScript : MonoBehaviour
         {
             UnityEngine.Debug.Log("Build succeeded: " + summary.totalSize + " bytes");
 	    Process proc = new Process();
-	    proc.StartInfo.FileName = buildPlayerOptions.locationPathName + (buildPlayerOptions.target == BuildTarget.StandaloneOSX ? ".app" : "");
+	    string relativePath = buildPlayerOptions.locationPathName + (buildPlayerOptions.target == BuildTarget.StandaloneOSX ? ".app" : "");
+	    proc.StartInfo.FileName = Path.GetFullPath(relativePath);
 	    proc.Start();
         }
 
