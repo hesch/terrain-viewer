@@ -19,7 +19,7 @@ public class NoiseNodeEditor : MonoBehaviour
     return canvasCache.nodeCanvas;
   }
 
-  private void Start () 
+  public void Awake () 
   {
     rt = transform as RectTransform;
     NormalReInit();
