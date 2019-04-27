@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 [NodeCanvasType("Noise Canvas")]
 public class NoiseCanvasType : NodeCanvas
 {
+  private Func<IEnumerable<(int, int)>> offsetGenerator;
+  private Action<List<Vector3>, List<int>, VoxelBlock<Voxel>> callback;
+  private CancellationTokenSource tokenSource;
+  private Task task;
+
   public override string canvasName { get { return "Noise"; } }
 
   private string rootNodeID { get { return "VoxelInput"; } }
@@ -46,24 +51,30 @@ public class NoiseCanvasType : NodeCanvas
     return true;
   }
 
-  private CancellationTokenSource tokenSource;
-  private Task task;
+  public void ConfigureComputation(Func<IEnumerable<(int, int)>> offsetGenerator, Action<List<Vector3>, List<int>, VoxelBlock<Voxel>> callback) {
+    this.offsetGenerator = offsetGenerator;
+    this.callback = callback;
+    Traversal.OnChange(null);
+  }
 
   public void StartComputation(List<Node> cache) {
     tokenSource = new CancellationTokenSource();
     CancellationToken token = tokenSource.Token;
     Action taskAction = () => {
       token.ThrowIfCancellationRequested();
-      foreach((int, int) tuple in Spiral(6)) {
-	  rootNode.Offset = new Vector2Int(tuple.Item1, tuple.Item2);
+      foreach((int, int) tuple in offsetGenerator()) {
 	  cache.ForEach(n => {
 	      if (n.isInput() && n is VoxelInputNode) {
 		VoxelInputNode n2 = n as VoxelInputNode;
-		n2.Offset = rootNode.Offset;
+		n2.Offset = new Vector2Int(tuple.Item1, tuple.Item2);
 	      }
 	      n.Calculate();
+	      if (n.isOutput() && n is VertexNode) {
+		VertexNode vertexNode = n as VertexNode;
+		callback(vertexNode.Vertices, vertexNode.Indices, vertexNode.Block);
+	      }
 	      token.ThrowIfCancellationRequested();
-	      });
+	  });
 	}
     };
     task = Task.Factory.StartNew(taskAction,token);
@@ -79,25 +90,6 @@ public class NoiseCanvasType : NodeCanvas
     } finally {
       tokenSource.Dispose();
       tokenSource = null;
-    }
-  }
-
-  private IEnumerable<(int, int)> Spiral(int radius) {
-    int x = 0;
-    int y = 0;
-    int dx = 0;
-    int dy = -1;
-    int maxI = radius * radius;
-    for(int i=0; i < maxI; i++) {
-        if ((-radius/2 < x && x <= radius/2) && (-radius/2 < y && y <= radius/2))
-            yield return (x, y);
-        if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1-y)) {
-	  int t = dx;
-            dx = -dy;
-	    dy = t;
-	}
-        x += dx;
-	y += dy;
     }
   }
 }

@@ -29,6 +29,10 @@ public class VertexNode: Node
 	private VerteGenerationMode mode = VerteGenerationMode.Cubes;
 	private float surface = 0.5f;
 
+	public List<Vector3> Vertices { get; set; }
+	public List<int> Indices { get; set; }
+	public VoxelBlock<Voxel> Block { get; set; }
+
 	public override void NodeGUI () 
 	{
 		GUILayout.BeginHorizontal();
@@ -124,7 +128,9 @@ public class VertexNode: Node
 
 	  weldVertices(verts, indices);
 
-	  VertexDisplay.PushNewMeshForOffset(verts, indices, block);
+	  Vertices = verts;
+	  Indices = indices;
+	  Block = block;
 
 	  return true;
 	}
