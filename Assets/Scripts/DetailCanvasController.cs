@@ -6,14 +6,18 @@ using System.Collections.Generic;
 using NodeEditorFramework;
 
 public class DetailCanvasController : MonoBehaviour {
-  private Canvas canvas;
+  public Material selectionMaterial;
   public Text layerSliderText;
   public Slider layerSlider;
+  public Camera camera;
+  private Canvas canvas;
+
+  private GameObject layerSelection;
+
   private LayerTexture texture;
   private VertexDisplay display;
   private TerrainPreviewController terrainPreviewController;
   private NoiseCanvasType noiseCanvas;
-  public Camera camera;
 
   public bool Active {
     get {
@@ -23,6 +27,7 @@ public class DetailCanvasController : MonoBehaviour {
       canvas.enabled = value;
       camera.rect = value ? new Rect(0.5f, 0.5f, 0.5f, 0.5f) : new Rect(0.5f, 0.0f, 0.5f, 1.0f);
       terrainPreviewController.enabled = !value;
+      layerSelection.SetActive(value);
       if (value) {
 	display.hideAllBut(displayedObject);
 	noiseCanvas.ConfigureComputation(() => offsetGenerator(), (verts, indices, block) => {
@@ -45,6 +50,8 @@ public class DetailCanvasController : MonoBehaviour {
       displayedObject = value;
       block = (VoxelBlock<Voxel>)displayedObject.GetComponent<BlockInfo>().Block;
       layerSlider.maxValue = block.Height;
+      layerSelection.transform.localScale = new Vector3(block.Width, 1.0f, block.Length);
+      layerSelection.transform.localPosition = displayedObject.transform.localPosition + layerSelection.transform.localScale/2;
     }
   }
   private int layerIndex = 0;
@@ -66,6 +73,12 @@ public class DetailCanvasController : MonoBehaviour {
     canvas.enabled = false;
 
     display.addMeshAddedDelegate(gameObject => DisplayedObject = gameObject);
+
+    layerSelection = GameObject.CreatePrimitive(PrimitiveType.Cube);
+    layerSelection.name = "Layer Selection";
+    layerSelection.transform.parent = display.transform;
+    layerSelection.GetComponent<Renderer>().material = selectionMaterial;
+    Destroy(layerSelection.GetComponent<BoxCollider>());
   }
 
   public void setLayerIndex(float index) {
@@ -73,6 +86,8 @@ public class DetailCanvasController : MonoBehaviour {
     layerIndex = Math.Max(Math.Min(layerIndex, block.Height - 1), 0);
     texture.Layer = block.Layers[layerIndex];
     layerSliderText.text = "" + layerIndex;
+    layerSelection.transform.localPosition = displayedObject.transform.localPosition + layerSelection.transform.localScale/2;
+    layerSelection.transform.localPosition += new Vector3(0.0f, layerSelection.transform.localPosition.y + layerIndex, 0.0f);
   }
 
   private IEnumerable<(int, int)> offsetGenerator() {

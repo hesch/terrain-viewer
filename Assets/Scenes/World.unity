@@ -1512,6 +1512,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67e530716e0316c3180b24bccbb70c68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectionMaterial: {fileID: 2100000, guid: 5fc4b8612d4cec0aea1618d6844b6935, type: 2}
   layerSliderText: {fileID: 1076878415}
   layerSlider: {fileID: 716967772}
   camera: {fileID: 1385311346}
