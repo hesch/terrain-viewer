@@ -19,14 +19,14 @@ public class VertexDisplay : MonoBehaviour
   private IVoxelBlock selectedBlock;
 
   private Dictionary<Vector2Int, GameObject> Meshes = new Dictionary<Vector2Int, GameObject>();
-  private ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)> meshQueue = new ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)>();
+  private static ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)> meshQueue = new ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)>();
 
   private bool gridlinesVisible = true;
 
   private DetailCanvasController detailController;
   private NoiseCanvasType noiseCanvas;
 
-  public void PushNewMeshForOffset(List<Vector3> meshVertices, List<int> meshIndices, IVoxelBlock block) {
+  public static void PushNewMeshForOffset(List<Vector3> meshVertices, List<int> meshIndices, IVoxelBlock block) {
     meshQueue.Enqueue((meshVertices, meshIndices, block));
   }
 
@@ -40,6 +40,7 @@ public class VertexDisplay : MonoBehaviour
     detailController = UnityEngine.Object.FindObjectOfType<DetailCanvasController>();
     NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
     noiseCanvas = editor.GetCanvas() as NoiseCanvasType;
+    configureComputation();
   }
 
   public void Update() {
@@ -95,11 +96,13 @@ public class VertexDisplay : MonoBehaviour
       go.GetComponent<LineRenderer>().enabled = gridlinesVisible;
 
       Meshes[block.Offset] = go;
+      if (detailController.Active && detailController.DisplayedObject.GetComponent<BlockInfo>().Block.Offset == block.Offset) {
+	detailController.displayedObject = go;
+      }
     }
   }
   
   public IEnumerable<(int, int)> Spiral(int radius) {
-    Debug.Log("Spiraling");
     int x = 0;
     int y = 0;
     int dx = 0;

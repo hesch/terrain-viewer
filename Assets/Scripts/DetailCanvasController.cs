@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using NodeEditorFramework;
 
 public class DetailCanvasController : MonoBehaviour {
@@ -9,8 +11,6 @@ public class DetailCanvasController : MonoBehaviour {
   private VertexDisplay display;
   private NoiseCanvasType noiseCanvas;
   public Camera camera;
-
-  private ConcurrentQueue<(List<Vector3>, List<int>, VoxelBlock<Vertex>> queue = new ConcurrentQueue<(List<Vector3>, List<int>, VoxelBlock<Vertex>>();
 
   public bool Active {
     get {
@@ -22,7 +22,7 @@ public class DetailCanvasController : MonoBehaviour {
       display.enabled = !value;
       if (value) {
 	noiseCanvas.ConfigureComputation(() => offsetGenerator(), (verts, indices, block) => {
-	    queue.Enqueue((verts, indices, block));
+	    VertexDisplay.PushNewMeshForOffset(verts, indices, block);
 	});
       } else {
 	display.configureComputation();
@@ -56,7 +56,7 @@ public class DetailCanvasController : MonoBehaviour {
     display = UnityEngine.Object.FindObjectOfType<VertexDisplay>();
     NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
     noiseCanvas = editor.GetCanvas() as NoiseCanvasType;
-    Active = false;
+    canvas.enabled = false;
   }
 
   public void changeLayerIndex(int amount) {
@@ -65,7 +65,7 @@ public class DetailCanvasController : MonoBehaviour {
     texture.Layer = block.Layers[layerIndex];
   }
 
-  private IEnumerator<(int, int)> offsetGenerator() {
+  private IEnumerable<(int, int)> offsetGenerator() {
     while(true) yield return (block.Offset.x, block.Offset.y);
   }
 }
