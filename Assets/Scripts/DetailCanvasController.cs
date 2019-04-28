@@ -10,6 +10,8 @@ public class DetailCanvasController : MonoBehaviour {
   private NoiseCanvasType noiseCanvas;
   public Camera camera;
 
+  private ConcurrentQueue<(List<Vector3>, List<int>, VoxelBlock<Vertex>> queue = new ConcurrentQueue<(List<Vector3>, List<int>, VoxelBlock<Vertex>>();
+
   public bool Active {
     get {
       return canvas.enabled;
@@ -20,7 +22,7 @@ public class DetailCanvasController : MonoBehaviour {
       display.enabled = !value;
       if (value) {
 	noiseCanvas.ConfigureComputation(() => offsetGenerator(), (verts, indices, block) => {
-	   //TODO 
+	    queue.Enqueue((verts, indices, block));
 	});
       } else {
 	display.configureComputation();
@@ -42,6 +44,7 @@ public class DetailCanvasController : MonoBehaviour {
   private int layerIndex = 0;
 
   public void Update() {
+    if (!Active) return;
     if (Input.GetKeyUp(KeyCode.Escape)) {
       Active = false;
     }
@@ -62,4 +65,7 @@ public class DetailCanvasController : MonoBehaviour {
     texture.Layer = block.Layers[layerIndex];
   }
 
+  private IEnumerator<(int, int)> offsetGenerator() {
+    while(true) yield return (block.Offset.x, block.Offset.y);
+  }
 }
