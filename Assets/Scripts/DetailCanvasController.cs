@@ -22,12 +22,14 @@ public class DetailCanvasController : MonoBehaviour {
     set {
       canvas.enabled = value;
       camera.rect = value ? new Rect(0.5f, 0.5f, 0.5f, 0.5f) : new Rect(0.5f, 0.0f, 0.5f, 1.0f);
-      display.enabled = !value;
+      terrainPreviewController.enabled = !value;
       if (value) {
+	display.hideAllBut(displayedObject);
 	noiseCanvas.ConfigureComputation(() => offsetGenerator(), (verts, indices, block) => {
 	    display.PushNewMeshForOffset(verts, indices, block);
 	});
       } else {
+	display.clearHideState();
 	terrainPreviewController.configureComputation();
       }
     }

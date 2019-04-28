@@ -22,6 +22,8 @@ public class VertexDisplay : MonoBehaviour {
       }
     }
   }
+  private Vector2Int OnlyShowObjectAt;
+  private bool hiddenState = false;
 
   private Action<PointerEventData, GameObject> MeshEventDelegate = (_, _1) => {};
   private Action<GameObject> MeshAddedDelegate = _ => {};
@@ -46,6 +48,20 @@ public class VertexDisplay : MonoBehaviour {
     meshQueue.Enqueue((meshVertices, meshIndices, block));
   }
 
+  public void hideAllBut(GameObject it) {
+    OnlyShowObjectAt = it.GetComponent<BlockInfo>().Block.Offset;
+    hiddenState = true;
+    foreach(GameObject o in Meshes.Values) {
+      if (o != it) {
+	o.SetActive(false);
+      }
+    }
+  }
+
+  public void clearHideState() {
+    hiddenState = false;
+  }
+
   public void Update() {
     TryAddBlock();
   }
@@ -63,6 +79,9 @@ public class VertexDisplay : MonoBehaviour {
       GameObject go = BlockConverter.BlockToGameObject(vertices, indices, block, m_material, MeshEventDelegate);
       go.transform.parent = transform;
       go.GetComponent<LineRenderer>().enabled = gridlinesVisible;
+      if (hiddenState && block.Offset != OnlyShowObjectAt) {
+	go.SetActive(false);
+      }
 
       Meshes[block.Offset] = go;
       MeshAddedDelegate(go);
