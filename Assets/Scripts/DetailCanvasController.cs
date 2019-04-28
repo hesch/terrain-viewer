@@ -7,8 +7,11 @@ using NodeEditorFramework;
 
 public class DetailCanvasController : MonoBehaviour {
   private Canvas canvas;
+  public Text layerSliderText;
+  public Slider layerSlider;
   private LayerTexture texture;
   private VertexDisplay display;
+  private TerrainPreviewController terrainPreviewController;
   private NoiseCanvasType noiseCanvas;
   public Camera camera;
 
@@ -22,10 +25,10 @@ public class DetailCanvasController : MonoBehaviour {
       display.enabled = !value;
       if (value) {
 	noiseCanvas.ConfigureComputation(() => offsetGenerator(), (verts, indices, block) => {
-	    VertexDisplay.PushNewMeshForOffset(verts, indices, block);
+	    display.PushNewMeshForOffset(verts, indices, block);
 	});
       } else {
-	display.configureComputation();
+	terrainPreviewController.configureComputation();
       }
     }
   }
@@ -39,6 +42,7 @@ public class DetailCanvasController : MonoBehaviour {
     set {
       displayedObject = value;
       block = (VoxelBlock<Voxel>)displayedObject.GetComponent<BlockInfo>().Block;
+      layerSlider.maxValue = block.Height;
     }
   }
   private int layerIndex = 0;
@@ -54,15 +58,19 @@ public class DetailCanvasController : MonoBehaviour {
     canvas = GetComponent<Canvas>();
     texture = GetComponentInChildren<LayerTexture>();
     display = UnityEngine.Object.FindObjectOfType<VertexDisplay>();
+    terrainPreviewController = UnityEngine.Object.FindObjectOfType<TerrainPreviewController>();
     NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
     noiseCanvas = editor.GetCanvas() as NoiseCanvasType;
     canvas.enabled = false;
+
+    display.addMeshAddedDelegate(gameObject => DisplayedObject = gameObject);
   }
 
-  public void changeLayerIndex(int amount) {
-    layerIndex += amount;
+  public void setLayerIndex(float index) {
+    layerIndex = (int)index;
     layerIndex = Math.Max(Math.Min(layerIndex, block.Height - 1), 0);
     texture.Layer = block.Layers[layerIndex];
+    layerSliderText.text = "" + layerIndex;
   }
 
   private IEnumerable<(int, int)> offsetGenerator() {
