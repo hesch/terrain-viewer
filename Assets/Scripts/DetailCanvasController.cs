@@ -49,9 +49,11 @@ public class DetailCanvasController : MonoBehaviour {
     set {
       displayedObject = value;
       block = (VoxelBlock<Voxel>)displayedObject.GetComponent<BlockInfo>().Block;
+      Debug.Log("displayedObject: " + block.Offset);
       layerSlider.maxValue = block.Height;
       layerSelection.transform.localScale = new Vector3(block.Width, 1.0f, block.Length);
       layerSelection.transform.localPosition = displayedObject.transform.localPosition + layerSelection.transform.localScale/2;
+      layerSelection.transform.localPosition += new Vector3(0.0f, layerIndex, 0.0f);
     }
   }
   private int layerIndex = 0;
@@ -72,12 +74,16 @@ public class DetailCanvasController : MonoBehaviour {
     noiseCanvas = editor.GetCanvas() as NoiseCanvasType;
     canvas.enabled = false;
 
-    display.addMeshAddedDelegate(gameObject => DisplayedObject = gameObject);
+    display.addMeshAddedDelegate(gameObject => {
+	if (DisplayedObject == null || gameObject.GetComponent<BlockInfo>().Block.Offset == block.Offset)
+	  DisplayedObject = gameObject;
+    });
 
     layerSelection = GameObject.CreatePrimitive(PrimitiveType.Cube);
     layerSelection.name = "Layer Selection";
     layerSelection.transform.parent = display.transform;
     layerSelection.GetComponent<Renderer>().material = selectionMaterial;
+    layerSelection.SetActive(false);
     Destroy(layerSelection.GetComponent<BoxCollider>());
   }
 
@@ -87,7 +93,7 @@ public class DetailCanvasController : MonoBehaviour {
     texture.Layer = block.Layers[layerIndex];
     layerSliderText.text = "" + layerIndex;
     layerSelection.transform.localPosition = displayedObject.transform.localPosition + layerSelection.transform.localScale/2;
-    layerSelection.transform.localPosition += new Vector3(0.0f, layerSelection.transform.localPosition.y + layerIndex, 0.0f);
+    layerSelection.transform.localPosition += new Vector3(0.0f, layerIndex, 0.0f);
   }
 
   private IEnumerable<(int, int)> offsetGenerator() {
