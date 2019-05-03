@@ -47,6 +47,9 @@ public class DetailCanvasController : MonoBehaviour {
       return displayedObject;
     }
     set {
+      if (Active && block.Offset != value.GetComponent<BlockInfo>().Block.Offset) {
+	display.hideAllBut(value);
+      }
       displayedObject = value;
       block = (VoxelBlock<Voxel>)displayedObject.GetComponent<BlockInfo>().Block;
       Debug.Log("displayedObject: " + block.Offset);

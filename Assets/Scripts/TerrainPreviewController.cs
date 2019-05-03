@@ -56,8 +56,8 @@ public class TerrainPreviewController : MonoBehaviour
 	selection.SetActive(true);
 	blockPositon.text = String.Format("Block position: {0}", selectedBlock.Offset.ToString());
       } else if (eventData.clickCount == 2) {
-	detailController.Active = true;
 	detailController.DisplayedObject = selected;
+	detailController.Active = true;
 	selection.SetActive(false);
       }
     }
