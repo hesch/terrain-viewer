@@ -1,9 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System.Linq;
 
 public class LayerTexture : MonoBehaviour {
   private Image image;
+  private RectTransform rectTransform;
+  private Texture2D currentTexture;
 
   private VoxelLayer<Voxel> layer;
   public VoxelLayer<Voxel> Layer {
@@ -12,19 +15,89 @@ public class LayerTexture : MonoBehaviour {
     }
     set {
       layer = value;
-      calculateTexture(layer);
+      calculateTexture();
     }
   }
   public float threshold = 0.5f;
-  public bool outline = true;
-  public bool drawColors = true;
+  private bool outline = true;
+  public bool Outline { 
+    get {
+      return outline;
+    }
+    set {
+      outline = value;
+      calculateTexture();
+    } 
+  }
+  private bool drawColors = true;
+  public bool DrawColors {
+    get {
+      return drawColors;
+    }
+    set {
+      drawColors = value;
+      calculateTexture();
+    } 
+  }
+  private bool mouseInside = false;
+
+  private Vector2 highlightPosition = Vector2.zero;
+  private Color previousColor;
+  private float highlightBrightness = 0.5f;
+
+  private int scaleFactor = 5;
 
   public void Start() {
     image = GetComponent<Image>();
+    rectTransform = GetComponent<RectTransform>();
+    currentTexture = new Texture2D(1, 1);
   }
 
-  private void calculateTexture(VoxelLayer<Voxel> layer) {
-    Texture2D texture = new Texture2D(layer.Width, layer.Length);
+  public void OnMouseEnter() {
+    mouseInside = true;
+  }
+
+  public void OnMouseLeave() {
+    mouseInside = false;
+  }
+
+  public void Update() {
+    if (mouseInside && layer != null) {
+      Vector2 mousePosition;
+      RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, Input.mousePosition, null, out mousePosition);
+      mousePosition = new Vector2(rectTransform.rect.width + mousePosition.x, mousePosition.y);
+      mousePosition = mousePosition / rectTransform.rect.width * layer.Width;
+      unhighlightPixel(highlightPosition);
+      highlightPosition = mousePosition;
+      highlightPixel();
+      redraw();
+    }
+  }
+
+  private void highlightPixel() {
+    int x = (int)highlightPosition.x;
+    int y = (int)highlightPosition.y;
+    Color color = GetPixel(x, y);
+    previousColor = color;
+    color += new Color(highlightBrightness, highlightBrightness, highlightBrightness);
+    SetPixel(x, y, color);
+  }
+
+  private void unhighlightPixel(Vector2 position) {
+    int x = (int)highlightPosition.x;
+    int y = (int)highlightPosition.y;
+    SetPixel(x, y, previousColor);
+  }
+
+  private void redraw() {
+    currentTexture.Apply();
+    image.sprite = Sprite.Create(currentTexture, new Rect(0.0f, 0.0f, currentTexture.width, currentTexture.height), new Vector2(0.5f, 0.5f));
+  }
+
+  private void calculateTexture() {
+    if (currentTexture.width != layer.Width*scaleFactor || currentTexture.height != layer.Length*scaleFactor) {
+      currentTexture = new Texture2D(layer.Width*scaleFactor, layer.Length*scaleFactor);
+    }
 
     Color[] pixels = Enumerable.Repeat(Color.white, layer.Width*layer.Length).ToArray();
 
@@ -32,7 +105,7 @@ public class LayerTexture : MonoBehaviour {
       for(int y = 0; y < layer.Length; y++) {
 	int idx = x + y * layer.Width;
 	float brightness = layer[x,y].GetValue();
-	if (outline) {
+	if (Outline) {
 	  if (y < layer.Length - 1) {
 	    float brightnessBottom = layer[x,y+1].GetValue();
 	    drawOutline(pixels, idx, brightness, idx+layer.Length, brightnessBottom, threshold);
@@ -43,7 +116,7 @@ public class LayerTexture : MonoBehaviour {
 	  }
 	}
 
-	if (drawColors) {
+	if (DrawColors) {
 	  if (brightness < 0.5)  {
 	    pixels[idx] *= new Color(brightness, brightness, 1.5f*brightness);
 	  } else {
@@ -55,10 +128,11 @@ public class LayerTexture : MonoBehaviour {
       }
     }
 
-    texture.SetPixels(pixels);
-    texture.Apply();
+    pixels = scalePixelArray(pixels);
 
-    image.sprite = Sprite.Create(texture, new Rect(0.0f, 0.0f, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+    currentTexture.SetPixels(pixels);
+    highlightPixel();
+    redraw();
   }
 
   private void drawOutline(Color[] pixels, int idx1, float brightness1, int idx2, float brightness2, float threshold) {
@@ -71,6 +145,34 @@ public class LayerTexture : MonoBehaviour {
       pixels[idx1] *= new Color(1.0f, interpolationFactor, interpolationFactor);
       pixels[idx2] *= new Color(1.0f, 1-interpolationFactor, 1-interpolationFactor);
     }
+  }
+
+  private Color[] scalePixelArray(Color[] pixel) {
+    Color[] scaledArray = new Color[pixel.Length*scaleFactor*scaleFactor];
+    int oldWidth = currentTexture.width/scaleFactor;
+    for(int i = 0; i < pixel.Length; i++) {
+      int row = (i/oldWidth) * scaleFactor;
+      int col = (i%oldWidth) * scaleFactor;
+      for(int x = 0; x < scaleFactor; x++) {
+	for(int y = 0; y < scaleFactor; y++) {
+	  int idx = col + row*currentTexture.width + x + y*currentTexture.width;
+	  scaledArray[idx] = pixel[i];
+	}
+      }
+    }
+    return scaledArray;
+  }
+
+  private void SetPixel(int x, int y, Color color) {
+    for(int sx = 0; sx < scaleFactor; sx++) {
+      for(int sy = 0; sy < scaleFactor; sy++) {
+	currentTexture.SetPixel(x*scaleFactor + sx, y*scaleFactor + sy, color);
+      }
+    }
+  }
+
+  private Color GetPixel(int x, int y) {
+    return currentTexture.GetPixel(x*scaleFactor, y*scaleFactor);
   }
 }
 

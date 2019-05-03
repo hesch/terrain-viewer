@@ -52,8 +52,7 @@ public class DetailCanvasController : MonoBehaviour {
       Debug.Log("displayedObject: " + block.Offset);
       layerSlider.maxValue = block.Height;
       layerSelection.transform.localScale = new Vector3(block.Width, 1.0f, block.Length);
-      layerSelection.transform.localPosition = displayedObject.transform.localPosition + layerSelection.transform.localScale/2;
-      layerSelection.transform.localPosition += new Vector3(0.0f, layerIndex, 0.0f);
+      setLayerIndex(layerIndex);
     }
   }
   private int layerIndex = 0;
@@ -97,6 +96,6 @@ public class DetailCanvasController : MonoBehaviour {
   }
 
   private IEnumerable<(int, int)> offsetGenerator() {
-    while(true) yield return (block.Offset.x, block.Offset.y);
+    yield return (block.Offset.x, block.Offset.y);
   }
 }

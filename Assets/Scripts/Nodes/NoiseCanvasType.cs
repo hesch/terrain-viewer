@@ -62,7 +62,8 @@ public class NoiseCanvasType : NodeCanvas
     CancellationToken token = tokenSource.Token;
     Action taskAction = () => {
       token.ThrowIfCancellationRequested();
-      foreach((int, int) tuple in offsetGenerator()) {
+      var offsets = offsetGenerator();
+      foreach((int, int) tuple in offsets) {
 	  cache.ForEach(n => {
 	      if (n.isInput() && n is VoxelInputNode) {
 		VoxelInputNode n2 = n as VoxelInputNode;
