@@ -12,6 +12,9 @@ public class DetailCanvasController : MonoBehaviour {
   public Camera camera;
   private Canvas canvas;
 
+  private Vector3 previousCameraPosition;
+  private Quaternion previousCameraOrientation;
+
   private GameObject layerSelection;
 
   private LayerTexture texture;
@@ -33,9 +36,15 @@ public class DetailCanvasController : MonoBehaviour {
 	noiseCanvas.ConfigureComputation(() => offsetGenerator(), (verts, indices, block) => {
 	    display.PushNewMeshForOffset(verts, indices, block);
 	});
+	previousCameraPosition = camera.transform.position;
+	previousCameraOrientation = camera.transform.localRotation;
+	camera.transform.position = displayedObject.transform.position - new Vector3(100.0f, 100.0f, 100.0f);
+	camera.transform.LookAt(displayedObject.transform.position); 
       } else {
 	display.clearHideState();
 	terrainPreviewController.configureComputation();
+	camera.transform.position = previousCameraPosition;
+	camera.transform.localRotation = previousCameraOrientation;
       }
     }
   }
