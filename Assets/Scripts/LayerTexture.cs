@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Linq;
+using System;
 
 public class LayerTexture : MonoBehaviour {
   private Image image;
@@ -39,6 +40,8 @@ public class LayerTexture : MonoBehaviour {
       calculateTexture();
     } 
   }
+
+  private Action<Voxel> voxelSelectionDelegate = voxel => {};
   private bool mouseInside = false;
 
   private Vector2 highlightPosition = Vector2.zero;
@@ -61,6 +64,14 @@ public class LayerTexture : MonoBehaviour {
     mouseInside = false;
   }
 
+  public void addVoxelSelectionDelegate(Action<Voxel> del) {
+    voxelSelectionDelegate += del;
+  }
+
+  public void removeVoxelSelectionDelegate(Action<Voxel> del) {
+    voxelSelectionDelegate -= del;
+  }
+
   public void Update() {
     if (mouseInside && layer != null) {
       Vector2 mousePosition;
@@ -81,6 +92,7 @@ public class LayerTexture : MonoBehaviour {
     previousColor = color;
     color += new Color(highlightBrightness, highlightBrightness, highlightBrightness);
     SetPixel(x, y, color);
+    voxelSelectionDelegate(Layer[x, y]);
   }
 
   private void unhighlightPixel(Vector2 position) {

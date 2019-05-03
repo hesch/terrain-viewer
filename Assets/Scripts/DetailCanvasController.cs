@@ -9,6 +9,7 @@ public class DetailCanvasController : MonoBehaviour {
   public Material selectionMaterial;
   public Text layerSliderText;
   public Slider layerSlider;
+  public Text voxelInfoText;
   public Camera camera;
   private Canvas canvas;
 
@@ -38,7 +39,7 @@ public class DetailCanvasController : MonoBehaviour {
 	});
 	previousCameraPosition = camera.transform.position;
 	previousCameraOrientation = camera.transform.localRotation;
-	camera.transform.position = displayedObject.transform.position - new Vector3(100.0f, 100.0f, 100.0f);
+	camera.transform.position = displayedObject.transform.position + new Vector3(100.0f, 100.0f, 100.0f);
 	camera.transform.LookAt(displayedObject.transform.position); 
       } else {
 	display.clearHideState();
@@ -88,6 +89,10 @@ public class DetailCanvasController : MonoBehaviour {
     display.addMeshAddedDelegate(gameObject => {
 	if (DisplayedObject == null || gameObject.GetComponent<BlockInfo>().Block.Offset == block.Offset)
 	  DisplayedObject = gameObject;
+    });
+
+    texture.addVoxelSelectionDelegate(voxel => {
+	voxelInfoText.text = "Value: " + voxel.Data;
     });
 
     layerSelection = GameObject.CreatePrimitive(PrimitiveType.Cube);
