@@ -31,6 +31,7 @@ public class VertexNode: Node
 
 	public List<Vector3> Vertices { get; set; }
 	public List<int> Indices { get; set; }
+	public List<Vector3> Normals { get; set; }
 	public VoxelBlock<Voxel> Block { get; set; }
 
 	public override void NodeGUI () 
@@ -61,11 +62,13 @@ public class VertexNode: Node
 		}
 	}
 
-	private void weldVertices(List<Vector3> verts, List<int> indices) {
+	private void weldVertices(List<Vector3> verts, List<int> indices, List<Vector3> normals) {
 	  Dictionary<Vector3, int> indexMap = new Dictionary<Vector3, int>();
+	  Dictionary<Vector3, Vector3> normalMap = new Dictionary<Vector3, Vector3>();
 	  for(int i = 0; i < verts.Count; i++) {
 	      if (!indexMap.ContainsKey(verts[i])) {
 		indexMap.Add(verts[i], indexMap.Count);
+		normalMap.Add(verts[i], normals[i]);
 	      }
 	  }
 
@@ -75,6 +78,8 @@ public class VertexNode: Node
 
 	  verts.Clear();
 	  verts.InsertRange(0, indexMap.OrderBy(kv => kv.Value).Select(kv => kv.Key));
+	  normals.Clear();
+	  normals.InsertRange(0, indexMap.OrderBy(kv => kv.Value).Select(kv => normalMap[kv.Key]));
 	}
 
 	public override bool Calculate() {
@@ -123,13 +128,15 @@ public class VertexNode: Node
 
 	  List<Vector3> verts = new List<Vector3>();
 	  List<int> indices = new List<int>();
+	  List<Vector3> normals = new List<Vector3>();
 
-	  marching.Generate(voxels, width, height, length, verts, indices);
+	  marching.Generate(voxels, width, height, length, verts, indices, normals);
 
-	  weldVertices(verts, indices);
+	  weldVertices(verts, indices, normals);
 
 	  Vertices = verts;
 	  Indices = indices;
+	  Normals = normals;
 	  Block = block;
 
 	  return true;

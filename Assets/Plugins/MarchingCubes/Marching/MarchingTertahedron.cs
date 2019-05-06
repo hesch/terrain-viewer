@@ -29,7 +29,7 @@ namespace MarchingCubesProject
         /// <summary>
         /// MarchCubeTetrahedron performs the Marching Tetrahedrons algorithm on a single cube
         /// </summary>
-        protected override void March(float x, float y, float z, float[] cube, IList<Vector3> vertList, IList<int> indexList)
+        protected override void March(float x, float y, float z, float[] cube, IList<Vector3> vertList, IList<int> indexList, IList<Vector3> normalList)
         {
             int i, j, vertexInACube;
 

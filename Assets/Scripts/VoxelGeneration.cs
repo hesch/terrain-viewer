@@ -7,7 +7,7 @@ public class VoxelGeneration : Marching {
 
   private float[] OtherCube = new float[7];
   
-  public override void Generate(IList<float> voxels, int width, int height, int depth, IList<Vector3> verts, IList<int> indices)
+  public override void Generate(IList<float> voxels, int width, int height, int depth, IList<Vector3> verts, IList<int> indices, IList<Vector3> normals)
   {
 
     if (Surface > 0.0f)
@@ -43,7 +43,7 @@ public class VoxelGeneration : Marching {
 	  }
 
 	  //Perform algorithm
-	  March(x, y, z, OtherCube, verts, indices);
+	  March(x, y, z, OtherCube, verts, indices, normals);
 	}
       }
     }
@@ -57,7 +57,7 @@ public class VoxelGeneration : Marching {
     {0, 0, -1}, {0, 0, 1}
   };
 
-  protected override void March(float x, float y, float z, float[] cube, IList<Vector3> vertList, IList<int> indexList) {
+  protected override void March(float x, float y, float z, float[] cube, IList<Vector3> vertList, IList<int> indexList, IList<Vector3> normalList) {
     if (cube[0] < Surface) {
       return;
     }

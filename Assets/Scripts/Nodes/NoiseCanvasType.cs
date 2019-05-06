@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 public class NoiseCanvasType : NodeCanvas
 {
   private Func<IEnumerable<(int, int)>> offsetGenerator;
-  private Action<List<Vector3>, List<int>, VoxelBlock<Voxel>> callback;
+  private Action<List<Vector3>, List<int>, List<Vector3>, VoxelBlock<Voxel>> callback;
   private CancellationTokenSource tokenSource;
   private Task task;
 
@@ -51,7 +51,7 @@ public class NoiseCanvasType : NodeCanvas
     return true;
   }
 
-  public void ConfigureComputation(Func<IEnumerable<(int, int)>> offsetGenerator, Action<List<Vector3>, List<int>, VoxelBlock<Voxel>> callback) {
+  public void ConfigureComputation(Func<IEnumerable<(int, int)>> offsetGenerator, Action<List<Vector3>, List<int>, List<Vector3>, VoxelBlock<Voxel>> callback) {
     this.offsetGenerator = offsetGenerator;
     this.callback = callback;
     Traversal.OnChange(null);
@@ -72,7 +72,7 @@ public class NoiseCanvasType : NodeCanvas
 	      n.Calculate();
 	      if (n.isOutput() && n is VertexNode) {
 		VertexNode vertexNode = n as VertexNode;
-		callback(vertexNode.Vertices, vertexNode.Indices, vertexNode.Block);
+		callback(vertexNode.Vertices, vertexNode.Indices, vertexNode.Normals, vertexNode.Block);
 	      }
 	      token.ThrowIfCancellationRequested();
 	  });

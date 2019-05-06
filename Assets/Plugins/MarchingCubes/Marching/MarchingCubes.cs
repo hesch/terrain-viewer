@@ -10,16 +10,18 @@ namespace MarchingCubesProject
     {
 
         private Vector3[] EdgeVertex { get; set; }
+        private Vector3[] NormalVertex { get; set; }
 
         public MarchingCubes(float surface = 0.5f) : base(surface)
         {
             EdgeVertex = new Vector3[12];
+            NormalVertex = new Vector3[12];
         }
 
         /// <summary>
         /// MarchCube performs the Marching Cubes algorithm on a single cube
         /// </summary>
-        protected override void March(float x, float y, float z, float[] cube, IList<Vector3> vertList, IList<int> indexList)
+        protected override void March(float x, float y, float z, float[] cube, IList<Vector3> vertList, IList<int> indexList, IList<Vector3> normalList)
         {
             int i, j, vert, idx;
             int flagIndex = 0;
@@ -40,11 +42,23 @@ namespace MarchingCubesProject
                 //if there is an intersection on this edge
                 if ((edgeFlags & (1 << i)) != 0)
                 {
-                    offset = GetOffset(cube[EdgeConnection[i, 0]], cube[EdgeConnection[i, 1]]);
+		    int vert1 = EdgeConnection[i, 0];
+		    int vert2 = EdgeConnection[i, 1];
+                    offset = GetOffset(cube[vert1], cube[vert2]);
 
-                    EdgeVertex[i].x = x + (VertexOffset[EdgeConnection[i, 0], 0] + offset * EdgeDirection[i, 0]);
-                    EdgeVertex[i].y = y + (VertexOffset[EdgeConnection[i, 0], 1] + offset * EdgeDirection[i, 1]);
-                    EdgeVertex[i].z = z + (VertexOffset[EdgeConnection[i, 0], 2] + offset * EdgeDirection[i, 2]);
+                    EdgeVertex[i].x = x + (VertexOffset[vert1, 0] + offset * EdgeDirection[i, 0]);
+                    EdgeVertex[i].y = y + (VertexOffset[vert1, 1] + offset * EdgeDirection[i, 1]);
+                    EdgeVertex[i].z = z + (VertexOffset[vert1, 2] + offset * EdgeDirection[i, 2]);
+
+		    NormalVertex[i].x = Mathf.Lerp((cube[VertexSurround[0, vert1, 1]] - cube[VertexSurround[0, vert1, 0]]) / 2,
+						   (cube[VertexSurround[0, vert2, 1]] - cube[VertexSurround[0, vert2, 0]]) / 2,
+						   offset);
+		    NormalVertex[i].y = Mathf.Lerp((cube[VertexSurround[1, vert1, 1]] - cube[VertexSurround[1, vert1, 0]]) / 2,
+						   (cube[VertexSurround[1, vert2, 1]] - cube[VertexSurround[1, vert2, 0]]) / 2,
+						   offset);
+		    NormalVertex[i].z = Mathf.Lerp((cube[VertexSurround[2, vert1, 1]] - cube[VertexSurround[2, vert1, 0]]) / 2,
+						   (cube[VertexSurround[2, vert2, 1]] - cube[VertexSurround[2, vert2, 0]]) / 2,
+						   offset);
                 }
             }
 
@@ -60,6 +74,7 @@ namespace MarchingCubesProject
                     vert = TriangleConnectionTable[flagIndex, 3 * i + j];
                     indexList.Add(idx + WindingOrder[j]);
                     vertList.Add(EdgeVertex[vert]);
+		    normalList.Add(NormalVertex[vert]);
                 }
             }
         }

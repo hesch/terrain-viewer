@@ -66,10 +66,11 @@ namespace MarchingCubesProject
 
             List<Vector3> verts = new List<Vector3>();
             List<int> indices = new List<int>();
+            List<Vector3> normals = new List<Vector3>();
 
             //The mesh produced is not optimal. There is one vert for each index.
             //Would need to weld vertices for better quality mesh.
-            marching.Generate(voxels, width, height, length, verts, indices);
+            marching.Generate(voxels, width, height, length, verts, indices, normals);
 
             //A mesh in unity can only be made up of 65000 verts.
             //Need to split the verts between multiple meshes.
@@ -82,6 +83,7 @@ namespace MarchingCubesProject
 
                 List<Vector3> splitVerts = new List<Vector3>();
                 List<int> splitIndices = new List<int>();
+                List<Vector3> splitNormals = new List<Vector3>();
 
                 for (int j = 0; j < maxVertsPerMesh; j++)
                 {
@@ -90,6 +92,7 @@ namespace MarchingCubesProject
                     if (idx < verts.Count)
                     {
                         splitVerts.Add(verts[idx]);
+                        splitNormals.Add(normals[idx]);
                         splitIndices.Add(j);
                     }
                 }
@@ -97,10 +100,10 @@ namespace MarchingCubesProject
                 if (splitVerts.Count == 0) continue;
 
                 Mesh mesh = new Mesh();
-                mesh.SetVertices(splitVerts);
+                mesh.SetVertices(splitVerts);	
                 mesh.SetTriangles(splitIndices, 0);
+                mesh.SetNormals(splitNormals);
                 mesh.RecalculateBounds();
-                mesh.RecalculateNormals();
 
                 GameObject go = new GameObject("Mesh");
                 go.transform.parent = transform;

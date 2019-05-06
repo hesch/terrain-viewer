@@ -34,8 +34,8 @@ public class DetailCanvasController : MonoBehaviour {
       layerSelection.SetActive(value);
       if (value) {
 	display.hideAllBut(displayedObject);
-	noiseCanvas.ConfigureComputation(() => offsetGenerator(), (verts, indices, block) => {
-	    display.PushNewMeshForOffset(verts, indices, block);
+	noiseCanvas.ConfigureComputation(() => offsetGenerator(), (verts, indices, normals, block) => {
+	    display.PushNewMeshForOffset(verts, indices, normals,  block);
 	});
 	previousCameraPosition = camera.transform.position;
 	previousCameraOrientation = camera.transform.localRotation;

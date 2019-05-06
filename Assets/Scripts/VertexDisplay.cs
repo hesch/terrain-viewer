@@ -8,7 +8,7 @@ public class VertexDisplay : MonoBehaviour {
   public Material m_material;
 
   private Dictionary<Vector2Int, GameObject> Meshes = new Dictionary<Vector2Int, GameObject>();
-  private ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)> meshQueue = new ConcurrentQueue<(List<Vector3>, List<int>, IVoxelBlock)>();
+  private ConcurrentQueue<(List<Vector3>, List<int>, List<Vector3>, IVoxelBlock)> meshQueue = new ConcurrentQueue<(List<Vector3>, List<int>, List<Vector3>, IVoxelBlock)>();
 
   private bool gridlinesVisible = true;
   public bool GridlinesVisible {
@@ -44,8 +44,8 @@ public class VertexDisplay : MonoBehaviour {
     MeshAddedDelegate -= del;
   }
 
-  public void PushNewMeshForOffset(List<Vector3> meshVertices, List<int> meshIndices, IVoxelBlock block) {
-    meshQueue.Enqueue((meshVertices, meshIndices, block));
+  public void PushNewMeshForOffset(List<Vector3> meshVertices, List<int> meshIndices, List<Vector3> meshNormals, IVoxelBlock block) {
+    meshQueue.Enqueue((meshVertices, meshIndices, meshNormals, block));
   }
 
   public void hideAllBut(GameObject it) {
@@ -67,16 +67,16 @@ public class VertexDisplay : MonoBehaviour {
   }
 
   private void TryAddBlock() {
-    (List<Vector3>, List<int>, IVoxelBlock) tuple;
+    (List<Vector3>, List<int>, List<Vector3>, IVoxelBlock) tuple;
     if(meshQueue.TryDequeue(out tuple)) {
-      var (vertices, indices, block) = tuple;
+      var (vertices, indices, normals, block) = tuple;
       
       if(Meshes.ContainsKey(block.Offset)) {
 	  GameObject oldMesh = Meshes[block.Offset];
 	  Destroy(oldMesh);
       }
 
-      GameObject go = BlockConverter.BlockToGameObject(vertices, indices, block, m_material, MeshEventDelegate);
+      GameObject go = BlockConverter.BlockToGameObject(vertices, indices, normals, block, m_material, MeshEventDelegate);
       go.transform.parent = transform;
       go.GetComponent<LineRenderer>().enabled = gridlinesVisible;
       if (hiddenState && block.Offset != OnlyShowObjectAt) {

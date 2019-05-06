@@ -6,18 +6,18 @@ using System.Linq;
 
 public class BlockConverter {
 
-  public static GameObject BlockToGameObject(List<Vector3> vertices, List<int> indices, IVoxelBlock block, Material material, Action<PointerEventData, GameObject> clickCallback) {
+  public static GameObject BlockToGameObject(List<Vector3> vertices, List<int> indices, List<Vector3> normals, IVoxelBlock block, Material material, Action<PointerEventData, GameObject> clickCallback) {
       int limit = UInt16.MaxValue;
 
       List<(List<int>, int)> triangles = splitIndices(indices, limit);
       Mesh mesh = new Mesh();
       mesh.SetVertices(vertices);
+      mesh.SetNormals(normals);
       mesh.subMeshCount = triangles.Count();
       for(int i = 0; i < triangles.Count(); i++) {
 	mesh.SetTriangles(triangles[i].Item1, i, true, triangles[i].Item2);
       }
       mesh.RecalculateBounds();
-      mesh.RecalculateNormals();
 
       GameObject go = new GameObject(String.Format("Block({0}, {1})", block.Offset.x, block.Offset.y));
       go.AddComponent<MeshFilter>();
