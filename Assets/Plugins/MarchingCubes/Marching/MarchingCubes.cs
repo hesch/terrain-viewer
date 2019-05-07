@@ -59,6 +59,7 @@ namespace MarchingCubesProject
 		    NormalVertex[i].z = Mathf.Lerp((cube[VertexSurround[2, vert1, 1]] - cube[VertexSurround[2, vert1, 0]]) / 2,
 						   (cube[VertexSurround[2, vert2, 1]] - cube[VertexSurround[2, vert2, 0]]) / 2,
 						   offset);
+		    NormalVertex[i] = -NormalVertex[i].normalized;
                 }
             }
 
