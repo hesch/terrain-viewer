@@ -11,19 +11,28 @@ namespace MarchingCubesProject
 
         private Vector3[] EdgeVertex { get; set; }
 
+        private Vector3[] NormalVertex { get; set; }
+
         private Vector3[] CubePosition { get; set; }
 
         private Vector3[] TetrahedronPosition { get; set; }
 
         private float[] TetrahedronValue { get; set; }
 
+	private float[] CubeValue { get; set; }
+
+	private int[] VertexInCube { get; set; }
+
         public MarchingTertrahedron(float surface = 0.5f)
             : base(surface)
         {
             EdgeVertex = new Vector3[6];
+            NormalVertex = new Vector3[6];
             CubePosition = new Vector3[8];
             TetrahedronPosition = new Vector3[4];
             TetrahedronValue = new float[4];
+            CubeValue = new float[32];
+            VertexInCube = new int[4];
         }
 
         /// <summary>
@@ -31,7 +40,9 @@ namespace MarchingCubesProject
         /// </summary>
         protected override void March(float x, float y, float z, float[] cube, IList<Vector3> vertList, IList<int> indexList, IList<Vector3> normalList)
         {
-            int i, j, vertexInACube;
+            int i, j;
+
+	    CubeValue = cube;
 
             //Make a local copy of the cube's corner positions
             for (i = 0; i < 8; i++)
@@ -45,19 +56,19 @@ namespace MarchingCubesProject
             {
                 for (j = 0; j < 4; j++)
                 {
-                    vertexInACube = TetrahedronsInACube[i, j];
-                    TetrahedronPosition[j] = CubePosition[vertexInACube];
-                    TetrahedronValue[j] = cube[vertexInACube];
+                    VertexInCube[j] = TetrahedronsInACube[i, j];
+                    TetrahedronPosition[j] = CubePosition[VertexInCube[j]];
+                    TetrahedronValue[j] = cube[VertexInCube[j]];
                 }
 
-                MarchTetrahedron(vertList, indexList);
+                MarchTetrahedron(vertList, indexList, normalList);
             }
         }
 
         /// <summary>
         /// MarchTetrahedron performs the Marching Tetrahedrons algorithm on a single tetrahedron
         /// </summary>
-        private void MarchTetrahedron(IList<Vector3> vertList, IList<int> indexList)
+        private void MarchTetrahedron(IList<Vector3> vertList, IList<int> indexList, IList<Vector3> normalList)
         {
             int i, j, vert, vert0, vert1, idx;
             int flagIndex = 0, edgeFlags;
@@ -86,6 +97,17 @@ namespace MarchingCubesProject
                     EdgeVertex[i].x = invOffset * TetrahedronPosition[vert0].x + offset * TetrahedronPosition[vert1].x;
                     EdgeVertex[i].y = invOffset * TetrahedronPosition[vert0].y + offset * TetrahedronPosition[vert1].y;
                     EdgeVertex[i].z = invOffset * TetrahedronPosition[vert0].z + offset * TetrahedronPosition[vert1].z;
+
+		    NormalVertex[i].x = Mathf.Lerp((CubeValue[VertexSurround[0, VertexInCube[vert0], 1]] - CubeValue[VertexSurround[0, VertexInCube[vert0], 0]]) / 2,
+						   (CubeValue[VertexSurround[0, VertexInCube[vert1], 1]] - CubeValue[VertexSurround[0, VertexInCube[vert1], 0]]) / 2,
+						   offset);
+		    NormalVertex[i].y = Mathf.Lerp((CubeValue[VertexSurround[1, VertexInCube[vert0], 1]] - CubeValue[VertexSurround[1, VertexInCube[vert0], 0]]) / 2,
+						   (CubeValue[VertexSurround[1, VertexInCube[vert1], 1]] - CubeValue[VertexSurround[1, VertexInCube[vert1], 0]]) / 2,
+						   offset);
+		    NormalVertex[i].z = Mathf.Lerp((CubeValue[VertexSurround[2, VertexInCube[vert0], 1]] - CubeValue[VertexSurround[2, VertexInCube[vert0], 0]]) / 2,
+						   (CubeValue[VertexSurround[2, VertexInCube[vert1], 1]] - CubeValue[VertexSurround[2, VertexInCube[vert1], 0]]) / 2,
+						   offset);
+		    NormalVertex[i] = -NormalVertex[i].normalized;
                 }
             }
 
@@ -101,6 +123,7 @@ namespace MarchingCubesProject
                     vert = TetrahedronTriangles[flagIndex, 3 * i + j];
                     indexList.Add(idx + WindingOrder[j]);
                     vertList.Add(EdgeVertex[vert]);
+                    normalList.Add(NormalVertex[vert]);
                 }
             }
         }
