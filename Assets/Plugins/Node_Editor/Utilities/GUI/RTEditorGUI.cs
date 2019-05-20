@@ -687,6 +687,30 @@ namespace NodeEditorFramework.Utilities
 			}
 		}
 
+		public static void Popup(GUIContent label, int selected, string[] displayedOptions, Action<int> callback)
+		{
+			label.text += ": " + displayedOptions[selected];
+			Rect buttonRect = GUILayoutUtility.GetRect(label, new GUIStyle(GUI.skin.button));
+			if (GUI.Button(buttonRect, label)) {
+			  PopupMenu menu = new PopupMenu();
+			  for(int i = 0; i < displayedOptions.Length; i++) {
+			    // fucking references
+			    int i2 = i;
+			    menu.AddItem(new GUIContent(displayedOptions[i]), true, () => callback(i2));
+			  }
+
+			  Vector2 buttonPos = Event.current.mousePosition; //new Vector2(buttonRect.x, buttonRect.y + buttonRect.height);
+			  buttonPos -= NodeEditor.curEditorState.zoomPanAdjust;
+			  buttonPos /= NodeEditor.curEditorState.zoom;
+			  buttonPos += NodeEditor.curEditorState.zoomPanAdjust;
+
+			  //buttonPos = GUIScaleUtility.ScaledToGUISpace(buttonPos);
+			  buttonPos = GUIUtility.GUIToScreenPoint(buttonPos);
+			  Debug.Log(buttonPos);
+			  menu.Show(new Vector2(buttonPos.x + 1, buttonPos.y + 1), buttonRect.width);
+			}
+		}
+
 		public static int Popup (GUIContent label, int selected, string[] displayedOptions) 
 		{
 			#if UNITY_EDITOR
