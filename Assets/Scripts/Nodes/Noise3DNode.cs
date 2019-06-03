@@ -19,11 +19,21 @@ public class Noise3DNode : VoxelNode<Voxel>
 	private int length = 0;
 	private Vector2Int offset;
 
+	private NoiseGUI noiseGUI;
+
 	public Noise3DNode() {
+	  noiseGUI = new NoiseGUI();
+	  noiseFunction = noiseGUI.noiseFunction;
 	}
 
 	public override void NodeGUI() {
 	  base.NodeGUI();
+
+	  noiseFunction = noiseGUI.Display();
+
+	  if (GUI.changed || noiseGUI.changed) {
+	    NodeEditor.curNodeCanvas.OnNodeChange(this);
+	  }
 	}
 
 	protected override void CalculationSetup(VoxelBlock<Voxel> block) {
@@ -34,8 +44,8 @@ public class Noise3DNode : VoxelNode<Voxel>
 	}
 
 	protected override bool CalculateVoxel(Voxel voxel, int x, int y, int z) {
-	  float noiseValue = fractal.Sample3D(offset.x + x/(float)width, y/(float)height, offset.y + z/(float)length);
-	  voxel.Data = normalize(noiseValue);
+	  float noiseValue = noiseFunction.Sample3D(offset.x + x/(float)width, y/(float)height, offset.y + z/(float)length);
+	  voxel.Data = noiseValue;
 	  return true;
 	}
 }
