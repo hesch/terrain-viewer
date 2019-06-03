@@ -1,14 +1,15 @@
+
 using UnityEngine;
 using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 
-[Node (false, "Fractal")]
-public class FractalNode : VoxelNode<Voxel> {
-	public const string ID = "Fractal";
+[Node (false, "Fractal2D")]
+public class Fractal2DNode : HeightMapNode<Voxel> {
+	public const string ID = "Fractal2D";
 	public override string GetID { get { return ID; } }
 
-	public override string Title { get { return "Fractal"; } }
+	public override string Title { get { return "Fractal2D"; } }
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 200); } }
 
 	private INoise noiseFunction;
@@ -26,7 +27,7 @@ public class FractalNode : VoxelNode<Voxel> {
 	private float frequency = 1.0f;
 	private float amplitude = 1.0f;
 
-	public FractalNode() {
+	public Fractal2DNode() {
 	  noiseGUI = new NoiseGUI();
 	  noiseFunction = noiseGUI.noiseFunction;
 	  fractalNoise = new FractalNoise(noiseFunction, octaves, frequency, amplitude);
@@ -65,9 +66,9 @@ public class FractalNode : VoxelNode<Voxel> {
 	  offset = block.Offset;
 	}
 
-	protected override bool CalculateVoxel(Voxel voxel, int x, int y, int z) {
-	  float noiseValue = fractalNoise.Sample3D(offset.x + x/(float)width, y/(float)height, offset.y + z/(float)length);
-	  voxel.Data = 1-(noiseValue+1)/2;
+	protected override bool CalculateHeight(out float height, int x, int z) {
+	  float noiseValue = fractalNoise.Sample2D(offset.x+x/(float)width, offset.y + z/(float)length);
+	  height = noiseValue;
 	  return true;
 	}
 }

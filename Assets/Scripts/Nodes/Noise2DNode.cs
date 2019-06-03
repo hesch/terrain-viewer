@@ -47,8 +47,7 @@ public class Noise2DNode : HeightMapNode<Voxel>
 
 	protected override bool CalculateHeight(out float height, int x, int z) {
 	  float noiseValue = noiseFunction.Sample2D(offset.x+x/(float)width, offset.y + z/(float)length);
-	  float normalizedNoise = noiseValue;
-	  height = normalizedNoise;
+	  height = noiseValue;
 	  return true;
 	}
 }
