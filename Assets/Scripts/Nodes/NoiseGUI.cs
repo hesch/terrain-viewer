@@ -3,6 +3,7 @@ using NodeEditorFramework.Utilities;
 using ProceduralNoiseProject;
 using System.Reflection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 public class NoiseGUI {
@@ -13,17 +14,36 @@ public class NoiseGUI {
 	private int noiseTypeIndex = 0;
 
 	public bool changed { get; set; }
+	private bool outOfBandChange = false;
 
 	public NoiseGUI() {
+	  init(null);
+	  Loader.listener += ass => init(ass);
+	}
+
+	private void init(Assembly special) {
+	  Debug.Log("NoiseGUI init called");
 	  noiseFunctions = ReflectionUtility.getSubTypes(typeof(Noise));
+	  if (special != null) {
+	    List<Type> lazyLoadedNoise = special.GetTypes ()
+	      .Where ((Type T) => 
+		      (T.IsClass && !T.IsAbstract) 
+		      && T.IsSubclassOf (typeof(Noise))).ToList();
+
+	    lazyLoadedNoise.AddRange(noiseFunctions);
+	    noiseFunctions = lazyLoadedNoise.ToArray();
+	  }
+
 	  Type t = noiseFunctions[0];
 	  ConstructorInfo ctor = noiseFunctions[0].GetConstructors()[0];
 	  noiseParameters = defaultParams(ctor);
 	  noiseFunction = (Noise)ctor.Invoke(noiseParameters);
+	  outOfBandChange = true;
 	}
 
 	public INoise Display() {
-	  changed = false;
+	  changed = outOfBandChange;
+	  outOfBandChange = false;
 	  string[] names = noiseFunctions.Select(n => n.Name).ToArray();
 	  RTEditorGUI.Popup (new GUIContent ("Noise", "The noise type to use"), noiseTypeIndex, names, selected => {
 	      noiseTypeIndex = selected;
@@ -33,7 +53,7 @@ public class NoiseGUI {
 	      noiseParameters = defaultParams(ctor);
 	      noiseFunction = (Noise)ctor.Invoke(noiseParameters);
 
-	      changed = true;
+	      outOfBandChange = true;
 	  });
 
 	  GUILayout.BeginVertical();
