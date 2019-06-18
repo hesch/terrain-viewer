@@ -17,7 +17,7 @@ public class NoiseGUI {
 	private bool outOfBandChange = false;
 
 	public NoiseGUI() {
-	  init(null);
+	  init(Loader.currentAssembly);
 	  Loader.listener += ass => init(ass);
 	}
 

@@ -14,11 +14,13 @@ public class Loader
 {
   public static Action<Assembly> listener = file => {};
   private static FileSystemWatcher watcher;
+  public static Assembly currentAssembly;
 
   static Loader() {
     Debug.Log(Directory.GetCurrentDirectory());
     watcher = new FileSystemWatcher();
     watch();
+    loadFile("");
   }
 
   public static void watch() {
@@ -29,7 +31,7 @@ public class Loader
     watcher.EnableRaisingEvents = true;
   }
 
-  private static bool x = false;
+  private static bool x = true;
 
   public static void FileChanged(object source, FileSystemEventArgs args) {
     if (x) {
@@ -37,16 +39,15 @@ public class Loader
       Debug.Log(args.ChangeType);
       loadFile(args.FullPath);
     }
-    x = !x;
+    x = true;
   }
 
   static void loadFile(string fileName) {
     AppDomain domain = AppDomain.CurrentDomain;
     Assembly[] assemblies = domain.GetAssemblies();
+    string[] fileNames = Directory.GetFiles(Directory.GetCurrentDirectory() + "/src", "*.cs", SearchOption.AllDirectories);
 
-    string SourceString = System.IO.File.ReadAllText(fileName);
     CSharpCodeProvider codeProvider = new CSharpCodeProvider();
-    ICodeCompiler icc = codeProvider.CreateCompiler();
 
     System.CodeDom.Compiler.CompilerParameters parameters = new CompilerParameters();
     parameters.GenerateInMemory = true;
@@ -62,7 +63,7 @@ public class Loader
       parameters.ReferencedAssemblies.Add(Assembly.GetAssembly(typeof(Noise)).Location);
       parameters.ReferencedAssemblies.Add(Assembly.GetAssembly(typeof(Mathf)).Location);
     Debug.Log("compiling file");
-    CompilerResults results = icc.CompileAssemblyFromSource(parameters,SourceString);
+    CompilerResults results = codeProvider.CompileAssemblyFromFile(parameters,fileNames);
     Debug.Log("compiling finsihed");
 
     if (results.Errors.Count > 0)
@@ -80,6 +81,7 @@ public class Loader
 
     Debug.Log(results.CompiledAssembly.FullName);
     Debug.Log("calling listeners");
+    currentAssembly = results.CompiledAssembly;
     listener(results.CompiledAssembly);
   }
 
