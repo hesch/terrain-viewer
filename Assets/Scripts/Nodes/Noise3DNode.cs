@@ -10,7 +10,7 @@ public class Noise3DNode : VoxelNode<Voxel>
 	public override string GetID { get { return ID; } }
 
 	public override string Title { get { return "Noise3D"; } }
-	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
+	public override Vector2 DefaultSize { get { return new Vector2 (150, 200); } }
 
 	private INoise noiseFunction;
 

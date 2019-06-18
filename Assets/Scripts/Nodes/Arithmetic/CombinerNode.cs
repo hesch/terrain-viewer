@@ -111,7 +111,7 @@ public class CombinerNode : Node {
     for(int x = -b1.Overlap; x < b1.Width + b1.Overlap; x++) {
       for(int y = -b1.Overlap; y < b1.Height + b1.Overlap; y++) {
 	for(int z = -b1.Overlap; z < b1.Length + b1.Overlap; z++) {
-	  if(!combiner(b1[x, y, z], b1[x, y, z]))
+	  if(!combiner(b1[x, y, z], b2[x, y, z]))
 	    return false;
 	}
       }
