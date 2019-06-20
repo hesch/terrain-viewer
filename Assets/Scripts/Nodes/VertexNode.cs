@@ -5,6 +5,7 @@ using ProceduralNoiseProject;
 using MarchingCubesProject;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 public enum VerteGenerationMode {
   Cubes,
@@ -26,8 +27,8 @@ public class VertexNode: Node
 	[ValueConnectionKnob("Surface", Direction.In, "Float")]
 		public ValueConnectionKnob surfaceConnection;
 
-	private VerteGenerationMode mode = VerteGenerationMode.Cubes;
-	private float surface = 0.5f;
+	public VerteGenerationMode mode = VerteGenerationMode.Cubes;
+	public float surface = 0.5f;
 
 	public List<Vector3> Vertices { get; set; }
 	public List<int> Indices { get; set; }
@@ -130,7 +131,13 @@ public class VertexNode: Node
 	  List<int> indices = new List<int>();
 	  List<Vector3> normals = new List<Vector3>();
 
+	  Stopwatch sw = Stopwatch.StartNew();
+
 	  marching.Generate(voxels, width, height, length, verts, indices, normals);
+
+	  sw.Stop();
+
+	  UnityEngine.Debug.Log("marching took: " + sw.ElapsedMilliseconds);
 
 	  weldVertices(verts, indices, normals);
 

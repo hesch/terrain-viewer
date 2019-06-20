@@ -26,9 +26,10 @@ namespace MarchingCubesProject
             int i, j, vert, idx;
             int flagIndex = 0;
             float offset = 0.0f;
+	    float s = Surface;
 
             //Find which vertices are inside of the surface and which are outside
-            for (i = 0; i < 8; i++) if (cube[i] <= Surface) flagIndex |= 1 << i;
+            for (i = 0; i < 8; i++) if (cube[i] <= s) flagIndex |= 1 << i;
 
             //Find which edges are intersected by the surface
             int edgeFlags = CubeEdgeFlags[flagIndex];

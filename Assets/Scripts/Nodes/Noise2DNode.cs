@@ -20,7 +20,7 @@ public class Noise2DNode : HeightMapNode<Voxel>
 
 	private Vector2Int offset;
 
-	private NoiseGUI noiseGUI;
+	public NoiseGUI noiseGUI;
 
 	public Noise2DNode() {
 	  noiseGUI = new NoiseGUI();

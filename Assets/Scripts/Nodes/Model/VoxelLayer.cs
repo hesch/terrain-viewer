@@ -1,30 +1,37 @@
 using UnityEngine;
 
 public class VoxelLayer<T> where T : Voxel {
-  public int Overlap { get; set; }
+  private int overlap;
+  public int Overlap {
+    get {
+      return overlap;
+    }
+    set {
+      overlap = value;
+      recalcDim();
+    }
+  }
   // indices are x, z
-  public T[,] Layer { get; set; }
-
-  public int Width {
+  private T[,] layer;
+  public T[,] Layer {
     get {
-      return Layer.GetLength(0) - 2*Overlap;
+      return layer;
+    }
+    set {
+      layer = value;
+      recalcDim();
     }
   }
 
-  public int Length {
-    get {
-      return Layer.GetLength(1) - 2*Overlap;
-    }
-  }
+  public int Width { get; private set; }
 
-  public Vector2Int VoxelCount {
-    get {
-      return new Vector2Int(Width + 2*Overlap, Length + 2*Overlap);
-    }
-  }
+  public int Length { get; private set; }
+
+  public Vector2Int VoxelCount { get; private set; }
 
   public VoxelLayer(T[,] layer) {
     this.Layer = layer;
+    recalcDim();
   }
 
   public VoxelLayer(VoxelLayer<T> l) {
@@ -35,9 +42,20 @@ public class VoxelLayer<T> where T : Voxel {
 	this.Layer[x,z] = (T) l.Layer[x,z].Clone();
       }
     }
+    recalcDim();
   }
 
   public T this[int x, int z] {
-    get { return Layer[x+Overlap, z+Overlap]; }
+    get { return layer[x+overlap, z+overlap]; }
+  }
+
+  private void recalcDim() {
+    if (Layer != null) {
+      int length = Layer.GetLength(1);
+      int width = Layer.GetLength(0);
+      this.Length = length - 2*Overlap;
+      this.Width = width - 2*Overlap;
+      this.VoxelCount = new Vector2Int(width, length);
+    }
   }
 }

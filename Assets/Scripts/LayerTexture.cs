@@ -160,14 +160,15 @@ public class LayerTexture : MonoBehaviour {
   }
 
   private Color[] scalePixelArray(Color[] pixel) {
+    int currentTextureWidth = currentTexture.width;
     Color[] scaledArray = new Color[pixel.Length*scaleFactor*scaleFactor];
-    int oldWidth = currentTexture.width/scaleFactor;
+    int oldWidth = currentTextureWidth/scaleFactor;
     for(int i = 0; i < pixel.Length; i++) {
       int row = (i/oldWidth) * scaleFactor;
       int col = (i%oldWidth) * scaleFactor;
       for(int x = 0; x < scaleFactor; x++) {
 	for(int y = 0; y < scaleFactor; y++) {
-	  int idx = col + row*currentTexture.width + x + y*currentTexture.width;
+	  int idx = col + row*currentTextureWidth + x + y*currentTextureWidth;
 	  scaledArray[idx] = pixel[i];
 	}
       }

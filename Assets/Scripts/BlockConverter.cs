@@ -9,7 +9,7 @@ public class BlockConverter {
   public static GameObject BlockToGameObject(List<Vector3> vertices, List<int> indices, List<Vector3> normals, IVoxelBlock block, Material material, Action<PointerEventData, GameObject> clickCallback) {
       int limit = UInt16.MaxValue;
 
-      List<(List<int>, int)> triangles = splitIndices(indices, limit);
+      List<(List<int>, int)> triangles = vertices.Count() > limit ? splitIndices(indices, limit) : new List<(List<int>, int)> { (indices, 0) };
       Mesh mesh = new Mesh();
       mesh.SetVertices(vertices);
       mesh.SetNormals(normals);
@@ -54,31 +54,49 @@ public class BlockConverter {
     List<(List<int>, int)> resultList = new List<(List<int>, int)>();
     List<int> indicesLeft = indices;
     int currentOffset = 0;
+    int lastOffset = 0;
 
     while(indicesLeft.Any()) {
-      int offset = indicesLeft.Min(i => i);
-      indicesLeft = indicesLeft.Select(i => i - offset).ToList();
-      currentOffset += offset;
 
       List<int> belowLimit = new List<int>();
       List<int> aboveLimit = new List<int>();
-      for(int i = 0; i < indicesLeft.Count(); i += 3) {
-	List<int> addToList = indicesLeft[i] < limit || indicesLeft[i+1] < limit || indicesLeft[i+2] < limit
-	  ? belowLimit
-	  : aboveLimit;
+      int offset = 0;
+      int i1, i2, i3;
+      int indexCount = indicesLeft.Count();
+      int currentLimit = lastOffset + limit;
+      for(int i = 0; i < indexCount; i += 3) {
+	i1 = indicesLeft[i];
+	i2 = indicesLeft[i+1];
+	i3 = indicesLeft[i+2];
+	List<int> addToList;
+	if (i1 < currentLimit || i2 < currentLimit || i3 < currentLimit) {
+	  addToList = belowLimit;
+	  i1 -= lastOffset;
+	  i2 -= lastOffset;
+	  i3 -= lastOffset;
+	  if (!(i1 < limit && i2 < limit && i3 < limit)) {
+	    int minIndex = Math.Min(i1, Math.Min(i2, i3));
+	    if (minIndex < offset) {
+	      offset = minIndex;
+	    }
+	  }
+	} else {
+	  addToList = aboveLimit;
+	}
 
-	addToList.Add(indicesLeft[i]);
-	addToList.Add(indicesLeft[i+1]);
-	addToList.Add(indicesLeft[i+2]);
+	addToList.Add(i1);
+	addToList.Add(i2);
+	addToList.Add(i3);
       }
 
-      indicesLeft = aboveLimit;
+      indicesLeft = aboveLimit.Select(i => i - offset).ToList();
       resultList.Add((belowLimit, currentOffset));
+      currentOffset += offset;
+      lastOffset = offset;
     }
 
     return resultList;
   }
-
   
   private static Vector3[] getBoundingBoxPoints(IVoxelBlock block) {
     return new Vector3[] {

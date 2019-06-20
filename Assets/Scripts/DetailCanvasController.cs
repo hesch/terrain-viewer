@@ -62,7 +62,6 @@ public class DetailCanvasController : MonoBehaviour {
       }
       displayedObject = value;
       block = (VoxelBlock<Voxel>)displayedObject.GetComponent<BlockInfo>().Block;
-      Debug.Log("displayedObject: " + block.Offset);
       layerSlider.maxValue = block.Height;
       layerSelection.transform.localScale = new Vector3(block.Width, 1.0f, block.Length);
       setLayerIndex(layerIndex);

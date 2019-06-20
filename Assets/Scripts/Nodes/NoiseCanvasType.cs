@@ -78,7 +78,8 @@ public class NoiseCanvasType : NodeCanvas
 	  });
 	}
     };
-    task = Task.Factory.StartNew(taskAction,token);
+    taskAction();
+    //task = Task.Factory.StartNew(taskAction,token);
   }
 
   public void StopComputation() {
@@ -86,7 +87,9 @@ public class NoiseCanvasType : NodeCanvas
       return;
     tokenSource.Cancel();
     try {
-      task.Wait();
+      if (task != null) {
+	task.Wait();
+      }
     } catch(AggregateException _) {
     } finally {
       tokenSource.Dispose();

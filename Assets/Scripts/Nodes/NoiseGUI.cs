@@ -9,10 +9,10 @@ using System.Linq;
 public class NoiseGUI {
 	public INoise noiseFunction;
 	private Type[] noiseFunctions; 
-	private System.Object[] noiseParameters; 
+	public System.Object[] noiseParameters; 
 
-	private int noiseTypeIndex = 0;
-	private Type selectedNoiseType = null;
+	public int noiseTypeIndex = 0;
+	public Type selectedNoiseType = null;
 
 	public bool changed { get; set; }
 	private bool outOfBandChange = false;
@@ -23,7 +23,6 @@ public class NoiseGUI {
 	}
 
 	private void init(Assembly special) {
-	  Debug.Log("NoiseGUI init called");
 	  noiseFunctions = ReflectionUtility.getSubTypes(typeof(Noise));
 	  if (special != null) {
 	    List<Type> lazyLoadedNoise = special.GetTypes ()

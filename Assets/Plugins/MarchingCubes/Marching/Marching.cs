@@ -11,7 +11,7 @@ namespace MarchingCubesProject
 
         public float Surface { get; set; }
 
-        private float[] Cube { get; set; }
+        private float[] Cube;
 
         /// <summary>
         /// Winding order of triangles use 2,1,0 or 0,1,2
@@ -27,6 +27,8 @@ namespace MarchingCubesProject
 
         public virtual void Generate(IList<float> voxels, int width, int height, int depth, IList<Vector3> verts, IList<int> indices, IList<Vector3> normals)
         {
+	  float[] v = new float[voxels.Count];
+	  voxels.CopyTo(v, 0);
 
             if (Surface > 0.0f)
             {
@@ -56,7 +58,7 @@ namespace MarchingCubesProject
                             iy = y + VertexOffset[i, 1];
                             iz = z + VertexOffset[i, 2];
 
-                            Cube[i] = voxels[ix + iy * width + iz * width * height];
+                            Cube[i] = v[ix + iy * width + iz * width * height];
                         }
 
                         //Perform algorithm
