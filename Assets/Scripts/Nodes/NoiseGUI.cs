@@ -12,6 +12,7 @@ public class NoiseGUI {
 	private System.Object[] noiseParameters; 
 
 	private int noiseTypeIndex = 0;
+	private Type selectedNoiseType = null;
 
 	public bool changed { get; set; }
 	private bool outOfBandChange = false;
@@ -34,11 +35,15 @@ public class NoiseGUI {
 	    noiseFunctions = lazyLoadedNoise.ToArray();
 	  }
 
-	  Type t = noiseFunctions[0];
-	  ConstructorInfo ctor = noiseFunctions[0].GetConstructors()[0];
-	  noiseParameters = defaultParams(ctor);
-	  noiseFunction = (Noise)ctor.Invoke(noiseParameters);
-	  outOfBandChange = true;
+	  int index = Array.IndexOf(noiseFunctions, selectedNoiseType);
+
+	  if(index == -1) {
+	    Type t = noiseFunctions[0];
+	    ConstructorInfo ctor = noiseFunctions[0].GetConstructors()[0];
+	    noiseParameters = defaultParams(ctor);
+	    noiseFunction = (Noise)ctor.Invoke(noiseParameters);
+	    outOfBandChange = true;
+	  }
 	}
 
 	public INoise Display() {
@@ -47,8 +52,8 @@ public class NoiseGUI {
 	  string[] names = noiseFunctions.Select(n => n.Name).ToArray();
 	  RTEditorGUI.Popup (new GUIContent ("Noise", "The noise type to use"), noiseTypeIndex, names, selected => {
 	      noiseTypeIndex = selected;
-	      Type func = noiseFunctions[selected];
-	      ConstructorInfo ctor = func.GetConstructors()[0];
+	      selectedNoiseType = noiseFunctions[selected];
+	      ConstructorInfo ctor = selectedNoiseType.GetConstructors()[0];
 
 	      noiseParameters = defaultParams(ctor);
 	      noiseFunction = (Noise)ctor.Invoke(noiseParameters);
