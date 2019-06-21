@@ -3,7 +3,7 @@ using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
 using System;
 
-enum CombiningMode {
+public enum CombiningMode {
   Average,
   Add,
   Subtract,
@@ -21,7 +21,7 @@ public class CombinerNode : Node {
   public override string Title { get { return "Combiner"; } }
   public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
-  private CombiningMode mode = CombiningMode.Average;
+  public CombiningMode mode = CombiningMode.Average;
   
   [ValueConnectionKnob("Block 1", Direction.In, "Block")]
     public ValueConnectionKnob block1Connection;

@@ -20,14 +20,15 @@ public class Fractal3DNode : VoxelNode<Voxel> {
 
 	private Vector2Int offset;
 
-	private NoiseGUI noiseGUI;
+	public NoiseGUI noiseGUI;
+	public string noiseDesc;
 
-	private int octaves = 1;
-	private float frequency = 1.0f;
-	private float amplitude = 1.0f;
+	public int octaves = 1;
+	public float frequency = 1.0f;
+	public float amplitude = 1.0f;
 
-	public Fractal3DNode() {
-	  noiseGUI = new NoiseGUI();
+	public void OnEnable() {
+	  noiseGUI = new NoiseGUI(noiseDesc);
 	  noiseFunction = noiseGUI.noiseFunction;
 	  fractalNoise = new FractalNoise(noiseFunction, octaves, frequency, amplitude);
 	}
@@ -50,6 +51,7 @@ public class Fractal3DNode : VoxelNode<Voxel> {
 
 
 	  noiseFunction = noiseGUI.Display();
+	  noiseDesc = noiseGUI.noiseDesc();
 
 	  if (GUI.changed || noiseGUI.changed) {
 	    fractalNoise = new FractalNoise(noiseFunction, octaves, frequency, amplitude);

@@ -15,7 +15,7 @@ public class ThresholdNode : VoxelNode<Voxel>
 	[ValueConnectionKnob("Threshold", Direction.In, "Float")]
 		public ValueConnectionKnob thresholdConnection;
 
-	private float threshold = 0.5f;
+	public float threshold = 0.5f;
 	public override void NodeGUI () 
 	{
 	  base.NodeGUI();

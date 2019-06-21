@@ -62,6 +62,9 @@ public class NoiseCanvasType : NodeCanvas
     CancellationToken token = tokenSource.Token;
     Action taskAction = () => {
       token.ThrowIfCancellationRequested();
+      if (offsetGenerator == null) {
+	return;
+      }
       var offsets = offsetGenerator();
       foreach((int, int) tuple in offsets) {
 	  cache.ForEach(n => {

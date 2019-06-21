@@ -21,9 +21,10 @@ public class Noise2DNode : HeightMapNode<Voxel>
 	private Vector2Int offset;
 
 	public NoiseGUI noiseGUI;
+	public string noiseDesc;
 
-	public Noise2DNode() {
-	  noiseGUI = new NoiseGUI();
+	public void OnEnable() {
+	  noiseGUI = new NoiseGUI(noiseDesc);
 	  noiseFunction = noiseGUI.noiseFunction;
 	}
 
@@ -31,6 +32,7 @@ public class Noise2DNode : HeightMapNode<Voxel>
 	  base.NodeGUI();
 
 	  noiseFunction = noiseGUI.Display();
+	  noiseDesc = noiseGUI.noiseDesc();
 
 	  if (GUI.changed || noiseGUI.changed) {
 	    NodeEditor.curNodeCanvas.OnNodeChange(this);

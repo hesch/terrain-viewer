@@ -10,10 +10,10 @@ public class NormalizeNode : VoxelNode<Voxel> {
   public override string Title { get { return "Normalize"; } }
   public override Vector2 DefaultSize { get { return new Vector2 (200, 100); } }
 
-  private float inputLowerBound = -1.0f;
-  private float inputUpperBound = 1.0f;
-  private float outputLowerBound = 0.0f;
-  private float outputUpperBound = 1.0f;
+  public float inputLowerBound = -1.0f;
+  public float inputUpperBound = 1.0f;
+  public float outputLowerBound = 0.0f;
+  public float outputUpperBound = 1.0f;
 
   private float dInput = 0.0f;
   private float dOutput = 0.0f;

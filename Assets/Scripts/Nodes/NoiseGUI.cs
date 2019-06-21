@@ -5,6 +5,8 @@ using System.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Serialization;
+using System.IO;
 
 public class NoiseGUI {
 	public INoise noiseFunction;
@@ -12,14 +14,30 @@ public class NoiseGUI {
 	public System.Object[] noiseParameters; 
 
 	public int noiseTypeIndex = 0;
-	public Type selectedNoiseType = null;
+	public string selectedNoiseType;
 
 	public bool changed { get; set; }
 	private bool outOfBandChange = false;
 
-	public NoiseGUI() {
+	private bool initialized = false;
+
+	public NoiseGUI(string noiseDesc) {
+	  if (noiseDesc != null) {
+	    string[] splits = noiseDesc.Split(new char[]{';'}, 2);
+	    if (splits.Count() == 2) {
+	      selectedNoiseType = splits[0];
+
+	      XmlSerializer serializer = new XmlSerializer(typeof(object[]));
+	      noiseParameters = (object[])serializer.Deserialize(new StringReader(splits[1]));
+	    } else {
+	      Debug.Log("invalid NoiseDesc: " + noiseDesc);
+	    }
+	  }
 	  init(Loader.currentAssembly);
 	  Loader.listener += ass => init(ass);
+	}
+
+	public NoiseGUI() : this(null) {
 	}
 
 	private void init(Assembly special) {
@@ -34,15 +52,23 @@ public class NoiseGUI {
 	    noiseFunctions = lazyLoadedNoise.ToArray();
 	  }
 
-	  int index = Array.IndexOf(noiseFunctions, selectedNoiseType);
+	  noiseTypeIndex = Array.FindIndex(noiseFunctions, t => t.ToString() == selectedNoiseType);
 
-	  if(index == -1) {
-	    Type t = noiseFunctions[0];
-	    ConstructorInfo ctor = noiseFunctions[0].GetConstructors()[0];
-	    noiseParameters = defaultParams(ctor);
-	    noiseFunction = (Noise)ctor.Invoke(noiseParameters);
-	    outOfBandChange = true;
+	  bool useDefault = noiseTypeIndex == -1;
+
+	  if(useDefault) {
+	    noiseTypeIndex = 0;
 	  }
+
+	  selectedNoiseType = noiseFunctions[noiseTypeIndex].ToString();
+	  ConstructorInfo ctor = noiseFunctions[noiseTypeIndex].GetConstructors()[0];
+
+	  if(useDefault) {
+	    noiseParameters = defaultParams(ctor);
+	  }
+
+	  noiseFunction = (Noise)ctor.Invoke(noiseParameters);
+	  outOfBandChange = true;
 	}
 
 	public INoise Display() {
@@ -51,8 +77,9 @@ public class NoiseGUI {
 	  string[] names = noiseFunctions.Select(n => n.Name).ToArray();
 	  RTEditorGUI.Popup (new GUIContent ("Noise", "The noise type to use"), noiseTypeIndex, names, selected => {
 	      noiseTypeIndex = selected;
-	      selectedNoiseType = noiseFunctions[selected];
-	      ConstructorInfo ctor = selectedNoiseType.GetConstructors()[0];
+	      Type selectedNoise = noiseFunctions[selected];
+	      selectedNoiseType = selectedNoise.ToString();
+	      ConstructorInfo ctor = selectedNoise.GetConstructors()[0];
 
 	      noiseParameters = defaultParams(ctor);
 	      noiseFunction = (Noise)ctor.Invoke(noiseParameters);
@@ -81,6 +108,17 @@ public class NoiseGUI {
 	  }
 
 	  return noiseFunction;
+	}
+
+	public string noiseDesc() {
+	  string res = "" + noiseFunction + ";";
+
+	  XmlSerializer xmlSerializer = new XmlSerializer(typeof(object[]));
+	  StringWriter stringWriter = new StringWriter();
+	  xmlSerializer.Serialize(stringWriter, noiseParameters);
+	  res += stringWriter.ToString();
+
+	  return res;
 	}
 
 	private System.Object[] defaultParams(ConstructorInfo ctor) {
