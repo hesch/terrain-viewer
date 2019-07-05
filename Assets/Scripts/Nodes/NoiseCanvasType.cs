@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
 
 [NodeCanvasType("Noise Canvas")]
 public class NoiseCanvasType : NodeCanvas
@@ -14,8 +16,11 @@ public class NoiseCanvasType : NodeCanvas
   private Action<List<Vector3>, List<int>, List<Vector3>, VoxelBlock<Voxel>> callback;
   private CancellationTokenSource tokenSource;
   private Task task;
+    private Stopwatch stopwatch = new Stopwatch();
+    private Stopwatch nodeStopwatch = new Stopwatch();
+    private StreamWriter file;
 
-  public override string canvasName { get { return "Noise"; } }
+    public override string canvasName { get { return "Noise"; } }
 
   private string rootNodeID { get { return "VoxelInput"; } }
   // TODO: make this more generic
@@ -29,6 +34,7 @@ public class NoiseCanvasType : NodeCanvas
 
   private void OnEnable () 
   {
+        
     if (Traversal == null)
       Traversal = new NoiseTraversal (this);
     // Register to other callbacks
@@ -63,26 +69,41 @@ public class NoiseCanvasType : NodeCanvas
     Action taskAction = () => {
       token.ThrowIfCancellationRequested();
       if (offsetGenerator == null) {
-	return;
+	    return;
       }
       var offsets = offsetGenerator();
+      var first = true;
+      var performanceString = "";
       foreach((int, int) tuple in offsets) {
-	  cache.ForEach(n => {
+            
+        stopwatch.Restart();
+	    foreach(Node n in cache) {
 	      if (n.isInput() && n is VoxelInputNode) {
-		VoxelInputNode n2 = n as VoxelInputNode;
-		n2.Offset = new Vector2Int(tuple.Item1, tuple.Item2);
+		    VoxelInputNode n2 = n as VoxelInputNode;
+		    n2.Offset = new Vector2Int(tuple.Item1, tuple.Item2);
 	      }
+          nodeStopwatch.Restart();
 	      n.Calculate();
+          nodeStopwatch.Stop();
+          performanceString += String.Format("\n\tNode {0} took\t{1}ms", n.Title, nodeStopwatch.ElapsedMilliseconds);
 	      if (n.isOutput() && n is VertexNode) {
-		VertexNode vertexNode = n as VertexNode;
-		callback(vertexNode.Vertices, vertexNode.Indices, vertexNode.Normals, vertexNode.Block);
+		     VertexNode vertexNode = n as VertexNode;
+		     callback(vertexNode.Vertices, vertexNode.Indices, vertexNode.Normals, vertexNode.Block);
 	      }
 	      token.ThrowIfCancellationRequested();
-	  });
-	}
+	    }
+        stopwatch.Stop();
+        performanceString = String.Format("Calculation of block({0}, {1}) took\t{2}ms{3}", tuple.Item1, tuple.Item2, stopwatch.ElapsedMilliseconds, performanceString);
+        if (file == null) {
+            file = new StreamWriter("performance.txt");
+        }
+        file.WriteLine(performanceString);
+        file.Flush();
+        performanceString = "";
+	  }
     };
-    taskAction();
-    //task = Task.Factory.StartNew(taskAction,token);
+    //taskAction();
+    task = Task.Factory.StartNew(taskAction,token);
   }
 
   public void StopComputation() {

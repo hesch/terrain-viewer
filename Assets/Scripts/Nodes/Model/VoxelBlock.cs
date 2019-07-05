@@ -49,7 +49,7 @@ public class VoxelBlock<T> : IVoxelBlock where T : Voxel {
     }
   }
 
-  private int overlap = 1;
+  private int overlap = 2;
   public override int Overlap { 
     get {
       return overlap;
@@ -83,7 +83,11 @@ public class VoxelBlock<T> : IVoxelBlock where T : Voxel {
     }
     this.Offset = b.Offset;
     if (b.Layers != null) {
-      this.Layers = b.Layers.Select(l => new VoxelLayer<T>(l)).ToArray();
+            this.layers = new VoxelLayer<T>[b.layers.Count()];
+            for(int i = 0; i < b.layers.Count(); i++)
+            {
+                this.layers[i] = new VoxelLayer<T>(b.layers[i]);
+            }
     }
     this.Overlap = b.Overlap;
   }

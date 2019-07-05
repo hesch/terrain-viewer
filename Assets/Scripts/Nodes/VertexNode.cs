@@ -84,7 +84,7 @@ public class VertexNode: Node
 	}
 
 	public override bool Calculate() {
-	  VoxelBlock<Voxel> block = new VoxelBlock<Voxel>(input.GetValue<VoxelBlock<Voxel>>());
+	  VoxelBlock<Voxel> block = input.GetValue<VoxelBlock<Voxel>>();
 	  if (surfaceConnection.connected()) {
 	    surface = surfaceConnection.GetValue<float>();
 	  }
@@ -137,9 +137,12 @@ public class VertexNode: Node
 
 	  sw.Stop();
 
-	  UnityEngine.Debug.Log("marching took: " + sw.ElapsedMilliseconds);
+	  UnityEngine.Debug.LogFormat("Marching took {0}ms\n\t{1} vertices; {2} triangles", sw.ElapsedMilliseconds, verts.Count(), indices.Count() / 3);
 
+        sw.Restart();
 	  weldVertices(verts, indices, normals);
+        sw.Stop();
+        UnityEngine.Debug.LogFormat("Vertex welding took {0}ms\n\t {1} vertices left", sw.ElapsedMilliseconds, verts.Count());
 
 	  Vertices = verts;
 	  Indices = indices;

@@ -36,10 +36,12 @@ public class VoxelLayer<T> where T : Voxel {
 
   public VoxelLayer(VoxelLayer<T> l) {
     this.Overlap = l.Overlap;
-    this.Layer = new T[l.Layer.GetLength(0), l.Layer.GetLength(1)];
-    for(int x = 0; x < l.Layer.GetLength(0); x++) {
-      for(int z = 0; z < l.Layer.GetLength(1); z++) {
-	this.Layer[x,z] = (T) l.Layer[x,z].Clone();
+        int width = l.layer.GetLength(0);
+        int length = l.layer.GetLength(1);
+    this.layer = new T[width, length];
+    for(int x = 0; x < width; x++) {
+      for(int z = 0; z < length; z++) {
+	this.layer[x,z] = (T) l.layer[x,z].Clone();
       }
     }
     recalcDim();

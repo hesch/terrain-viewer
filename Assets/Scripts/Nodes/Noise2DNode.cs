@@ -32,9 +32,9 @@ public class Noise2DNode : HeightMapNode<Voxel>
 	  base.NodeGUI();
 
 	  noiseFunction = noiseGUI.Display();
-	  noiseDesc = noiseGUI.noiseDesc();
 
 	  if (GUI.changed || noiseGUI.changed) {
+	    noiseDesc = noiseGUI.noiseDesc();
 	    NodeEditor.curNodeCanvas.OnNodeChange(this);
 	  }
 	}

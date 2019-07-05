@@ -1,5 +1,5 @@
 public class Voxel {
-  public float Data { get; set; }
+    public float Data;
 
   public virtual float GetValue() {
     return Data;

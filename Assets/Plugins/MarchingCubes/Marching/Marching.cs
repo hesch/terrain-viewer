@@ -17,6 +17,7 @@ namespace MarchingCubesProject
         /// Winding order of triangles use 2,1,0 or 0,1,2
         /// </summary>
         protected int[] WindingOrder { get; private set; }
+        protected Dictionary<Vector3, Vector3> Normals = new Dictionary<Vector3, Vector3>(); 
 
         public Marching(float surface = 0.5f)
         {
@@ -27,8 +28,9 @@ namespace MarchingCubesProject
 
         public virtual void Generate(IList<float> voxels, int width, int height, int depth, IList<Vector3> verts, IList<int> indices, IList<Vector3> normals)
         {
-	  float[] v = new float[voxels.Count];
-	  voxels.CopyTo(v, 0);
+            Normals = new Dictionary<Vector3, Vector3>();
+	        float[] v = new float[voxels.Count];
+	        voxels.CopyTo(v, 0);
 
             if (Surface > 0.0f)
             {

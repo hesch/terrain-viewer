@@ -51,10 +51,10 @@ public class Fractal3DNode : VoxelNode<Voxel> {
 
 
 	  noiseFunction = noiseGUI.Display();
-	  noiseDesc = noiseGUI.noiseDesc();
 
 	  if (GUI.changed || noiseGUI.changed) {
 	    fractalNoise = new FractalNoise(noiseFunction, octaves, frequency, amplitude);
+	    noiseDesc = noiseGUI.noiseDesc();
 	    NodeEditor.curNodeCanvas.OnNodeChange(this);
 	  }
 	}

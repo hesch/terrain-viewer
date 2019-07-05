@@ -3,13 +3,25 @@ using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Diagnostics;
 
 public class BlockConverter {
 
   public static GameObject BlockToGameObject(List<Vector3> vertices, List<int> indices, List<Vector3> normals, IVoxelBlock block, Material material, Action<PointerEventData, GameObject> clickCallback) {
       int limit = UInt16.MaxValue;
 
-      List<(List<int>, int)> triangles = vertices.Count() > limit ? splitIndices(indices, limit) : new List<(List<int>, int)> { (indices, 0) };
+        List<(List<int>, int)> triangles;
+        if (vertices.Count() > limit)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            triangles = splitIndices(indices, limit);
+            sw.Stop();
+            UnityEngine.Debug.LogFormat("splitIndices took {0}ms", sw.ElapsedMilliseconds);
+        }
+        else
+        {
+            triangles = new List<(List<int>, int)> { (indices, 0) };
+        }
       Mesh mesh = new Mesh();
       mesh.SetVertices(vertices);
       mesh.SetNormals(normals);

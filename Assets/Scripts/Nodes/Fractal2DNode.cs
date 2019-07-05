@@ -29,10 +29,10 @@ public class Fractal2DNode : HeightMapNode<Voxel> {
 	public float amplitude = 1.0f;
 
 	public void OnEnable() {
-	  noiseGUI = new NoiseGUI(noiseDesc);
-	  fractalNoise = new FractalNoise(noiseFunction, octaves, frequency, amplitude);
+      noiseGUI = new NoiseGUI(noiseDesc);
 	  noiseFunction = noiseGUI.noiseFunction;
-	}
+      fractalNoise = new FractalNoise(noiseFunction, octaves, frequency, amplitude);
+    }
 
 	public override void NodeGUI() {
 	  base.NodeGUI();
@@ -52,10 +52,10 @@ public class Fractal2DNode : HeightMapNode<Voxel> {
 
 
 	  noiseFunction = noiseGUI.Display();
-	  noiseDesc = noiseGUI.noiseDesc();
 
 	  if (GUI.changed || noiseGUI.changed) {
 	    fractalNoise = new FractalNoise(noiseFunction, octaves, frequency, amplitude);
+	    noiseDesc = noiseGUI.noiseDesc();
 	    NodeEditor.curNodeCanvas.OnNodeChange(this);
 	  }
 	}

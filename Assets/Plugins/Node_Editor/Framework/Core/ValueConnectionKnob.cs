@@ -99,8 +99,16 @@ namespace NodeEditorFramework
 		/// <returns>Value, if null default(T) (-> For reference types, null. For value types, default value)</returns>
 		public T GetValue<T> ()
 		{
-			if (typeof(T).IsAssignableFrom (valueType))
+			if (typeof(T).IsAssignableFrom (valueType)) {
+                if (direction == Direction.In && connections.Any() && connections[0].connections.Count() > 1 && connections[0].connections[0] != this) {
+                    // we need to clone the value here
+                    var copyConstructor = typeof(T).GetConstructor(new Type[] {typeof(T)});
+                    if (copyConstructor != null && value != null) {
+                        return (T)copyConstructor.Invoke(new object[] {value});
+                    }                                    
+                }
 				return (T)(value?? (value = GetDefault<T> ()));
+            }
 			Debug.LogError ("Trying to GetValue<" + typeof(T).FullName + "> for Output Type: " + valueType.FullName);
 			return GetDefault<T> ();
 		}

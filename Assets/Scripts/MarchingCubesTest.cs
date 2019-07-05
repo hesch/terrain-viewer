@@ -8,6 +8,7 @@ public class MarchingCubesTest : MonoBehaviour
   private int kernelIndex;
     void Start()
     {
+        Debug.Log("trying to run ComputeShader");
       kernelIndex = shader.FindKernel("computeSizes");
 
       ComputeBuffer buffer = new ComputeBuffer(8, sizeof(int));
@@ -17,7 +18,7 @@ public class MarchingCubesTest : MonoBehaviour
       shader.Dispatch(kernelIndex, 1, 1, 1);
       int[] result = new int[8];
       buffer.GetData(result);
-      Debug.Log(result);
+      Debug.Log(string.Join(", ", result));
     }
 
     // Update is called once per frame

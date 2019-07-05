@@ -55,67 +55,59 @@ public class CombinerNode : Node {
       }
     });
 
-    if (GUI.changed)
-      NodeEditor.curNodeCanvas.OnNodeChange (this);
+        if (GUI.changed)
+        {
+            NodeEditor.curNodeCanvas.OnNodeChange(this);
+        }
   }
 
   public override bool Calculate() {
     if(!block1Connection.connected() || !block2Connection.connected()) {
       return false;
     }
-    VoxelBlock<Voxel> block1 = new VoxelBlock<Voxel>(block1Connection.GetValue<VoxelBlock<Voxel>>());
-    VoxelBlock<Voxel> block2 = new VoxelBlock<Voxel>(block2Connection.GetValue<VoxelBlock<Voxel>>());
+    VoxelBlock<Voxel> block1 = block1Connection.GetValue<VoxelBlock<Voxel>>();
+        VoxelBlock<Voxel> block2 = block2Connection.GetValue<VoxelBlock<Voxel>>();
 
-    bool success = false;
-    switch (mode) {
-      case CombiningMode.Average:	
-	success = IterateBlocks(block1, block2, (v1, v2) => {
-	    v1.Data = (v1.Data + v2.Data) / 2;
-	    return true;
-	});
-      break;
-      case CombiningMode.Add:
-	success = IterateBlocks(block1, block2, (v1, v2) => {
-	    v1.Data = v1.Data + v2.Data;
-	    return true;
-	});
-      break;
-      case CombiningMode.Subtract:
-	success = IterateBlocks(block1, block2, (v1, v2) => {
-	    v1.Data = v1.Data - v2.Data;
-	    return true;
-	});
-      break;
-      case CombiningMode.Divide:
-	success = IterateBlocks(block1, block2, (v1, v2) => {
-	    if (v2.Data == 0)
-	      return false;
-	    v1.Data = v1.Data / v2.Data;
-	    return true;
-	});
-      break;
-      case CombiningMode.Multiply:
-	success = IterateBlocks(block1, block2, (v1, v2) => {
-	    v1.Data = v1.Data * v2.Data;
-	    return true;
-	});
-      break;
+        int overlap = block1.Overlap;
+        int width = block1.Width;
+        int height = block1.Height;
+        int length = block1.Length;
+        for (int y = 0; y < height + 2*overlap; y++)
+    {
+            VoxelLayer<Voxel> l1 = block1.Layers[y];
+            VoxelLayer<Voxel> l2 = block2.Layers[y];
+        for (int x = 0; x < width + 2*overlap; x++)
+        {
+            for (int z = 0; z < length + 2*overlap; z++)
+            {
+                    var v1 = l1.Layer[x, z];
+                    var v2 = l2.Layer[x, z];
+                    switch (mode)
+                {
+                    case CombiningMode.Average:
+                        v1.Data = (v1.Data + v2.Data) / 2;
+                        break;
+                    case CombiningMode.Add:
+                            v1.Data = v1.Data + v2.Data;
+                        break;
+                    case CombiningMode.Subtract:
+                            v1.Data = v1.Data - v2.Data;
+                        break;
+                    case CombiningMode.Divide:
+                            if (v2.Data != 0)
+                            {
+                                v1.Data = v1.Data / v2.Data;
+                            }
+                        break;
+                    case CombiningMode.Multiply:
+                            v1.Data = v1.Data * v2.Data;
+                        break;
+                }
+            }
+        }
     }
-
     outputConnection.SetValue(block1);
 	
-    return success;
-  }
-
-  private bool IterateBlocks(VoxelBlock<Voxel> b1, VoxelBlock<Voxel> b2, Func<Voxel, Voxel, bool> combiner) {
-    for(int x = -b1.Overlap; x < b1.Width + b1.Overlap; x++) {
-      for(int y = -b1.Overlap; y < b1.Height + b1.Overlap; y++) {
-	for(int z = -b1.Overlap; z < b1.Length + b1.Overlap; z++) {
-	  if(!combiner(b1[x, y, z], b2[x, y, z]))
-	    return false;
-	}
-      }
-    }
     return true;
   }
 }

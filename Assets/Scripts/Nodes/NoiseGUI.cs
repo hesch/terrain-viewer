@@ -34,6 +34,8 @@ public class NoiseGUI {
 	    }
 	  }
 	  init(Loader.currentAssembly);
+        // reset outOfBandChange because this is the constructor
+        outOfBandChange = false;
 	  Loader.listener += ass => init(ass);
 	}
 

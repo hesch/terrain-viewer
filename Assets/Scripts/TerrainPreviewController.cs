@@ -37,7 +37,7 @@ public class TerrainPreviewController : MonoBehaviour
   }
 
   public void configureComputation() {
-    noiseCanvas.ConfigureComputation(() => Spiral(2), (verts, indices, normals, block) => vertexDisplay.PushNewMeshForOffset(verts, indices, normals, block));
+    noiseCanvas.ConfigureComputation(() => Spiral(5), (verts, indices, normals, block) => vertexDisplay.PushNewMeshForOffset(verts, indices, normals, block));
   }
 
   private void handleSelection(PointerEventData eventData, GameObject selected) {
@@ -64,6 +64,8 @@ public class TerrainPreviewController : MonoBehaviour
   }
 
   public IEnumerable<(int, int)> Spiral(int radius) {
+    if (radius == 1)
+        yield return (0, 0);
     int x = 0;
     int y = 0;
     int dx = 0;

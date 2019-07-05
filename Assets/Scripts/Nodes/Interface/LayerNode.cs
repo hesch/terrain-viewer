@@ -14,13 +14,20 @@ public abstract class LayerNode<T> : Node where T: Voxel
 	protected abstract bool CalculateLayer(VoxelLayer<T> layer, int index);
 
 	public override bool Calculate() {
-	  VoxelBlock<T> block = new VoxelBlock<T>(input.GetValue<VoxelBlock<T>>());
+	  VoxelBlock<T> block = input.GetValue<VoxelBlock<T>>();
 	  if(block == null || block.Layers == null) {
 	    return false;
 	  }
 
 	  CalculationSetup(block);
-	  bool success = block.Layers.AsParallel().Select((layer, i) => CalculateLayer(layer, i-block.Overlap)).All(x => x);
+        bool success = true;
+        for (int i = 0; i < block.Layers.Count(); i++) {
+            if(CalculateLayer(block.Layers[i], i - block.Overlap))
+            {
+                success = false;
+                break;
+            }
+        }
 	  CalculationTeardown();
 
 	  output.SetValue(block);
