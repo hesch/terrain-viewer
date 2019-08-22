@@ -3,10 +3,14 @@ using UnityEngine;
 
 public class test : Noise {
   private float freq = 3.0f;
-  private float amplitude = 3.0f;
+  
+	public float[,] test1 = new float[,] {
+	  {0.5f, 0f, 0.5f},
+	  {1f, 1f, 1f},
+	  {0.5f, 0f, 0.5f},
+	};
   public test(float frequency, float amplitude) {
     freq = frequency;
-    this.amplitude = amplitude;
   }
 
   public override float Sample1D(float x) {
@@ -14,7 +18,7 @@ public class test : Noise {
   }
 
   public override float Sample2D(float x, float y) {
-    return amplitude*(1+Mathf.Sin(freq*x)*Mathf.Sin(freq*y))/2;
+    return test1[((int)(x*3))%3, ((int)(y*3))%3];
   }
 
   public override float Sample3D(float x, float y, float z) {

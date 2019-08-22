@@ -41,7 +41,7 @@ public class NormalizeNode : VoxelNode<Voxel> {
 
   protected override void CalculationSetup(VoxelBlock<Voxel> block) {
     dInput = inputUpperBound - inputLowerBound;
-    dOutput = outputUpperBound - outputUpperBound;
+    dOutput = outputUpperBound - outputLowerBound;
   }
 
   protected override bool CalculateVoxel(Voxel voxel, int x, int y, int z) {

@@ -22,7 +22,7 @@ public abstract class LayerNode<T> : Node where T: Voxel
 	  CalculationSetup(block);
         bool success = true;
         for (int i = 0; i < block.Layers.Count(); i++) {
-            if(CalculateLayer(block.Layers[i], i - block.Overlap))
+            if(!CalculateLayer(block.Layers[i], i - block.Overlap))
             {
                 success = false;
                 break;

@@ -79,7 +79,6 @@ public class Loader
       Debug.LogError(error);
     }
 
-    Debug.Log(results.CompiledAssembly.FullName);
     Debug.Log("calling listeners");
     currentAssembly = results.CompiledAssembly;
     listener(results.CompiledAssembly);
