@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a088d17ace7488fdca4bf0087a3cacd6, type: 3}
-  m_Name: Node Canvas
+  m_Name: noise-canvas
   m_EditorClassIdentifier: 
   editorStates:
   - {fileID: 114929650343740316}
@@ -23,7 +23,7 @@ MonoBehaviour:
   - {fileID: 114786539009174282}
   - {fileID: 114002998507210620}
   groups: []
-  rootNode: {fileID: 114347098060190370, guid: c9619982fdf440369a2da66342c4be99, type: 2}
+  rootNode: {fileID: 0}
 --- !u!114 &114002998507210620
 MonoBehaviour:
   m_ObjectHideFlags: 1

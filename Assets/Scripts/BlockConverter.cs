@@ -62,7 +62,7 @@ public class BlockConverter {
       return go;
   }
 
-  private static List<(List<int>, int)> splitIndices(List<int> indices, int limit) {
+  public static List<(List<int>, int)> splitIndices(List<int> indices, int limit) {
     List<(List<int>, int)> resultList = new List<(List<int>, int)>();
     List<int> indicesLeft = indices;
     int currentOffset = 0;
@@ -81,19 +81,19 @@ public class BlockConverter {
 	i2 = indicesLeft[i+1];
 	i3 = indicesLeft[i+2];
 	List<int> addToList;
-	if (i1 < currentLimit || i2 < currentLimit || i3 < currentLimit) {
+	if (i1 < currentLimit && i2 < currentLimit && i3 < currentLimit) {
 	  addToList = belowLimit;
 	  i1 -= lastOffset;
 	  i2 -= lastOffset;
 	  i3 -= lastOffset;
-	  if (!(i1 < limit && i2 < limit && i3 < limit)) {
-	    int minIndex = Math.Min(i1, Math.Min(i2, i3));
-	    if (minIndex < offset) {
-	      offset = minIndex;
-	    }
-	  }
+	} else if (i1 > currentLimit && i2 > currentLimit && i3 > currentLimit) {
+	  addToList = aboveLimit;
 	} else {
 	  addToList = aboveLimit;
+	  int minIndex = Math.Min(i1, Math.Min(i2, i3));
+	  if (minIndex < offset) {
+	    offset = minIndex;
+	  }
 	}
 
 	addToList.Add(i1);
@@ -101,7 +101,7 @@ public class BlockConverter {
 	addToList.Add(i3);
       }
 
-      indicesLeft = aboveLimit.Select(i => i - offset).ToList();
+      indicesLeft = aboveLimit;
       resultList.Add((belowLimit, currentOffset));
       currentOffset += offset;
       lastOffset = offset;
