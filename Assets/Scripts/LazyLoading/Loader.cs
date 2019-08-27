@@ -7,6 +7,7 @@ using Microsoft.CSharp;
 using System;
 using System.Reflection;
 using System.Linq;
+using System.IO;
 using UnityEngine;
 using ProceduralNoiseProject;
 
@@ -15,6 +16,7 @@ public class Loader
   public static Action<Assembly> listener = file => {};
   private static FileSystemWatcher watcher;
   public static Assembly currentAssembly;
+  private static string srcDir = Path.Combine(Directory.GetCurrentDirectory(), "src");
 
   static Loader() {
     Debug.Log(Directory.GetCurrentDirectory());
@@ -24,7 +26,8 @@ public class Loader
   }
 
   public static void watch() {
-    watcher.Path = Directory.GetCurrentDirectory() + "/src";
+    Directory.CreateDirectory(srcDir);
+    watcher.Path = srcDir;
     watcher.NotifyFilter = NotifyFilters.LastWrite;
     watcher.Filter = "*.cs";
     watcher.Changed += new FileSystemEventHandler(FileChanged);
@@ -45,7 +48,7 @@ public class Loader
   static void loadFile(string fileName) {
     AppDomain domain = AppDomain.CurrentDomain;
     Assembly[] assemblies = domain.GetAssemblies();
-    string[] fileNames = Directory.GetFiles(Directory.GetCurrentDirectory() + "/src", "*.cs", SearchOption.AllDirectories);
+    string[] fileNames = Directory.GetFiles(srcDir, "*.cs", SearchOption.AllDirectories);
 
     CSharpCodeProvider codeProvider = new CSharpCodeProvider();
 
@@ -62,8 +65,10 @@ public class Loader
     */
       parameters.ReferencedAssemblies.Add(Assembly.GetAssembly(typeof(Noise)).Location);
       parameters.ReferencedAssemblies.Add(Assembly.GetAssembly(typeof(Mathf)).Location);
-    Debug.Log("compiling file");
-    CompilerResults results = codeProvider.CompileAssemblyFromFile(parameters,fileNames);
+    Debug.Log("compiling files: " + string.Join(";", fileNames) + " " + fileNames.Length);
+    string t = File.ReadAllText(fileNames[0]);
+    Debug.Log(t);
+    CompilerResults results = codeProvider.CompileAssemblyFromFile(parameters, fileNames[0]);
     Debug.Log("compiling finsihed");
 
     if (results.Errors.Count > 0)
