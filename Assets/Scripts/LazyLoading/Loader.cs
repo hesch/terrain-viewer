@@ -66,9 +66,7 @@ public class Loader
       parameters.ReferencedAssemblies.Add(Assembly.GetAssembly(typeof(Noise)).Location);
       parameters.ReferencedAssemblies.Add(Assembly.GetAssembly(typeof(Mathf)).Location);
     Debug.Log("compiling files: " + string.Join(";", fileNames) + " " + fileNames.Length);
-    string t = File.ReadAllText(fileNames[0]);
-    Debug.Log(t);
-    CompilerResults results = codeProvider.CompileAssemblyFromFile(parameters, fileNames[0]);
+    CompilerResults results = codeProvider.CompileAssemblyFromFile(parameters, fileNames);
     Debug.Log("compiling finsihed");
 
     if (results.Errors.Count > 0)
