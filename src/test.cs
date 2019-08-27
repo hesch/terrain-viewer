@@ -2,7 +2,6 @@ using ProceduralNoiseProject;
 using UnityEngine;
 
 public class test : Noise {
-  private float freq = 3.0f;
   
 	public float[,] test1 = new float[,] {
 	  {0.5f, 0f, 0.5f},
@@ -10,7 +9,6 @@ public class test : Noise {
 	  {0.5f, 0f, 0.5f},
 	};
   public test(float frequency, float amplitude) {
-    freq = frequency;
   }
 
   public override float Sample1D(float x) {
@@ -22,7 +20,7 @@ public class test : Noise {
   }
 
   public override float Sample3D(float x, float y, float z) {
-    return (Mathf.Sin(freq*x*2*Mathf.PI)*Mathf.Sin(freq*y*2*Mathf.PI)*Mathf.Sin(freq*z*2*Mathf.PI)+1)/2;
+    return (int)(x*64+y*64+z*64)%2;
   }
 
   public override void UpdateSeed(int seed) {

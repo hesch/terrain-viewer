@@ -16,7 +16,7 @@ namespace Tests
 	  Debug.Log("stuff");
 	  List<(List<int>, int)> output = global::BlockConverter.splitIndices(input, 5);
 	  Debug.Log("after run");
-	  Assert.That((input, 0), Is.EqualTo((new List<int> {0,1,2}, 0)));
+	  Assert.That(output[0].Item1, Is.EquivalentTo(new List<int> {0,1,2}));
 	  Debug.Log("after assert");
             // Use the Assert class to test conditions
         }

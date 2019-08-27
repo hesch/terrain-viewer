@@ -29,7 +29,6 @@ public class NoiseTraversal : NodeCanvasTraversal
   /// </summary>
   public override void OnChange (Node node) 
   {
-        Debug.Log("OnChange called");
     (nodeCanvas as NoiseCanvasType).StopComputation();
     //repopulate cache on change
     cache = new List<Node>();

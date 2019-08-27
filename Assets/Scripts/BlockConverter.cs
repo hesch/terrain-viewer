@@ -66,16 +66,15 @@ public class BlockConverter {
     List<(List<int>, int)> resultList = new List<(List<int>, int)>();
     List<int> indicesLeft = indices;
     int currentOffset = 0;
-    int lastOffset = 0;
 
     while(indicesLeft.Any()) {
 
       List<int> belowLimit = new List<int>();
       List<int> aboveLimit = new List<int>();
-      int offset = 0;
+      int currentLimit = currentOffset + limit;
+      int nextOffset = currentLimit;
       int i1, i2, i3;
       int indexCount = indicesLeft.Count();
-      int currentLimit = lastOffset + limit;
       for(int i = 0; i < indexCount; i += 3) {
 	i1 = indicesLeft[i];
 	i2 = indicesLeft[i+1];
@@ -83,16 +82,16 @@ public class BlockConverter {
 	List<int> addToList;
 	if (i1 < currentLimit && i2 < currentLimit && i3 < currentLimit) {
 	  addToList = belowLimit;
-	  i1 -= lastOffset;
-	  i2 -= lastOffset;
-	  i3 -= lastOffset;
+	  i1 -= currentOffset;
+	  i2 -= currentOffset;
+	  i3 -= currentOffset;
 	} else if (i1 > currentLimit && i2 > currentLimit && i3 > currentLimit) {
 	  addToList = aboveLimit;
 	} else {
 	  addToList = aboveLimit;
 	  int minIndex = Math.Min(i1, Math.Min(i2, i3));
-	  if (minIndex < offset) {
-	    offset = minIndex;
+	  if (minIndex < nextOffset) {
+	    nextOffset = minIndex;
 	  }
 	}
 
@@ -103,8 +102,7 @@ public class BlockConverter {
 
       indicesLeft = aboveLimit;
       resultList.Add((belowLimit, currentOffset));
-      currentOffset += offset;
-      lastOffset = offset;
+      currentOffset = nextOffset;
     }
 
     return resultList;

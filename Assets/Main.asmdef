@@ -1,8 +1,6 @@
 {
-    "name": "Main",
-    "references": [
-        "Plugins"
-    ],
+    "name": "MainAssembly",
+    "references": [],
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
