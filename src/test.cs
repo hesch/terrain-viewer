@@ -1,13 +1,9 @@
 using ProceduralNoiseProject;
 using UnityEngine;
+using System;
 
 public class test : Noise {
   
-	public float[,] test1 = new float[,] {
-	  {0.5f, 0f, 0.5f},
-	  {1f, 1f, 1f},
-	  {0.5f, 0f, 0.5f},
-	};
   public test(float frequency, float amplitude) {
   }
 
@@ -16,7 +12,7 @@ public class test : Noise {
   }
 
   public override float Sample2D(float x, float y) {
-    return test1[((int)(x*3))%3, ((int)(y*3))%3];
+    return rand((float)(int)(x*2f), (float)(int)(y*2f));
   }
 
   public override float Sample3D(float x, float y, float z) {
@@ -25,5 +21,10 @@ public class test : Noise {
 
   public override void UpdateSeed(int seed) {
 
+  }
+
+  private float rand(float x, float y) {
+    float e = (float)Math.Sin((x*12.9898f + y*78.233f)*43758.5453123f);
+    return e - (int) e;
   }
 }

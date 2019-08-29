@@ -76,8 +76,9 @@ public class LayerTexture : MonoBehaviour {
     if (mouseInside && layer != null) {
       Vector2 mousePosition;
       RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, Input.mousePosition, null, out mousePosition);
-      mousePosition = new Vector2(rectTransform.rect.width + mousePosition.x, mousePosition.y);
-      mousePosition = mousePosition / rectTransform.rect.width * layer.Width;
+      mousePosition = new Vector2(rectTransform.rect.width + mousePosition.x, rectTransform.rect.height/2 + mousePosition.y);
+      mousePosition.x = mousePosition.x / rectTransform.rect.width * layer.Width;
+      mousePosition.y = mousePosition.y / rectTransform.rect.height * layer.Length;
       unhighlightPixel(highlightPosition);
       highlightPosition = mousePosition;
       highlightPixel();
