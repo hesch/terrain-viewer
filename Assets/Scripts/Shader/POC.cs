@@ -18,6 +18,17 @@ public class POC : MonoBehaviour
         
     }
 
+    public float reduce1(float[] input) {
+	int kernelIndex = POCShader.FindKernel("reduce1");
+	ComputeBuffer buffer = new ComputeBuffer(input.Length, sizeof(float));
+	buffer.SetData(input);
+	POCShader.SetBuffer(kernelIndex, "g_data", buffer);
+	POCShader.Dispatch(kernelIndex, 1, 1, 1);
+	buffer.GetData(input);
+	buffer.Release();
+	return input[0];
+    }
+
 
     public ComputeBuffer invokeShader(string name, ComputeBuffer input) {
 	int kernelIndex = POCShader.FindKernel(name);

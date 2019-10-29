@@ -32,6 +32,21 @@ namespace Tests
         }
 
         [Test]
+        public void POCNvidia()
+        {
+	    float[] input = new float[128];
+	    float sum = 0;
+
+	    for(int i = 0; i < input.Length; i++) {
+		input[i] = (float)i;
+		sum += (float)i;
+	    }
+
+	    float result = poc.reduce1(input);
+	    Assert.AreEqual(sum, result);
+        }
+
+        [Test]
         public void POCTestMarchingPasses()
         {
 	    float[] voxels = new float[512];
@@ -48,6 +63,5 @@ namespace Tests
 	      Assert.AreEqual(1, indices[i]);
 	    }
         }
-
     }
 }

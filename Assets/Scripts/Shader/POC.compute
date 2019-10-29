@@ -1,4 +1,5 @@
 #pragma kernel dataTransferTest
+#pragma kernel reduce1
 #pragma kernel MarchingCubes
 
 RWStructuredBuffer<float> input;
@@ -8,6 +9,28 @@ void dataTransferTest (uint3 dtid : SV_DispatchThreadID)
 {
     input[dtid.x*32+dtid.y] = 1;
 }
+
+RWStructuredBuffer<float> g_data;
+#define groupDim_x 128
+groupshared float sdata[groupDim_x];
+[numthreads( groupDim_x, 1, 1)]
+void reduce1(uint3 threadIdx : SV_GroupThreadID, uint3 groupIdx : SV_GroupID)
+{
+    unsigned int tid = threadIdx.x;
+    unsigned int i = groupIdx.x*groupDim_x + threadIdx.x;
+    sdata[tid] = g_data[i];
+    GroupMemoryBarrierWithGroupSync();
+
+    for(unsigned int s=1; s < groupDim_x; s *= 2) {
+      if (tid % (2*s) == 0) {
+	sdata[tid] += sdata[tid + s];
+      }
+      GroupMemoryBarrierWithGroupSync();
+    }
+
+    if (tid == 0) g_data[groupIdx.x] = sdata[0];
+}
+
 
 RWStructuredBuffer<float> voxels;
 RWStructuredBuffer<float> vertices;
@@ -24,6 +47,4 @@ void MarchingCubes (
     indices[baseIndex] = 1;
     indices[baseIndex+1] = 1;
     indices[baseIndex+2] = 1;
-
-
 }
