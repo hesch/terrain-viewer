@@ -1,0 +1,29 @@
+#pragma kernel dataTransferTest
+#pragma kernel MarchingCubes
+
+RWStructuredBuffer<float> input;
+
+[numthreads(1,1,1)]
+void dataTransferTest (uint3 dtid : SV_DispatchThreadID)
+{
+    input[dtid.x*32+dtid.y] = 1;
+}
+
+RWStructuredBuffer<float> voxels;
+RWStructuredBuffer<float> vertices;
+RWStructuredBuffer<int> indices;
+
+[numthreads(1,1,1)]
+void MarchingCubes (
+  uint3 dtid : SV_DispatchThreadID,
+  uint threadId : SV_GroupIndex,
+  uint3 groupId : SV_GroupID
+)
+{
+    int baseIndex = 3*(dtid.z*8*8+dtid.y*8+dtid.x);
+    indices[baseIndex] = 1;
+    indices[baseIndex+1] = 1;
+    indices[baseIndex+2] = 1;
+
+
+}
