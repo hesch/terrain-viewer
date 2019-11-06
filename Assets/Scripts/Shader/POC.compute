@@ -1,6 +1,7 @@
 #pragma kernel dataTransferTest
 #pragma kernel reduce1
 #pragma kernel MarchingCubes
+#pragma kernel renderTest
 
 RWStructuredBuffer<float> input;
 
@@ -47,4 +48,35 @@ void MarchingCubes (
     indices[baseIndex] = 1;
     indices[baseIndex+1] = 1;
     indices[baseIndex+2] = 1;
+}
+
+RWStructuredBuffer<float3> testVertex;
+RWStructuredBuffer<int> testIndex;
+
+[numthreads(1,1,1)]
+void renderTest (
+  uint3 dtid : SV_DispatchThreadID,
+  uint threadId : SV_GroupIndex,
+  uint3 groupId : SV_GroupID
+)
+{
+    // float norm_dtid = dtid.x / 100;
+    // testVertex[dtid.x] = float3(norm_dtid, norm_dtid, 0);
+    // testIndex[dtid.x] = dtid.x;
+
+    float size = 5.0f;
+
+    testVertex[0] = float3(0, 0, 0);
+    testVertex[1] = float3(size, 0, 0);
+    testVertex[2] = float3(0, size, 0);
+    testVertex[3] = float3(size, size, 0);
+
+
+    testIndex[0] = 0;
+    testIndex[1] = 1;
+    testIndex[2] = 2;
+
+    testIndex[3] = 2;
+    testIndex[4] = 1;
+    testIndex[5] = 3;
 }

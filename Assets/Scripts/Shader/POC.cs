@@ -5,11 +5,30 @@ using UnityEngine;
 public class POC : MonoBehaviour
 {
     public ComputeShader POCShader;
+    public Material mat;
+
+    ComputeBuffer vertexBuffer;
+    ComputeBuffer indexBuffer;
+    int vertexCount = 4;
+    int indexCount = 6;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+	float size = 5.0f;
+	vertexBuffer = new ComputeBuffer(vertexCount, 3*sizeof(float));
+	indexBuffer = new ComputeBuffer(indexCount, sizeof(int));
+
+	float[] points = new float[vertexCount*3];
+	int[] indices = new int[indexCount];
+   
+	vertexBuffer.SetData(points);
+	indexBuffer.SetData(indices);
+
+	int kernelIndex = POCShader.FindKernel("renderTest");
+	POCShader.SetBuffer(kernelIndex, "testVertex", vertexBuffer);
+	POCShader.SetBuffer(kernelIndex, "testIndex", indexBuffer);
+	POCShader.Dispatch(kernelIndex, 1, 1, 1);
     }
 
     // Update is called once per frame
@@ -63,4 +82,19 @@ public class POC : MonoBehaviour
       vertexBuffer.Release();
       indexBuffer.Release();
     }
+
+    void OnPostRender()
+    {
+        mat.SetPass(0);
+        mat.SetBuffer("vertexBuffer", vertexBuffer);
+	mat.SetBuffer("indexBuffer", indexBuffer);
+        Graphics.DrawProceduralNow(MeshTopology.Triangles, indexCount, 1);
+    }
+ 
+    void OnDestroy()
+    {
+        vertexBuffer.Release();
+	indexBuffer.Release();
+    }
+
 }
