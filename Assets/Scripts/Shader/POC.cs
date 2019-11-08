@@ -19,12 +19,6 @@ public class POC : MonoBehaviour
 	vertexBuffer = new ComputeBuffer(vertexCount, 3*sizeof(float));
 	indexBuffer = new ComputeBuffer(indexCount, sizeof(int));
 
-	float[] points = new float[vertexCount*3];
-	int[] indices = new int[indexCount];
-   
-	vertexBuffer.SetData(points);
-	indexBuffer.SetData(indices);
-
 	int kernelIndex = POCShader.FindKernel("renderTest");
 	POCShader.SetBuffer(kernelIndex, "testVertex", vertexBuffer);
 	POCShader.SetBuffer(kernelIndex, "testIndex", indexBuffer);
