@@ -1,87 +1,4 @@
-#pragma kernel dataTransferTest
-#pragma kernel reduce1
-#pragma kernel MarchingCubes
-#pragma kernel renderTest
 #pragma kernel minMax
-
-RWStructuredBuffer<float> input;
-
-[numthreads(1,1,1)]
-void dataTransferTest (uint3 dtid : SV_DispatchThreadID)
-{
-    input[dtid.x*32+dtid.y] = 1;
-}
-
-RWStructuredBuffer<float> g_data;
-#define groupDim_x 128
-groupshared float sdata[groupDim_x];
-[numthreads( groupDim_x, 1, 1)]
-void reduce1(uint3 threadIdx : SV_GroupThreadID, uint3 groupIdx : SV_GroupID)
-{
-    unsigned int tid = threadIdx.x;
-    unsigned int i = groupIdx.x*groupDim_x + threadIdx.x;
-    sdata[tid] = g_data[i];
-    GroupMemoryBarrierWithGroupSync();
-
-    for(unsigned int s=1; s < groupDim_x; s *= 2) {
-      if (tid % (2*s) == 0) {
-	sdata[tid] += sdata[tid + s];
-      }
-      GroupMemoryBarrierWithGroupSync();
-    }
-
-    if (tid == 0) g_data[groupIdx.x] = sdata[0];
-}
-
-
-RWStructuredBuffer<float> voxels;
-RWStructuredBuffer<float> vertices;
-RWStructuredBuffer<int> indices;
-
-[numthreads(1,1,1)]
-void MarchingCubes (
-  uint3 dtid : SV_DispatchThreadID,
-  uint threadId : SV_GroupIndex,
-  uint3 groupId : SV_GroupID
-)
-{
-    int baseIndex = 3*(dtid.z*8*8+dtid.y*8+dtid.x);
-    indices[baseIndex] = 1;
-    indices[baseIndex+1] = 1;
-    indices[baseIndex+2] = 1;
-}
-
-RWStructuredBuffer<float3> testVertex;
-RWStructuredBuffer<int> testIndex;
-
-[numthreads(1,1,1)]
-void renderTest (
-  uint3 dtid : SV_DispatchThreadID,
-  uint threadId : SV_GroupIndex,
-  uint3 groupId : SV_GroupID
-)
-{
-    // float norm_dtid = dtid.x / 100;
-    // testVertex[dtid.x] = float3(norm_dtid, norm_dtid, 0);
-    // testIndex[dtid.x] = dtid.x;
-
-    float size = 5.0f;
-
-    testVertex[0] = float3(0, 0, 0);
-    testVertex[1] = float3(size, 0, 0);
-    testVertex[2] = float3(0, size, 0);
-    testVertex[3] = float3(size, size, 0);
-
-
-    testIndex[0] = 0;
-    testIndex[1] = 1;
-    testIndex[2] = 2;
-
-    testIndex[3] = 2;
-    testIndex[4] = 1;
-    testIndex[5] = 3;
-}
-
 
 #define B_DIM_X 8
 #define B_DIM_Y 4
@@ -92,11 +9,13 @@ void renderTest (
 struct MinMaxPair {
   float min;
   float max;
-}
+};
 
+int3 size;
+int3 numBlocks;
 RWStructuredBuffer<MinMaxPair> minMaxBuffer;
 
-groupshared RWStructuredBuffer<MinMaxPair> sharedMinMaxBuffer;
+groupshared MinMaxPair sharedMinMaxBuffer[B_DIM];
 
 RWStructuredBuffer<float> voxelBuffer;
 
@@ -107,18 +26,18 @@ void minMax (
   uint gidx : SV_GroupIndex
 )
 {
-int3 size = int3(1, 1, 1);
-int3 numBlocks = int3(1, 1, 1);
   uint globalIndex = dtid.z*size.x*size.y + dtid.y*size.x + dtid.x;
 
   float val1 = voxelBuffer[globalIndex];
-  sharedMinMaxBuffer[gidx] = minMaxPair(val1, val1);
+  sharedMinMaxBuffer[gidx].min = val1;
+  sharedMinMaxBuffer[gidx].max = val1;
 
   for(uint i=B_DIM/2; 0 > i; i>>=1) {
     if(gidx < i) {
       MinMaxPair pair1 = sharedMinMaxBuffer[gidx];
       MinMaxPair pair2 = sharedMinMaxBuffer[gidx+i];
-      sharedMinMaxBuffer[gidx] = minMaxPair(min(pair1.min, pair2.min), max(pair1.max, pair2.max));
+      sharedMinMaxBuffer[gidx].min = min(pair1.min, pair2.min);
+      sharedMinMaxBuffer[gidx].max = max(pair1.max, pair2.max);
     }
     GroupMemoryBarrierWithGroupSync();
   }

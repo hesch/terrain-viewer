@@ -11,57 +11,24 @@ namespace Tests
 	POC poc = Component.FindObjectOfType<POC>();
 
         [Test]
-        public void POCTestSimplePasses()
+        public void MinMaxShader()
         {
-	    float[] output = new float[1024];
+	  int width = 8;
+	  int height = 4;
+	  int depth = 4;
+	  int size = width*height*depth;
 
-	    for(int i = 0; i < output.Length; i++) {
-		output[i] = (float)i;
-	    }
+	  float[] voxels = new float[size];
+	  for(int i = 0; i < size; i++) {
+	    voxels[i] = 0.0f;
+	  }
 
-	    ComputeBuffer buffer = new ComputeBuffer(1024, sizeof(float));
-	    buffer.SetData(output);
-	    poc.invokeShader("dataTransferTest", buffer);
-	    buffer.GetData(output);
+	  MinMaxPair[] result = poc.computeMinMax(voxels, width, height, depth);
 
-	    for(int i = 0; i < output.Length; i++) {
-	      Assert.AreEqual(true, output[i] == 1.0f);
-	    }
-
-	    buffer.Release();
-        }
-
-        [Test]
-        public void POCNvidia()
-        {
-	    float[] input = new float[128];
-	    float sum = 0;
-
-	    for(int i = 0; i < input.Length; i++) {
-		input[i] = (float)i;
-		sum += (float)i;
-	    }
-
-	    float result = poc.reduce1(input);
-	    Assert.AreEqual(sum, result);
-        }
-
-        [Test]
-        public void POCTestMarchingPasses()
-        {
-	    float[] voxels = new float[512];
-	    Vector3[] vertices;
-	    int[] indices;
-
-	    for(int i = 0; i < voxels.Length; i++) {
-		voxels[i] = (float)i;
-	    }
-
-	    poc.computeSurface(voxels, 8, 8, 8, out vertices, out indices);
-
-	    for(int i = 0; i < indices.Length; i++) {
-	      Assert.AreEqual(1, indices[i]);
-	    }
+	  foreach(MinMaxPair pair in result) {
+	    Assert.AreEqual(pair.min, 0.0f);
+	    Assert.AreEqual(pair.max, 0.0f);
+	  }
         }
     }
 }

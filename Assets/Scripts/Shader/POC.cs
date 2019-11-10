@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct MinMaxPair {
+  public float min;
+  public float max;
+}
+
 public class POC : MonoBehaviour
 {
     public ComputeShader POCShader;
@@ -12,69 +17,36 @@ public class POC : MonoBehaviour
     int vertexCount = 4;
     int indexCount = 6;
 
+    public static Vector3Int blockSize = new Vector3Int(8, 4, 4);
+
     // Start is called before the first frame update
     void Start()
     {
 	float size = 5.0f;
 	vertexBuffer = new ComputeBuffer(vertexCount, 3*sizeof(float));
 	indexBuffer = new ComputeBuffer(indexCount, sizeof(int));
-
-	int kernelIndex = POCShader.FindKernel("renderTest");
-	POCShader.SetBuffer(kernelIndex, "testVertex", vertexBuffer);
-	POCShader.SetBuffer(kernelIndex, "testIndex", indexBuffer);
-	POCShader.Dispatch(kernelIndex, 1, 1, 1);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public MinMaxPair[] computeMinMax(float[] voxels, int width, int height, int depth) {
+      Vector3Int numBlocks = new Vector3Int(width/blockSize.x, height/blockSize.y, depth/blockSize.z);
 
-    public float reduce1(float[] input) {
-	int kernelIndex = POCShader.FindKernel("reduce1");
-	ComputeBuffer buffer = new ComputeBuffer(input.Length, sizeof(float));
-	buffer.SetData(input);
-	POCShader.SetBuffer(kernelIndex, "g_data", buffer);
-	POCShader.Dispatch(kernelIndex, 1, 1, 1);
-	buffer.GetData(input);
-	buffer.Release();
-	return input[0];
-    }
+      ComputeBuffer voxelBuffer = new ComputeBuffer(voxels.Length, sizeof(float));
+      ComputeBuffer minMaxBuffer = new ComputeBuffer(numBlocks.x*numBlocks.y*numBlocks.z, 2*sizeof(float));
+      voxelBuffer.SetData(voxels);
+      
+      int minMaxKernelIndex = POCShader.FindKernel("minMax");
+      
+      POCShader.SetBuffer(minMaxKernelIndex, "voxelInput", voxelBuffer);
+      POCShader.SetBuffer(minMaxKernelIndex, "minMaxBuffer", minMaxBuffer);
+      POCShader.SetInts("size", new int[]{ width, height, depth });
+      POCShader.SetInts("numBlocks", new int[]{ numBlocks.x, numBlocks.y, numBlocks.z });
 
+      POCShader.Dispatch(minMaxKernelIndex, numBlocks.x, numBlocks.y, numBlocks.z);
 
-    public ComputeBuffer invokeShader(string name, ComputeBuffer input) {
-	int kernelIndex = POCShader.FindKernel(name);
-	POCShader.SetBuffer(kernelIndex, "input", input);
-	POCShader.Dispatch(kernelIndex, 32, 32, 1);
-	return input;
-    }
+      MinMaxPair[] result = new MinMaxPair[numBlocks.x*numBlocks.y*numBlocks.z];
+      minMaxBuffer.GetData(result);
 
-    public void computeSurface(float[] voxels, int width, int height, int depth, out Vector3[] vertices, out int[] indices) {
-      int kernelIndex = POCShader.FindKernel("MarchingCubes");
-      ComputeBuffer buffer = new ComputeBuffer(voxels.Length, sizeof(float));
-      ComputeBuffer vertexBuffer = new ComputeBuffer(voxels.Length, sizeof(float)*3);
-      ComputeBuffer indexBuffer = new ComputeBuffer(voxels.Length*3, sizeof(int));
-      buffer.SetData(voxels);
-
-      POCShader.SetBuffer(kernelIndex, "voxels", buffer);
-      POCShader.SetBuffer(kernelIndex, "vertices", vertexBuffer);
-      POCShader.SetBuffer(kernelIndex, "indices", indexBuffer);
-      POCShader.Dispatch(kernelIndex, width, height, depth);
-
-      vertices = new Vector3[voxels.Length];
-      float[] vertexOutput = new float[voxels.Length*3];
-      vertexBuffer.GetData(vertexOutput);
-      for(int i = 0; i < vertices.Length; i++) {
-	vertices[i] = new Vector3(vertexOutput[i*3], vertexOutput[i*3+1], vertexOutput[i*3+2]);
-      }
-
-      indices = new int[voxels.Length*3];
-      indexBuffer.GetData(indices);
-
-      buffer.Release();
-      vertexBuffer.Release();
-      indexBuffer.Release();
+      return result;
     }
 
     void OnPostRender()
