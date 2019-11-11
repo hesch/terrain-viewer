@@ -1,4 +1,5 @@
 #pragma kernel minMax
+#pragma kernel compactActiveBlocks
 
 #define B_DIM_X 8
 #define B_DIM_Y 4
