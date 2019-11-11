@@ -1,10 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public struct MinMaxPair {
   public float min;
   public float max;
+
+  public override string ToString() {
+    return string.Format("(min: {0}; max: {1})", min, max);
+  }
 }
 
 public class POC : MonoBehaviour
@@ -28,6 +33,7 @@ public class POC : MonoBehaviour
     }
 
     public MinMaxPair[] computeMinMax(float[] voxels, int width, int height, int depth) {
+      addPadding(ref voxels, ref width, ref height, ref depth);
       Vector3Int numBlocks = new Vector3Int(width/blockSize.x, height/blockSize.y, depth/blockSize.z);
 
       ComputeBuffer voxelBuffer = new ComputeBuffer(voxels.Length, sizeof(float));
@@ -36,7 +42,7 @@ public class POC : MonoBehaviour
       
       int minMaxKernelIndex = POCShader.FindKernel("minMax");
       
-      POCShader.SetBuffer(minMaxKernelIndex, "voxelInput", voxelBuffer);
+      POCShader.SetBuffer(minMaxKernelIndex, "voxelBuffer", voxelBuffer);
       POCShader.SetBuffer(minMaxKernelIndex, "minMaxBuffer", minMaxBuffer);
       POCShader.SetInts("size", new int[]{ width, height, depth });
       POCShader.SetInts("numBlocks", new int[]{ numBlocks.x, numBlocks.y, numBlocks.z });
@@ -46,7 +52,39 @@ public class POC : MonoBehaviour
       MinMaxPair[] result = new MinMaxPair[numBlocks.x*numBlocks.y*numBlocks.z];
       minMaxBuffer.GetData(result);
 
+      voxelBuffer.Release();
+      minMaxBuffer.Release();
+
       return result;
+    }
+
+    public void addPadding(ref float[] voxels, ref int width, ref int height, ref int depth) {
+      int widthRest = width % blockSize.x;
+      int heightRest = height % blockSize.y;
+      int depthRest = depth % blockSize.z;
+      
+      if (widthRest == 0 && heightRest == 0 && depthRest == 0) {
+	return;
+      }
+
+      int newWidth = width + (widthRest != 0 ? blockSize.x - widthRest : 0);
+      int newHeight = height + (heightRest != 0 ? blockSize.y - heightRest : 0);
+      int newDepth = depth + (depthRest != 0 ? blockSize.z - depthRest : 0);
+
+      float[] resizedArray = new float[newWidth*newHeight*newDepth];
+
+      for(int z = 0; z < depth; z++) {
+	for(int y = 0; y < height; y++) {
+	  for(int x = 0; x < width; x++) {
+	    resizedArray[x+y*newWidth+z*newWidth*newHeight] = voxels[x+y*width+z*width*height];
+	  }
+	}
+      }
+
+      voxels = resizedArray;
+      width = newWidth;
+      height = newHeight;
+      depth = newDepth;
     }
 
     void OnPostRender()

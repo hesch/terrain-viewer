@@ -32,7 +32,8 @@ void minMax (
   sharedMinMaxBuffer[gidx].min = val1;
   sharedMinMaxBuffer[gidx].max = val1;
 
-  for(uint i=B_DIM/2; 0 > i; i>>=1) {
+  GroupMemoryBarrierWithGroupSync();
+  for(uint i=B_DIM/2; i > 0; i>>=1) {
     if(gidx < i) {
       MinMaxPair pair1 = sharedMinMaxBuffer[gidx];
       MinMaxPair pair2 = sharedMinMaxBuffer[gidx+i];
