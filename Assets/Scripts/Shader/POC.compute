@@ -47,3 +47,36 @@ void minMax (
     minMaxBuffer[gid.z*numBlocks.x*numBlocks.y + gid.y*numBlocks.x + gid.x] = sharedMinMaxBuffer[gidx];
   }
 }
+
+float isoValue;
+int activeBlkNum = 0;
+int compactedBlkArray[numBlocks.x*numBlocks.y*numBlocks.z];
+groupshared int sharedCompactedBlkArray[B_DIM]
+
+[numthreads(8, 4, 4)]
+void compactActiveBlocks(
+  uint3 dtid : SV_DispatchThreadID,
+  uint gidx : SV_GroupIndex
+)
+{
+  uint blockIdx = dtid.z*numBlocks.x*numBlocks.y + dtid.y*numBlocks.x + dtid.x;
+  MinMaxPair pair = minMaxBuffer[blockIdx];
+  bool active = pair.min < isoValue && pair.max > isoValue;
+  sharedCompactedBlkArray[gidx] = active;
+  GroupMemoryBarrierWithGroupSync();
+
+  for (int offset = 1; offset < B_DIM; offset <<= 1) {
+    if (gidx > offset) {
+      sharedCompactedBlkArray[gidx] += sharedCompactedBlkArray[gidx+offset];
+    }
+    GroupMemoryBarrierWithGroupSync();
+  }
+
+  int activeBlocks;
+  if (gidx == 3*8*4+3*4+7) {
+    InterlockedAdd(activeBlkNum, sharedCompactedBlkArray[gidx], activeBlocks);
+  }
+  AllMemoryBarrierWithGroupSync();
+
+  compactedBlkArray[blockIdx] = sharedCompactedBlkArray[gidx] + activeBlocks;
+}
