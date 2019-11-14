@@ -49,35 +49,47 @@ void minMax (
   }
 }
 
-float isoValue;
-int activeBlkNum = 0;
-int compactedBlkArray[numBlocks.x*numBlocks.y*numBlocks.z];
-groupshared int sharedCompactedBlkArray[B_DIM]
+extern float isoValue;
+RWStructuredBuffer<uint> activeBlkNum;
+RWStructuredBuffer<int> compactedBlkArray;
+groupshared int sharedCompactedBlkArray[B_DIM];
 
 [numthreads(8, 4, 4)]
 void compactActiveBlocks(
   uint3 dtid : SV_DispatchThreadID,
+  uint3 gtid : SV_GroupThreadID,
+  uint3 gid : SV_GroupID,
   uint gidx : SV_GroupIndex
 )
 {
+  uint3 numBlocksInGroup = numBlocks - gid * uint3(B_DIM_X, B_DIM_Y, B_DIM_Z);
+  uint maxValidGidx = min(B_DIM, (numBlocksInGroup.z-1)*B_DIM_X*B_DIM_Y + (numBlocksInGroup.y-1)*B_DIM_X + numBlocksInGroup.x) - 1;
+
+  bool valid = gtid.x < numBlocksInGroup.x && gtid.y < numBlocksInGroup.y && gtid.z < numBlocksInGroup.z;
+
   uint blockIdx = dtid.z*numBlocks.x*numBlocks.y + dtid.y*numBlocks.x + dtid.x;
   MinMaxPair pair = minMaxBuffer[blockIdx];
-  bool active = pair.min < isoValue && pair.max > isoValue;
+  bool active = pair.min < isoValue && pair.max > isoValue && valid;
   sharedCompactedBlkArray[gidx] = active;
+
   GroupMemoryBarrierWithGroupSync();
 
-  for (int offset = 1; offset < B_DIM; offset <<= 1) {
-    if (gidx > offset) {
-      sharedCompactedBlkArray[gidx] += sharedCompactedBlkArray[gidx+offset];
+  for (uint offset = 1; offset < B_DIM; offset <<= 1) {
+    if (gidx >= offset) {
+      sharedCompactedBlkArray[gidx] += sharedCompactedBlkArray[gidx-offset];
     }
     GroupMemoryBarrierWithGroupSync();
   }
 
-  int activeBlocks;
-  if (gidx == 3*8*4+3*4+7) {
-    InterlockedAdd(activeBlkNum, sharedCompactedBlkArray[gidx], activeBlocks);
+  uint index = sharedCompactedBlkArray[gidx];
+  int activeBlocks = 0;
+  if (gidx == maxValidGidx) {
+    InterlockedAdd(activeBlkNum[0], index, activeBlocks);
   }
+
   AllMemoryBarrierWithGroupSync();
 
-  compactedBlkArray[blockIdx] = sharedCompactedBlkArray[gidx] + activeBlocks;
+  if (valid) {
+    compactedBlkArray[blockIdx] = active ? index + activeBlocks - 1 : -1;
+  }
 }

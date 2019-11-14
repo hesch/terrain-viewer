@@ -172,5 +172,63 @@ namespace Tests
 	  Assert.AreEqual(expectedDepth, depth);
 	  Assert.AreEqual(expectedSize, voxels.Length);
 	}
+
+        [Test]
+        public void compactActiveBlocksWorksWithZeroBlocks()
+        {
+	  float isoValue = 0.5f;
+	  int width = blockDim.x;
+	  int height = blockDim.y;
+	  int depth = blockDim.z;
+	  int size = width*height*depth;
+
+	  float[] voxels = new float[size];
+	  for(int i = 0; i < size; i++) {
+	    voxels[i] = 0.0f;
+	  }
+
+	  int[] result = poc.compactBlockArray(voxels, width, height, depth, isoValue);
+
+	  Assert.AreEqual(1, result.Length);
+	  foreach(int index in result) {
+	    Assert.AreEqual(0, index);
+	  }
+        }
+
+        [Test]
+        public void compactActiveBlocksWorks()
+        {
+	  float isoValue = 1.0f;
+	  int blockMultiplier = 4;
+	  int width = blockDim.x*blockMultiplier;
+	  int height = blockDim.y*blockMultiplier;
+	  int depth = blockDim.z*blockMultiplier;
+	  int size = width*height*depth;
+
+	  float[] voxels = new float[size];
+	  for(int i = 0; i < size; i++) {
+	    voxels[i] = 0.0f;
+	  }
+
+	  int blockIdx = 0;
+	  for(int z = 0; z < depth; z += blockDim.z) {
+	    for(int y = 0; y < height; y += blockDim.y) {
+	      for(int x = 0; x < width; x += blockDim.x) {
+		if (blockIdx%2==0) {
+		  voxels[x+y*width+z*width*height] = -(float)blockIdx/10.0f;
+		  voxels[(x+blockDim.x-1)+(y+blockDim.y-1)*width+(z+blockDim.z-1)*width*height] = (float)blockIdx/10.0f;
+		}
+		blockIdx++;
+	      }
+	    }
+	  }
+
+	  int[] compactedBlkArray = poc.compactBlockArray(voxels, width, height, depth, isoValue);
+
+	  Debug.Log(string.Join(",", compactedBlkArray));
+
+	  
+
+        }
     }
 }

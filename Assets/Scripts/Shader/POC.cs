@@ -87,12 +87,14 @@ public class POC : MonoBehaviour
       depth = newDepth;
     }
 
-    public int[] compactBlockArray(float[] voxels, int width, int height, int depth) {
+    public int[] compactBlockArray(float[] voxels, int width, int height, int depth, float isoValue) {
       addPadding(ref voxels, ref width, ref height, ref depth);
       Vector3Int numBlocks = new Vector3Int(width/blockSize.x, height/blockSize.y, depth/blockSize.z);
 
       ComputeBuffer voxelBuffer = new ComputeBuffer(voxels.Length, sizeof(float));
       ComputeBuffer minMaxBuffer = new ComputeBuffer(numBlocks.x*numBlocks.y*numBlocks.z, 2*sizeof(float));
+      ComputeBuffer compactedBlkArray = new ComputeBuffer(numBlocks.x*numBlocks.y*numBlocks.z, sizeof(int));
+      ComputeBuffer activeBlkNum = new ComputeBuffer(1, sizeof(int));
       voxelBuffer.SetData(voxels);
       
       int minMaxKernelIndex = POCShader.FindKernel("minMax");
@@ -106,15 +108,22 @@ public class POC : MonoBehaviour
 
       int compactActiveBlocksKernelIndex = POCShader.FindKernel("compactActiveBlocks");
 
+      POCShader.SetFloat("isoValue", isoValue);
+      POCShader.SetBuffer(compactActiveBlocksKernelIndex, "activeBlkNum", activeBlkNum);
       POCShader.SetBuffer(compactActiveBlocksKernelIndex, "minMaxBuffer", minMaxBuffer);
+      POCShader.SetBuffer(compactActiveBlocksKernelIndex, "compactedBlkArray", compactedBlkArray);
 
       POCShader.Dispatch(compactActiveBlocksKernelIndex, 1, 1, 1);
 
+      int[] result = new int[numBlocks.x*numBlocks.y*numBlocks.z];
+      compactedBlkArray.GetData(result);
+
       voxelBuffer.Release();
       minMaxBuffer.Release();
+      compactedBlkArray.Release();
+      activeBlkNum.Release();
 
       return result;
-
     }
 
     void OnPostRender()
