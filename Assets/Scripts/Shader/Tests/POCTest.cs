@@ -174,7 +174,7 @@ namespace Tests
 	}
 
         [Test]
-        public void compactActiveBlocksWorksWithZeroBlocks()
+        public void compactActiveBlocksWorksWithSingleZeroBlock()
         {
 	  float isoValue = 0.5f;
 	  int width = blockDim.x;
@@ -191,14 +191,14 @@ namespace Tests
 
 	  Assert.AreEqual(1, result.Length);
 	  foreach(int index in result) {
-	    Assert.AreEqual(0, index);
+	    Assert.AreEqual(-1, index);
 	  }
         }
 
         [Test]
-        public void compactActiveBlocksWorks()
+        public void compactActiveBlocksWorksWithPartial()
         {
-	  float isoValue = 1.0f;
+	  float isoValue = .01f;
 	  int blockMultiplier = 4;
 	  int width = blockDim.x*blockMultiplier;
 	  int height = blockDim.y*blockMultiplier;
@@ -225,10 +225,53 @@ namespace Tests
 
 	  int[] compactedBlkArray = poc.compactBlockArray(voxels, width, height, depth, isoValue);
 
+	  Assert.AreEqual(-1, compactedBlkArray[0]);
+
+	  for(int i = 1; i < compactedBlkArray.Length; i++) {
+	    Assert.AreEqual(i%2==0 ? i/2 - 1 : -1, compactedBlkArray[i]);
+	  }
+	}
+
+        [Test]
+        public void compactActiveBlocksWorksForMultipleBlocks()
+        {
+	  float isoValue = .01f;
+	  int blockMultiplier = 10;
+	  int width = blockDim.x*blockMultiplier;
+	  int height = blockDim.y*blockMultiplier;
+	  int depth = blockDim.z*blockMultiplier;
+	  int size = width*height*depth;
+
+	  float[] voxels = new float[size];
+	  for(int i = 0; i < size; i++) {
+	    voxels[i] = 0.0f;
+	  }
+
+	  int blockIdx = 0;
+	  for(int z = 0; z < depth; z += blockDim.z) {
+	    for(int y = 0; y < height; y += blockDim.y) {
+	      for(int x = 0; x < width; x += blockDim.x) {
+		if (blockIdx%2==0) {
+		  voxels[x+y*width+z*width*height] = -(float)blockIdx/10.0f;
+		  voxels[(x+blockDim.x-1)+(y+blockDim.y-1)*width+(z+blockDim.z-1)*width*height] = (float)blockIdx/10.0f;
+		}
+		blockIdx++;
+	      }
+	    }
+	  }
+
+	  int[] compactedBlkArray = poc.compactBlockArray(voxels, width, height, depth, isoValue);
+
+	  Array.Sort(compactedBlkArray);
 	  Debug.Log(string.Join(",", compactedBlkArray));
 
-	  
-
-        }
+	  for(int i = 0; i < compactedBlkArray.Length; i++) {
+	    if (i < compactedBlkArray.Length/2) {
+	      Assert.AreEqual(-1, compactedBlkArray[i]);
+	    } else {
+	      Assert.AreEqual(i - compactedBlkArray.Length/2, compactedBlkArray[i]);
+	    }
+	  }
+	}
     }
 }
