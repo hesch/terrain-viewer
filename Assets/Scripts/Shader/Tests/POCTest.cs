@@ -262,8 +262,9 @@ namespace Tests
 
 	  int[] compactedBlkArray = poc.compactBlockArray(voxels, width, height, depth, isoValue);
 
-	  Array.Sort(compactedBlkArray);
 	  Debug.Log(string.Join(",", compactedBlkArray));
+
+	  Array.Sort(compactedBlkArray);
 
 	  for(int i = 0; i < compactedBlkArray.Length; i++) {
 	    if (i < compactedBlkArray.Length/2) {
