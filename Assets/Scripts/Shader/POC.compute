@@ -82,14 +82,13 @@ void compactActiveBlocks(
   }
 
   uint index = sharedCompactedBlkArray[gidx];
-  int activeBlocks = 0;
   if (gidx == maxValidGidx) {
-    InterlockedAdd(activeBlkNum[0], index, activeBlocks);
+    InterlockedAdd(activeBlkNum[0], sharedCompactedBlkArray[gidx], sharedCompactedBlkArray[gidx]);
   }
 
   AllMemoryBarrierWithGroupSync();
 
   if (valid) {
-    compactedBlkArray[blockIdx] = active ? index + activeBlocks - 1 : -1;
+    compactedBlkArray[blockIdx] = active ? index + sharedCompactedBlkArray[maxValidGidx] - 1 : -1;
   }
 }

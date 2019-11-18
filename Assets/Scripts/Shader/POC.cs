@@ -113,7 +113,7 @@ public class POC : MonoBehaviour
       POCShader.SetBuffer(compactActiveBlocksKernelIndex, "minMaxBuffer", minMaxBuffer);
       POCShader.SetBuffer(compactActiveBlocksKernelIndex, "compactedBlkArray", compactedBlkArray);
 
-      POCShader.Dispatch(compactActiveBlocksKernelIndex, 1, 1, 1);
+      POCShader.Dispatch(compactActiveBlocksKernelIndex, Mathf.CeilToInt((float)numBlocks.x/8), Mathf.CeilToInt((float)numBlocks.y/4), Mathf.CeilToInt((float)numBlocks.z/4));
 
       int[] result = new int[numBlocks.x*numBlocks.y*numBlocks.z];
       compactedBlkArray.GetData(result);

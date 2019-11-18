@@ -142,9 +142,6 @@ namespace Tests
 
 	  MinMaxPair[] result = poc.computeMinMax(voxels, width, height, depth);
 
-	  Debug.Log(string.Join(",", expectedValues));
-	  Debug.Log(string.Join(",", result));
-
 	  Assert.AreEqual(expectedValues.Length, result.Length);
 	  for(int i = 0; i < result.Length; i++) {
 	    Assert.AreEqual(expectedValues[i].min, result[i].min);
@@ -262,15 +259,14 @@ namespace Tests
 
 	  int[] compactedBlkArray = poc.compactBlockArray(voxels, width, height, depth, isoValue);
 
-	  Debug.Log(string.Join(",", compactedBlkArray));
-
 	  Array.Sort(compactedBlkArray);
 
+	  int numberOfInvalids = compactedBlkArray.Length/2+1;
 	  for(int i = 0; i < compactedBlkArray.Length; i++) {
-	    if (i < compactedBlkArray.Length/2) {
+	    if (i < numberOfInvalids) {
 	      Assert.AreEqual(-1, compactedBlkArray[i]);
 	    } else {
-	      Assert.AreEqual(i - compactedBlkArray.Length/2, compactedBlkArray[i]);
+	      Assert.AreEqual(i - numberOfInvalids, compactedBlkArray[i]);
 	    }
 	  }
 	}
