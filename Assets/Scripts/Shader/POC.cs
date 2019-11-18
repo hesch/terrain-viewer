@@ -126,6 +126,61 @@ public class POC : MonoBehaviour
       return result;
     }
 
+    public void parallelMarchingBlocks(float[] voxels, int width, int height, int depth, float isoValue, out Vector3[] vertices, out int[] indices) {
+      addPadding(ref voxels, ref width, ref height, ref depth);
+      Vector3Int numBlocks = new Vector3Int(width/blockSize.x, height/blockSize.y, depth/blockSize.z);
+
+      ComputeBuffer voxelBuffer = new ComputeBuffer(voxels.Length, sizeof(float));
+      ComputeBuffer minMaxBuffer = new ComputeBuffer(numBlocks.x*numBlocks.y*numBlocks.z, 2*sizeof(float));
+      ComputeBuffer compactedBlkArray = new ComputeBuffer(numBlocks.x*numBlocks.y*numBlocks.z, sizeof(int));
+      ComputeBuffer activeBlkNum = new ComputeBuffer(1, sizeof(int));
+      voxelBuffer.SetData(voxels);
+      
+      int minMaxKernelIndex = POCShader.FindKernel("minMax");
+      
+      POCShader.SetBuffer(minMaxKernelIndex, "voxelBuffer", voxelBuffer);
+      POCShader.SetBuffer(minMaxKernelIndex, "minMaxBuffer", minMaxBuffer);
+      POCShader.SetInts("size", new int[]{ width, height, depth });
+      POCShader.SetInts("numBlocks", new int[]{ numBlocks.x, numBlocks.y, numBlocks.z });
+
+      POCShader.Dispatch(minMaxKernelIndex, numBlocks.x, numBlocks.y, numBlocks.z);
+
+      int compactActiveBlocksKernelIndex = POCShader.FindKernel("compactActiveBlocks");
+
+      POCShader.SetFloat("isoValue", isoValue);
+      POCShader.SetBuffer(compactActiveBlocksKernelIndex, "activeBlkNum", activeBlkNum);
+      POCShader.SetBuffer(compactActiveBlocksKernelIndex, "minMaxBuffer", minMaxBuffer);
+      POCShader.SetBuffer(compactActiveBlocksKernelIndex, "compactedBlkArray", compactedBlkArray);
+
+      POCShader.Dispatch(compactActiveBlocksKernelIndex, Mathf.CeilToInt((float)numBlocks.x/8), Mathf.CeilToInt((float)numBlocks.y/4), Mathf.CeilToInt((float)numBlocks.z/4));
+
+      int[] numActiveBlocks = new int[1];
+      activeBlkNum.GetData(numActiveBlocks);
+
+      ComputeBuffer vertexBuffer = new ComputeBuffer(numActiveBlocks[0]*blockSize.x*blockSize.y*blockSize.z*3, sizeof(float)*3);
+      // TODO: evaluate this size
+      ComputeBuffer indexBuffer = new ComputeBuffer(numActiveBlocks[0]*blockSize.x*blockSize.y*blockSize.z*3*5, sizeof(int));
+
+      int generateTrianglesKernelIndex = POCShader.FindKernel("generateTriangles");
+
+      POCShader.SetBuffer(generateTrianglesKernelIndex, "compactedBlkArray", compactedBlkArray);
+      POCShader.SetBuffer(generateTrianglesKernelIndex, "vertexBuffer", vertexBuffer);
+      POCShader.SetBuffer(generateTrianglesKernelIndex, "indexBuffer", indexBuffer);
+      POCShader.Dispatch(generateTrianglesKernelIndex, numBlocks.x, numBlocks.y, numBlocks.z);
+
+      vertices = new Vector3[vertexBuffer.count];
+      indices = new int[indexBuffer.count];
+      vertexBuffer.GetData(vertices);
+      indexBuffer.GetData(indices);
+
+      voxelBuffer.Release();
+      minMaxBuffer.Release();
+      compactedBlkArray.Release();
+      activeBlkNum.Release();
+      vertexBuffer.Release();
+      indexBuffer.Release();
+    }
+
     void OnPostRender()
     {
         mat.SetPass(0);

@@ -270,5 +270,42 @@ namespace Tests
 	    }
 	  }
 	}
+
+        [Test]
+        public void parallelMarchingBlocksWorks()
+        {
+	  float isoValue = .01f;
+	  int blockMultiplier = 10;
+	  int width = blockDim.x*blockMultiplier;
+	  int height = blockDim.y*blockMultiplier;
+	  int depth = blockDim.z*blockMultiplier;
+	  int size = width*height*depth;
+
+	  float[] voxels = new float[size];
+	  for(int i = 0; i < size; i++) {
+	    voxels[i] = 0.0f;
+	  }
+
+	  int blockIdx = 0;
+	  for(int z = 0; z < depth; z += blockDim.z) {
+	    for(int y = 0; y < height; y += blockDim.y) {
+	      for(int x = 0; x < width; x += blockDim.x) {
+		if (blockIdx%2==0) {
+		  voxels[x+y*width+z*width*height] = -(float)blockIdx/10.0f;
+		  voxels[(x+blockDim.x-1)+(y+blockDim.y-1)*width+(z+blockDim.z-1)*width*height] = (float)blockIdx/10.0f;
+		}
+		blockIdx++;
+	      }
+	    }
+	  }
+
+	  Vector3[] vertices;
+	  int[] indices;
+
+	  poc.parallelMarchingBlocks(voxels, width, height, depth, isoValue, out vertices, out indices);
+
+	  Debug.Log("vertices: " + string.Join(",", vertices, 0, 100));
+	  Debug.Log("indices: " + string.Join(",", indices, 0, 100));
+	}
     }
 }
