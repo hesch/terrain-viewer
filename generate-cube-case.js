@@ -53,3 +53,4 @@ cubeCaseMap.forEach(({ index, numTris }) => {
 });
 
 console.log(tris.join(','));
+
