@@ -275,7 +275,7 @@ namespace Tests
         public void parallelMarchingBlocksWorks()
         {
 	  float isoValue = .01f;
-	  int blockMultiplier = 10;
+	  int blockMultiplier = 1;
 	  int width = blockDim.x*blockMultiplier;
 	  int height = blockDim.y*blockMultiplier;
 	  int depth = blockDim.z*blockMultiplier;
@@ -283,9 +283,10 @@ namespace Tests
 
 	  float[] voxels = new float[size];
 	  for(int i = 0; i < size; i++) {
-	    voxels[i] = 0.0f;
+	    voxels[i] = i > size/2 ? 0.0f : 1.0f;
 	  }
 
+	  /*
 	  int blockIdx = 0;
 	  for(int z = 0; z < depth; z += blockDim.z) {
 	    for(int y = 0; y < height; y += blockDim.y) {
@@ -297,15 +298,23 @@ namespace Tests
 		blockIdx++;
 	      }
 	    }
-	  }
+	  } */
+
+	  MinMaxPair[] minMax = poc.computeMinMax(voxels, width, height, depth);
+	  int[] compactedBlkArray = poc.compactBlockArray(voxels, width, height, depth, isoValue);
 
 	  Vector3[] vertices;
 	  int[] indices;
-
+	  
 	  poc.parallelMarchingBlocks(voxels, width, height, depth, isoValue, out vertices, out indices);
 
-	  Debug.Log("vertices: " + string.Join(",", vertices, 0, 100));
-	  Debug.Log("indices: " + string.Join(",", indices, 0, 100));
+	  Debug.Log("voxels: " + string.Join(",", voxels));
+	  Debug.Log("minMax: " + string.Join(",", minMax));
+	  Debug.Log("compactedBlkArray: " + string.Join(",", compactedBlkArray));
+	  Debug.Log("numVertices: " + vertices.Length);
+	  Debug.Log("vertices: " + string.Join(",", vertices));
+	  Debug.Log("numIndices: " + indices.Length);
+	  Debug.Log("indices: " + string.Join(",", indices));
 	}
     }
 }

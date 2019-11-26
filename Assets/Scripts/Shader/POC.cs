@@ -27,9 +27,27 @@ public class POC : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-	float size = 5.0f;
-	vertexBuffer = new ComputeBuffer(vertexCount, 3*sizeof(float));
-	indexBuffer = new ComputeBuffer(indexCount, sizeof(int));
+      int blockMultiplier = 4;
+      int width = blockSize.x*blockMultiplier;
+      int height = blockSize.y*blockMultiplier;
+      int depth = blockSize.z*blockMultiplier;
+      int size = width*height*depth;
+
+      float[] voxels = new float[size];
+      for(int z = 0; z < depth; z++) {
+	for(int y = 0; y < height; y++) {
+	  for(int x = 0; x < width; x++) {
+	    voxels[x+y*width+z*width*height] = y > height/2 ? 1.0f : 0.0f;
+	  }
+	}
+      }
+
+      Vector3[] vert;
+      int[] index;
+
+      parallelMarchingBlocks(voxels, width, height, depth, 0.5f, out vert, out index);
+      Debug.Log(string.Join(",", vert));
+      Debug.Log(string.Join(",", index));
     }
 
     public MinMaxPair[] computeMinMax(float[] voxels, int width, int height, int depth) {
@@ -157,16 +175,23 @@ public class POC : MonoBehaviour
       int[] numActiveBlocks = new int[1];
       activeBlkNum.GetData(numActiveBlocks);
 
-      ComputeBuffer vertexBuffer = new ComputeBuffer(numActiveBlocks[0]*blockSize.x*blockSize.y*blockSize.z*3, sizeof(float)*3);
+      vertexBuffer = new ComputeBuffer(numActiveBlocks[0]*blockSize.x*blockSize.y*blockSize.z*3, sizeof(float)*3);
       // TODO: evaluate this size
-      ComputeBuffer indexBuffer = new ComputeBuffer(numActiveBlocks[0]*blockSize.x*blockSize.y*blockSize.z*3*5, sizeof(int));
+      indexBuffer = new ComputeBuffer(numActiveBlocks[0]*blockSize.x*blockSize.y*blockSize.z*3*5, sizeof(int));
+      vertexCount = vertexBuffer.count;
+      indexCount = indexBuffer.count;
+      ComputeBuffer globalVertexOffset = new ComputeBuffer(1, sizeof(int));
+      ComputeBuffer globalIndexOffset = new ComputeBuffer(1, sizeof(int));
 
       int generateTrianglesKernelIndex = POCShader.FindKernel("generateTriangles");
 
+      POCShader.SetBuffer(generateTrianglesKernelIndex, "globalVertexOffset", globalVertexOffset);
+      POCShader.SetBuffer(generateTrianglesKernelIndex, "globalIndexOffset", globalIndexOffset);
+      POCShader.SetBuffer(generateTrianglesKernelIndex, "voxelBuffer", voxelBuffer);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "compactedBlkArray", compactedBlkArray);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "vertexBuffer", vertexBuffer);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "indexBuffer", indexBuffer);
-      POCShader.Dispatch(generateTrianglesKernelIndex, numBlocks.x, numBlocks.y, numBlocks.z);
+      POCShader.Dispatch(generateTrianglesKernelIndex, numActiveBlocks[0], 1, 1);
 
       vertices = new Vector3[vertexBuffer.count];
       indices = new int[indexBuffer.count];
@@ -179,6 +204,8 @@ public class POC : MonoBehaviour
       activeBlkNum.Release();
       vertexBuffer.Release();
       indexBuffer.Release();
+      globalVertexOffset.Release();
+      globalIndexOffset.Release();
     }
 
     void OnPostRender()

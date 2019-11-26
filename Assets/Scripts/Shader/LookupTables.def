@@ -1,100 +1,6 @@
-#pragma kernel minMax
-#pragma kernel compactActiveBlocks
-#pragma kernel generateTriangles
+#include "LookupTables.h"
 
-#define B_DIM_X 8
-#define B_DIM_Y 4
-#define B_DIM_Z 4
-#define B_DIM B_DIM_X*B_DIM_Y*B_DIM_Z
-#define WARP_SIZE 32
-
-struct MinMaxPair {
-  float min;
-  float max;
-};
-
-int3 size;
-int3 numBlocks;
-RWStructuredBuffer<MinMaxPair> minMaxBuffer;
-
-groupshared MinMaxPair sharedMinMaxBuffer[B_DIM];
-
-RWStructuredBuffer<float> voxelBuffer;
-
-[numthreads(B_DIM_X, B_DIM_Y, B_DIM_Z)]
-void minMax (
-  uint3 dtid : SV_DispatchThreadID,
-  uint3 gid : SV_GroupID,
-  uint gidx : SV_GroupIndex
-)
-{
-  uint globalIndex = dtid.z*size.x*size.y + dtid.y*size.x + dtid.x;
-
-  float val1 = voxelBuffer[globalIndex];
-  sharedMinMaxBuffer[gidx].min = val1;
-  sharedMinMaxBuffer[gidx].max = val1;
-
-  GroupMemoryBarrierWithGroupSync();
-  for(uint i=B_DIM/2; i > 0; i>>=1) {
-    if(gidx < i) {
-      MinMaxPair pair1 = sharedMinMaxBuffer[gidx];
-      MinMaxPair pair2 = sharedMinMaxBuffer[gidx+i];
-      sharedMinMaxBuffer[gidx].min = min(pair1.min, pair2.min);
-      sharedMinMaxBuffer[gidx].max = max(pair1.max, pair2.max);
-    }
-    GroupMemoryBarrierWithGroupSync();
-  }
-
-  if(gidx == 0) {
-    minMaxBuffer[gid.z*numBlocks.x*numBlocks.y + gid.y*numBlocks.x + gid.x] = sharedMinMaxBuffer[gidx];
-  }
-}
-
-extern float isoValue;
-RWStructuredBuffer<uint> activeBlkNum;
-RWStructuredBuffer<int> compactedBlkArray;
-groupshared int sharedCompactedBlkArray[B_DIM];
-
-[numthreads(8, 4, 4)]
-void compactActiveBlocks(
-  uint3 dtid : SV_DispatchThreadID,
-  uint3 gtid : SV_GroupThreadID,
-  uint3 gid : SV_GroupID,
-  uint gidx : SV_GroupIndex
-)
-{
-  uint3 numBlocksInGroup = numBlocks - gid * uint3(B_DIM_X, B_DIM_Y, B_DIM_Z);
-  uint maxValidGidx = min(B_DIM, (numBlocksInGroup.z-1)*B_DIM_X*B_DIM_Y + (numBlocksInGroup.y-1)*B_DIM_X + numBlocksInGroup.x) - 1;
-
-  bool valid = gtid.x < numBlocksInGroup.x && gtid.y < numBlocksInGroup.y && gtid.z < numBlocksInGroup.z;
-
-  uint blockIdx = dtid.z*numBlocks.x*numBlocks.y + dtid.y*numBlocks.x + dtid.x;
-  MinMaxPair pair = minMaxBuffer[blockIdx];
-  bool active = pair.min < isoValue && pair.max > isoValue && valid;
-  sharedCompactedBlkArray[gidx] = active;
-
-  GroupMemoryBarrierWithGroupSync();
-
-  for (uint offset = 1; offset < B_DIM; offset <<= 1) {
-    if (gidx >= offset) {
-      sharedCompactedBlkArray[gidx] += sharedCompactedBlkArray[gidx-offset];
-    }
-    GroupMemoryBarrierWithGroupSync();
-  }
-
-  uint index = sharedCompactedBlkArray[gidx];
-  if (gidx == maxValidGidx) {
-    InterlockedAdd(activeBlkNum[0], sharedCompactedBlkArray[gidx], sharedCompactedBlkArray[gidx]);
-  }
-
-  AllMemoryBarrierWithGroupSync();
-
-  if (valid) {
-    compactedBlkArray[blockIdx] = active ? index + sharedCompactedBlkArray[maxValidGidx] - 1 : -1;
-  }
-}
-
-static const uint4 neighborMappingTable[] = {
+const uint4 neighborMappingTable[] = {
   uint4(0,0,0,0),
   uint4(1,0,0,1),
   uint4(0,1,0,0),
@@ -109,7 +15,7 @@ static const uint4 neighborMappingTable[] = {
   uint4(0,1,0,2),
 };
 
-static const uint numTrisLookup[] = {
+const uint numTrisLookup[] = {
 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 
 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 
 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 
@@ -128,7 +34,7 @@ static const uint numTrisLookup[] = {
 4, 5, 5, 2, 5, 4, 2, 1, 3, 2, 4, 1, 2, 1, 1, 0
 };
 
-static const uint edgeTableOffset[] = {
+const uint edgeTableOffset[] = {
 0, 1, 2, 4, 5, 7, 9, 12, 13, 15, 17, 20, 22, 25, 28, 32, 
 33, 35, 37, 40, 42, 45, 48, 52, 54, 57, 60, 64, 67, 71, 75, 80, 
 81, 83, 85, 88, 90, 93, 96, 100, 102, 105, 108, 112, 115, 119, 123, 128, 
@@ -147,7 +53,7 @@ static const uint edgeTableOffset[] = {
 822, 827, 832, 834, 839, 843, 845, 846, 849, 851, 855, 856, 858, 859, 860, 860
 };
 
-static uint marchingCubesEdgeTable[] = {
+const uint marchingCubesEdgeTable[] = {
 5, 1, 3, 4, 0, 2, 5, 1, 3, 5, 10, 6, 0, 2, 6, 5, 
 1, 3, 6, 11, 7, 4, 0, 2, 4, 9, 5, 10, 11, 9, 9, 11, 
 2, 2, 11, 9, 4, 0, 2, 11, 8, 9, 11, 7, 6, 4, 0, 2, 
@@ -311,149 +217,3 @@ static uint marchingCubesEdgeTable[] = {
 5, 11, 11, 5, 3, 0, 2, 6, 5, 1, 3, 5, 10, 6, 4, 0, 
 2, 5, 1, 3
 };
-
-RWStructuredBuffer<float3> vertexBuffer;
-RWStructuredBuffer<float3> normalBuffer;
-RWStructuredBuffer<int> indexBuffer;
-
-RWStructuredBuffer<int> globalVertexOffset;
-RWStructuredBuffer<int> globalIndexOffset;
-
-groupshared float sharedVoxelBuffer[B_DIM];
-groupshared bool3 sharedXyzEdges[B_DIM];
-groupshared int numVerts[B_DIM];
-groupshared int numTris[B_DIM];
-
-
-[numthreads(B_DIM_X, B_DIM_Y, B_DIM_Z)]
-void generateTriangles(
-  uint3 gid : SV_GroupID,
-  uint3 gtid : SV_GroupThreadID
-)
-{
-  uint cBlkALength;
-  uint structSize;
-  compactedBlkArray.GetDimensions(cBlkALength, structSize);
-
-  uint3 c_gid = uint3(0, 0, 0);
-
-  for(uint i = 0; i < cBlkALength; i++) {
-    uint blkIdx = compactedBlkArray[i];
-    if (blkIdx == gid.x) {
-      c_gid.x = i%numBlocks.x;
-      c_gid.y = ((i-c_gid.x)/numBlocks.x)%numBlocks.y;
-      c_gid.z = (((i-c_gid.x)/numBlocks.x)-c_gid.y)/numBlocks.y;
-      break;
-    }
-  }
-
-  uint3 c_dtid = c_gid*uint3(B_DIM_X, B_DIM_Y, B_DIM_Z) + gtid;
-  uint c_gidx = gtid.z*B_DIM_X*B_DIM_Y + gtid.y*B_DIM_X + gtid.x;
-
-  int globalIndex = c_dtid.z*size.x*size.y + c_dtid.y*size.x + c_dtid.x;
-  float myVoxelValue = voxelBuffer[globalIndex];
-  sharedVoxelBuffer[c_gidx] = myVoxelValue;
-  GroupMemoryBarrierWithGroupSync();
-
-  uint cubeCase = myVoxelValue > isoValue;
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1] > isoValue ? 1 : 0);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1+B_DIM_X] > isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+B_DIM_X] > isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+B_DIM_X*B_DIM_Y] > isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1+B_DIM_X*B_DIM_Y] > isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1+B_DIM_X+B_DIM_X*B_DIM_Y] > isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+B_DIM_X+B_DIM_X*B_DIM_Y] > isoValue);
-
-  uint myNumTris = numTrisLookup[cubeCase];
-  numTris[c_gidx] = myNumTris;
-
-  float3 edgeVoxels = {
-    sharedVoxelBuffer[c_gidx+1],
-    sharedVoxelBuffer[c_gidx+B_DIM_X],
-    sharedVoxelBuffer[c_gidx+B_DIM_X*B_DIM_Y]
-  };
-
-  bool3 myXyzEdges;
-  if (myVoxelValue <= isoValue) {
-    myXyzEdges = bool3(
-      edgeVoxels.x > isoValue,
-      edgeVoxels.y > isoValue,
-      edgeVoxels.z > isoValue
-    );
-  } else {
-    myXyzEdges = bool3(
-      edgeVoxels.x <= isoValue,
-      edgeVoxels.y <= isoValue,
-      edgeVoxels.z <= isoValue
-    );
-  }
-  sharedXyzEdges[c_gidx] = myXyzEdges;
-
-  uint myNumVerts = myXyzEdges.x + myXyzEdges.y + myXyzEdges.z; 
-  numVerts[c_gidx] = myNumVerts;
-
-  GroupMemoryBarrierWithGroupSync();
-
-  for (uint offset = 1; offset < B_DIM; offset <<= 1) {
-    if (c_gidx >= offset) {
-      numTris[c_gidx] += numTris[c_gidx-offset];
-      numVerts[c_gidx] += numVerts[c_gidx-offset];
-    }
-    GroupMemoryBarrierWithGroupSync();
-  }
-
-  uint trisOffset = numTris[c_gidx];
-  uint vertsOffset = numVerts[c_gidx];
-  if (c_gidx == B_DIM) {
-    InterlockedAdd(globalVertexOffset[0], numVerts[c_gidx], numVerts[c_gidx]);
-    InterlockedAdd(globalIndexOffset[0], numTris[c_gidx], numTris[c_gidx]);
-  }
-
-  AllMemoryBarrierWithGroupSync();
-
-  numTris[c_gidx] = trisOffset + numTris[B_DIM-1];
-  numVerts[c_gidx] = vertsOffset + numVerts[B_DIM-1];
-  GroupMemoryBarrierWithGroupSync();
-
-  uint vertexOffset = numVerts[c_gidx]-myNumVerts;
-  if (myXyzEdges.x) {
-    float3 xVoxel = c_dtid;
-    xVoxel.x += 1;
-    float delta = edgeVoxels.x - myVoxelValue;
-    vertexBuffer[vertexOffset] = lerp(c_dtid, xVoxel, (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta);
-    vertexOffset++;
-  }
-
-  if (myXyzEdges.y) {
-    float3 yVoxel = c_dtid;
-    yVoxel.y += 1;
-    float delta = edgeVoxels.y - myVoxelValue;
-    vertexBuffer[vertexOffset] = lerp(c_dtid, yVoxel, (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta);
-    vertexOffset++;
-  }
-
-  if (myXyzEdges.z) {
-    float3 zVoxel = c_dtid;
-    zVoxel.z += 1;
-    float delta = edgeVoxels.z - myVoxelValue;
-    vertexBuffer[vertexOffset] = lerp(c_dtid, zVoxel, (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta);
-  }
-
-  uint tableOffset = edgeTableOffset[cubeCase];
-  for (uint indexOffset = tableOffset; i < tableOffset+myNumTris*3; indexOffset++) {
-    uint4 edgeMap = neighborMappingTable[marchingCubesEdgeTable[indexOffset]];
-    uint edgeCellOffset = c_gidx + edgeMap.z*B_DIM_X*B_DIM_Y + edgeMap.y*B_DIM_X + edgeMap.x;
-    bool3 neighborXyzEdges = sharedXyzEdges[edgeCellOffset];
-    uint edgeSum = 0;
-    if (edgeMap.w == 0) {
-      edgeSum = neighborXyzEdges.x;
-    } else if (edgeMap.w == 1) {
-      edgeSum = neighborXyzEdges.x+neighborXyzEdges.y;
-    } else {
-      edgeSum = neighborXyzEdges.x+neighborXyzEdges.y+neighborXyzEdges.z;
-    }
-    uint edgeVertexIndex = numVerts[edgeCellOffset]+edgeSum;
-    indexBuffer[numTris[c_gidx]*3-myNumTris*3+indexOffset-tableOffset] = edgeVertexIndex;
-  }
-}
-
