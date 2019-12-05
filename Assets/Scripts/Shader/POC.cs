@@ -190,12 +190,19 @@ public class POC : MonoBehaviour
       indexCount = indexBuffer.count;
       ComputeBuffer globalVertexOffset = new ComputeBuffer(1, sizeof(int));
       ComputeBuffer globalIndexOffset = new ComputeBuffer(1, sizeof(int));
-      RenderTexture marchingCubesEdgeTableBuffer = new RenderTexture(marchingCubesEdgeTable.GetLength(0), marchingCubesEdgeTable.GetLength(1), 0, RenderTextureFormat.RInt);
-      marchingCubesEdgeTableBuffer.enableRandomWrite = true;
+      ComputeBuffer marchingCubesEdgeTableBuffer = new ComputeBuffer(marchingCubesEdgeTable.Length, sizeof(int));
+      int[] table = new int[marchingCubesEdgeTable.Length];
+      int k = 0;
+      for(int i = 0; i < marchingCubesEdgeTable.GetLength(0); i++) {
+	for(int j = 0; j < marchingCubesEdgeTable.GetLength(1); j++) {
+	  table[k++] = marchingCubesEdgeTable[i,j];
+	}
+      }
+      marchingCubesEdgeTableBuffer.SetData(table);
 
       int generateTrianglesKernelIndex = POCShader.FindKernel("generateTriangles");
 
-      POCShader.SetTexture(generateTrianglesKernelIndex, "marchingCubesEdgeTable", marchingCubesEdgeTableBuffer);
+      POCShader.SetBuffer(generateTrianglesKernelIndex, "marchingCubesEdgeTable", marchingCubesEdgeTableBuffer);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "globalVertexOffset", globalVertexOffset);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "globalIndexOffset", globalIndexOffset);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "voxelBuffer", voxelBuffer);

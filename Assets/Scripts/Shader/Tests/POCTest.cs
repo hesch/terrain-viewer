@@ -314,7 +314,19 @@ namespace Tests
 	  Debug.Log("numVertices: " + vertices.Length);
 	  Debug.Log("vertices: " + string.Join(",", vertices));
 	  Debug.Log("numIndices: " + indices.Length);
-	  Debug.Log("indices: " + string.Join(",", indices));
+	  string indicesString = "";
+	  string cubeCases = "";
+	  for (int i = 0; i < indices.Length; i++) {
+	    if ( i < 1000 ) {
+	      indicesString += indices[i] + ",";
+	    } else {
+	      cubeCases += indices[i] + ",";
+	    }
+	  }
+
+	  Debug.Log("indices: " + indicesString);
+	  Debug.Log("cubeCases: " + cubeCases);
+
 	}
     }
 }
