@@ -55,6 +55,7 @@ public class POC : MonoBehaviour
       GetComponent<MeshFilter>().mesh = mesh;
       mesh.vertices = vert;
       mesh.triangles = index;
+      mesh.RecalculateNormals();
     }
 
     public MinMaxPair[] computeMinMax(float[] voxels, int width, int height, int depth) {

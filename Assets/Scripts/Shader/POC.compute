@@ -160,7 +160,6 @@ groupshared bool3 sharedXyzEdges[B_DIM];
 groupshared int numVerts[B_DIM];
 groupshared int numTris[B_DIM];
 
-
 [numthreads(B_DIM_X, B_DIM_Y, B_DIM_Z)]
 void generateTriangles(
   uint3 gid : SV_GroupID,
@@ -168,13 +167,11 @@ void generateTriangles(
   uint3 gtid : SV_GroupThreadID
 )
 {
-  uint cBlkALength;
-  uint structSize;
-  compactedBlkArray.GetDimensions(cBlkALength, structSize);
-
   uint3 c_gid = uint3(0, 0, 0);
 
-  for(uint i = 0; i < cBlkALength; i++) {
+  uint len = numBlocks.x*numBlocks.y*numBlocks.z;
+
+  for(uint i = 0; i < len; i++) {
     uint blkIdx = compactedBlkArray[i];
     if (blkIdx == gid.x) {
       c_gid.x = i%numBlocks.x;
@@ -192,14 +189,15 @@ void generateTriangles(
   sharedVoxelBuffer[c_gidx] = myVoxelValue;
   GroupMemoryBarrierWithGroupSync();
 
-  uint cubeCase = myVoxelValue > isoValue;
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1] > isoValue ? 1 : 0);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1+B_DIM_X] > isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+B_DIM_X] > isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+B_DIM_X*B_DIM_Y] > isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1+B_DIM_X*B_DIM_Y] > isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1+B_DIM_X+B_DIM_X*B_DIM_Y] > isoValue);
+  uint cubeCase = 0;
   cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+B_DIM_X+B_DIM_X*B_DIM_Y] > isoValue);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1+B_DIM_X+B_DIM_X*B_DIM_Y] > isoValue);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1+B_DIM_X*B_DIM_Y] > isoValue);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+B_DIM_X*B_DIM_Y] > isoValue);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+B_DIM_X] > isoValue);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1+B_DIM_X] > isoValue);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[c_gidx+1] > isoValue ? 1 : 0);
+  cubeCase = (cubeCase<<1)|(myVoxelValue > isoValue ? 1 : 0);
 
   uint myNumTris = numTrisLookup[cubeCase];
   numTris[c_gidx] = myNumTris;
@@ -276,10 +274,6 @@ void generateTriangles(
     vertexBuffer[vertexOffset] = lerp(c_dtid, zVoxel, (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta);
   }
 
-  indexBuffer[c_gidx] = numVerts[c_gidx];
-  indexBuffer[1000+c_gidx] = numTris[c_gidx];
-  return;
-
   uint tableOffset = edgeTableOffset[cubeCase];
   uint indexBufferBaseOffset = (numTris[c_gidx]-myNumTris)*3;
   for (uint indexOffset = 0; indexOffset < myNumTris*3; indexOffset++) {
@@ -292,9 +286,9 @@ void generateTriangles(
     }
     uint edgeVertexIndex = numVerts[edgeCellOffset]+edgeSum;
     indexBuffer[indexBufferBaseOffset+indexOffset] = edgeVertexIndex;
-    indexBuffer[indexBufferBaseOffset+indexOffset] = numVerts[edgeCellOffset]; // edgeMap.x * 1000 + edgeMap.y *100+edgeMap.z*10 + edgeMap.w;
+    //indexBuffer[indexBufferBaseOffset+indexOffset] = c_gidx; edgeMap.x * 1000 + edgeMap.y *100+edgeMap.z*10 + edgeMap.w;
     // indexBuffer[indexBufferBaseOffset+indexOffset] = marchingCubesEdgeTable[cubeCase*16+indexOffset];
-    indexBuffer[1000+indexBufferBaseOffset+indexOffset] = edgeCellOffset;
+    //indexBuffer[1000+indexBufferBaseOffset+indexOffset] = edgeCellOffset;
   }
 }
 

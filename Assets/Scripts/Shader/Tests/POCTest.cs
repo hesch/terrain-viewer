@@ -274,7 +274,7 @@ namespace Tests
         [Test]
         public void parallelMarchingBlocksWorks()
         {
-	  float isoValue = .01f;
+	  float isoValue = .5f;
 	  int blockMultiplier = 1;
 	  int width = blockDim.x*blockMultiplier;
 	  int height = blockDim.y*blockMultiplier;
@@ -283,22 +283,19 @@ namespace Tests
 
 	  float[] voxels = new float[size];
 	  for(int i = 0; i < size; i++) {
-	    voxels[i] = i > size/2 ? 0.0f : 1.0f;
+	    voxels[i] = i > size/2 -1 ? 0.0f : 1.0f;
 	  }
 
-	  /*
-	  int blockIdx = 0;
-	  for(int z = 0; z < depth; z += blockDim.z) {
-	    for(int y = 0; y < height; y += blockDim.y) {
-	      for(int x = 0; x < width; x += blockDim.x) {
-		if (blockIdx%2==0) {
-		  voxels[x+y*width+z*width*height] = -(float)blockIdx/10.0f;
-		  voxels[(x+blockDim.x-1)+(y+blockDim.y-1)*width+(z+blockDim.z-1)*width*height] = (float)blockIdx/10.0f;
-		}
-		blockIdx++;
+	  string voxelString = "";
+	  for(int z = 0; z < depth; z++) {
+	    for(int y = 0; y < height; y++) {
+	      for(int x = 0; x < width; x++) {
+		voxelString += voxels[z*width*height + y*width + x] + ",";
 	      }
+	      voxelString += "\n";
 	    }
-	  } */
+	    voxelString += "\n";
+	  }
 
 	  MinMaxPair[] minMax = poc.computeMinMax(voxels, width, height, depth);
 	  int[] compactedBlkArray = poc.compactBlockArray(voxels, width, height, depth, isoValue);
@@ -308,7 +305,7 @@ namespace Tests
 	  
 	  poc.parallelMarchingBlocks(voxels, width, height, depth, isoValue, out vertices, out indices);
 
-	  Debug.Log("voxels: " + string.Join(",", voxels));
+	  Debug.Log("voxels: " + voxelString);
 	  Debug.Log("minMax: " + string.Join(",", minMax));
 	  Debug.Log("compactedBlkArray: " + string.Join(",", compactedBlkArray));
 	  Debug.Log("numVertices: " + vertices.Length);
@@ -318,9 +315,29 @@ namespace Tests
 	  string cubeCases = "";
 	  for (int i = 0; i < indices.Length; i++) {
 	    if ( i < 1000 ) {
-	      indicesString += indices[i] + ",";
+	      for (int z = 0; z < depth; z++) {
+		for (int y = 0; y < height; y++) {
+		  for (int x = 0; x < width; x++) {
+		    if (i == 999) break;
+		    indicesString += indices[i++] + ",";
+		  }
+		  indicesString += "\n";
+		}
+		indicesString += "\n";
+	      }
 	    } else {
-	      cubeCases += indices[i] + ",";
+	      for (int z = 0; z < depth; z++) {
+		for (int y = 0; y < height; y++) {
+		  for (int x = 0; x < width; x++) {
+		    if (i == indices.Length) break;
+		    cubeCases += indices[i++] + ",";
+		    // cubeCases += string.Format("{0},", Convert.ToString(indices[i++], 2).PadLeft(8, '0'));
+		    if (i == indices.Length) break;
+		  }
+		  cubeCases += "\n";
+		}
+		cubeCases += "\n";
+	      }
 	    }
 	  }
 
