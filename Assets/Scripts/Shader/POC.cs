@@ -170,7 +170,7 @@ public class POC : MonoBehaviour
     public void parallelMarchingBlocks(float[] voxels, int width, int height, int depth, float isoValue, out Vector3[] vertices, out int[] indices) {
       Debug.Log("marchingCubesEdgeTable.Length: " + marchingCubesEdgeTable.Length);
       addPadding(ref voxels, ref width, ref height, ref depth);
-      Vector3Int numBlocks = new Vector3Int(width/blockSize.x, height/blockSize.y, depth/blockSize.z);
+      Vector3Int numBlocks = new Vector3Int((width-1)/blockSize.x, (height-1)/blockSize.y, (depth-1)/blockSize.z);
 
       ComputeBuffer voxelBuffer = new ComputeBuffer(voxels.Length, sizeof(float));
       ComputeBuffer minMaxBuffer = new ComputeBuffer(numBlocks.x*numBlocks.y*numBlocks.z, 2*sizeof(float));

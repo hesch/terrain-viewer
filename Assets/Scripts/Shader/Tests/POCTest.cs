@@ -125,14 +125,14 @@ namespace Tests
 	  }
 
 	  int blockIdx = 0;
-	  for(int z = 1; z < depth-1; z += blockDim.z-1) {
-	    for(int y = 1; y < height-1; y += blockDim.y-1) {
-	      for(int x = 1; x < width-1; x += blockDim.x-1) {
+	  for(int z = 1; z < depth; z += blockDim.z-1) {
+	    for(int y = 1; y < height; y += blockDim.y-1) {
+	      for(int x = 1; x < width; x += blockDim.x-1) {
 		voxels[x+y*width+z*width*height] = expectedValues[blockIdx].min;
 
-		int maxBlockX = Math.Min(x+blockDim.x, width)-2;
-		int maxBlockY = Math.Min(y+blockDim.y, height)-2;
-		int maxBlockZ = Math.Min(z+blockDim.z, depth)-2;
+		int maxBlockX = Math.Min(x+blockDim.x-2, width)-1;
+		int maxBlockY = Math.Min(y+blockDim.y-2, height)-1;
+		int maxBlockZ = Math.Min(z+blockDim.z-2, depth)-1;
 		voxels[maxBlockX+maxBlockY*width+maxBlockZ*width*height] = expectedValues[blockIdx].max;
 
 		blockIdx++;
@@ -141,8 +141,6 @@ namespace Tests
 	  }
 
 	  MinMaxPair[] result = poc.computeMinMax(voxels, width, height, depth);
-
-	  Debug.Log(string.Join(",", result));
 
 	  Assert.AreEqual(expectedValues.Length, result.Length);
 	  for(int i = 0; i < result.Length; i++) {
@@ -199,9 +197,9 @@ namespace Tests
         {
 	  float isoValue = .01f;
 	  int blockMultiplier = 4;
-	  int width = blockDim.x*blockMultiplier;
-	  int height = blockDim.y*blockMultiplier;
-	  int depth = blockDim.z*blockMultiplier;
+	  int width = (blockDim.x-1)*blockMultiplier+1;
+	  int height = (blockDim.y-1)*blockMultiplier+1;
+	  int depth = (blockDim.z-1)*blockMultiplier+1;
 	  int size = width*height*depth;
 
 	  float[] voxels = new float[size];
@@ -215,7 +213,7 @@ namespace Tests
 	      for(int x = 0; x < width; x += blockDim.x) {
 		if (blockIdx%2==0) {
 		  voxels[x+y*width+z*width*height] = -(float)blockIdx/10.0f;
-		  voxels[(x+blockDim.x-1)+(y+blockDim.y-1)*width+(z+blockDim.z-1)*width*height] = (float)blockIdx/10.0f;
+		  voxels[(x+blockDim.x-2)+(y+blockDim.y-2)*width+(z+blockDim.z-2)*width*height] = (float)blockIdx/10.0f;
 		}
 		blockIdx++;
 	      }
@@ -278,9 +276,9 @@ namespace Tests
         {
 	  float isoValue = .5f;
 	  int blockMultiplier = 1;
-	  int width = blockDim.x*blockMultiplier;
-	  int height = blockDim.y*blockMultiplier;
-	  int depth = blockDim.z*blockMultiplier;
+	  int width = (blockDim.x-1)*blockMultiplier+1;
+	  int height = (blockDim.y-1)*blockMultiplier+1;
+	  int depth = (blockDim.z-1)*blockMultiplier+1;
 	  int size = width*height*depth;
 
 	  float[] voxels = new float[size];
@@ -315,37 +313,17 @@ namespace Tests
 	  Debug.Log("numIndices: " + indices.Length);
 	  string indicesString = "";
 	  string cubeCases = "";
-	  for (int i = 0; i < indices.Length; i++) {
-	    if ( i < 1000 ) {
-	      for (int z = 0; z < depth; z++) {
-		for (int y = 0; y < height; y++) {
-		  for (int x = 0; x < width; x++) {
-		    if (i == 999) break;
-		    indicesString += indices[i++] + ",";
-		  }
-		  indicesString += "\n";
-		}
-		indicesString += "\n";
+
+	  for (int z = 0; z < depth; z++) {
+	    for (int y = 0; y < height; y++) {
+	      for (int x = 0; x < width; x++) {
+		indicesString += indices[x+y*(blockDim.x-1)+z*(blockDim.x-1)*(blockDim.y-1)] + ",";
 	      }
-	    } else {
-	      for (int z = 0; z < depth; z++) {
-		for (int y = 0; y < height; y++) {
-		  for (int x = 0; x < width; x++) {
-		    if (i == indices.Length) break;
-		    cubeCases += indices[i++] + ",";
-		    // cubeCases += string.Format("{0},", Convert.ToString(indices[i++], 2).PadLeft(8, '0'));
-		    if (i == indices.Length) break;
-		  }
-		  cubeCases += "\n";
-		}
-		cubeCases += "\n";
-	      }
+	      indicesString += "\n";
 	    }
+	    indicesString += "\n";
 	  }
-
 	  Debug.Log("indices: " + indicesString);
-	  Debug.Log("cubeCases: " + cubeCases);
-
 	}
     }
 }
