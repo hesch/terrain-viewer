@@ -66,9 +66,9 @@ namespace Tests
         public void MinMaxShaderWorksForMultipleBlocks()
         {
 	  int blockMultiplier = 4;
-	  int width = blockDim.x*blockMultiplier;
-	  int height = blockDim.y*blockMultiplier;
-	  int depth = blockDim.z*blockMultiplier;
+	  int width = (blockDim.x-1)*blockMultiplier+1;
+	  int height = (blockDim.y-1)*blockMultiplier+1;
+	  int depth = (blockDim.z-1)*blockMultiplier+1;
 	  int size = width*height*depth;
 
 	  float[] voxels = new float[size];
@@ -84,11 +84,11 @@ namespace Tests
 	  }
 
 	  int blockIdx = 0;
-	  for(int z = 0; z < depth; z += blockDim.z) {
-	    for(int y = 0; y < height; y += blockDim.y) {
-	      for(int x = 0; x < width; x += blockDim.x) {
+	  for(int z = 1; z < depth-1; z += blockDim.z-1) {
+	    for(int y = 1; y < height-1; y += blockDim.y-1) {
+	      for(int x = 1; x < width-1; x += blockDim.x-1) {
 		voxels[x+y*width+z*width*height] = expectedValues[blockIdx].min;
-		voxels[(x+blockDim.x-1)+(y+blockDim.y-1)*width+(z+blockDim.z-1)*width*height] = expectedValues[blockIdx].max;
+		voxels[(x+blockDim.x-2)+(y+blockDim.y-2)*width+(z+blockDim.z-2)*width*height] = expectedValues[blockIdx].max;
 		blockIdx++;
 	      }
 	    }
@@ -107,9 +107,9 @@ namespace Tests
         public void MinMaxShaderWorksForMisalignedData()
         {
 	  int blockMultiplier = 4;
-	  int width = blockDim.x*blockMultiplier+4;
-	  int height = blockDim.y*blockMultiplier+1;
-	  int depth = blockDim.z*blockMultiplier+2;
+	  int width = (blockDim.x-1)*blockMultiplier+5;
+	  int height = (blockDim.y-1)*blockMultiplier+2;
+	  int depth = (blockDim.z-1)*blockMultiplier+3;
 	  int size = width*height*depth;
 
 	  float[] voxels = new float[size];
@@ -117,7 +117,7 @@ namespace Tests
 	    voxels[i] = 0.0f;
 	  }
 
-	  MinMaxPair[] expectedValues = new MinMaxPair[Mathf.CeilToInt((float)width/blockDim.x)*Mathf.CeilToInt((float)height/blockDim.y)*Mathf.CeilToInt((float)depth/blockDim.z)];
+	  MinMaxPair[] expectedValues = new MinMaxPair[Mathf.CeilToInt((float)width/(blockDim.x-1))*Mathf.CeilToInt((float)height/(blockDim.y-1))*Mathf.CeilToInt((float)depth/(blockDim.z-1))];
 
 	  for(int i=0; i < expectedValues.Length; i++) {
 	    expectedValues[i].min = (float)-i*10;
@@ -125,14 +125,14 @@ namespace Tests
 	  }
 
 	  int blockIdx = 0;
-	  for(int z = 0; z < depth; z += blockDim.z) {
-	    for(int y = 0; y < height; y += blockDim.y) {
-	      for(int x = 0; x < width; x += blockDim.x) {
+	  for(int z = 1; z < depth-1; z += blockDim.z-1) {
+	    for(int y = 1; y < height-1; y += blockDim.y-1) {
+	      for(int x = 1; x < width-1; x += blockDim.x-1) {
 		voxels[x+y*width+z*width*height] = expectedValues[blockIdx].min;
 
-		int maxBlockX = Math.Min(x+blockDim.x, width)-1;
-		int maxBlockY = Math.Min(y+blockDim.y, height)-1;
-		int maxBlockZ = Math.Min(z+blockDim.z, depth)-1;
+		int maxBlockX = Math.Min(x+blockDim.x, width)-2;
+		int maxBlockY = Math.Min(y+blockDim.y, height)-2;
+		int maxBlockZ = Math.Min(z+blockDim.z, depth)-2;
 		voxels[maxBlockX+maxBlockY*width+maxBlockZ*width*height] = expectedValues[blockIdx].max;
 
 		blockIdx++;
@@ -141,6 +141,8 @@ namespace Tests
 	  }
 
 	  MinMaxPair[] result = poc.computeMinMax(voxels, width, height, depth);
+
+	  Debug.Log(string.Join(",", result));
 
 	  Assert.AreEqual(expectedValues.Length, result.Length);
 	  for(int i = 0; i < result.Length; i++) {
@@ -155,8 +157,8 @@ namespace Tests
 	  int height = 498;
 	  int depth = 3;
 	  int origSize = width*height*depth;
-	  int expectedWidth = 128;
-	  int expectedHeight = 500;
+	  int expectedWidth = 127;
+	  int expectedHeight = 499;
 	  int expectedDepth = 4;
 	  int expectedSize = expectedWidth*expectedHeight*expectedDepth;
 
@@ -283,7 +285,7 @@ namespace Tests
 
 	  float[] voxels = new float[size];
 	  for(int i = 0; i < size; i++) {
-	    voxels[i] = i > size/2 -1 ? 0.0f : 1.0f;
+	    voxels[i] = i%32 < 16 ? 0.0f : 1.0f;
 	  }
 
 	  string voxelString = "";

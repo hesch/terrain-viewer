@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ProceduralNoiseProject;
 
 public struct MinMaxPair {
   public float min;
@@ -24,22 +25,36 @@ public class POC : MonoBehaviour
     int vertexCount = 4;
     int indexCount = 6;
 
-    public static Vector3Int blockSize = new Vector3Int(8, 4, 4);
+    public static Vector3Int blockSize = new Vector3Int(7, 3, 3);
 
     // Start is called before the first frame update
     void Start()
     {
+      string output = "";
+      for (int i = 0; i < marchingCubesEdgeTable.GetLength(0); i++) {
+	int j = 0;
+	for(; marchingCubesEdgeTable[i,j] != -1; j++);
+	output += j/3 + ",";
+	if (i % 16 == 0) {
+	  output += "\n";
+	}
+      }
+
+      Debug.Log(output);
       int blockMultiplier = 4;
       int width = blockSize.x*blockMultiplier;
       int height = blockSize.y*blockMultiplier;
       int depth = blockSize.z*blockMultiplier;
       int size = width*height*depth;
 
+      Noise n = new PerlinNoise(1337, 1.0f);
+
       float[] voxels = new float[size];
       for(int z = 0; z < depth; z++) {
 	for(int y = 0; y < height; y++) {
 	  for(int x = 0; x < width; x++) {
 	    voxels[x+y*width+z*width*height] = y > height/2 ? 1.0f : 0.0f;
+	    //voxels[x+y*width+z*width*height] = n.Sample3D((float)x/width, (float)y/height, (float)z/depth);
 	  }
 	}
       }
@@ -85,9 +100,9 @@ public class POC : MonoBehaviour
     }
 
     public void addPadding(ref float[] voxels, ref int width, ref int height, ref int depth) {
-      int widthRest = width % blockSize.x;
-      int heightRest = height % blockSize.y;
-      int depthRest = depth % blockSize.z;
+      int widthRest = (width-1) % blockSize.x;
+      int heightRest = (height-1) % blockSize.y;
+      int depthRest = (depth-1) % blockSize.z;
       
       if (widthRest == 0 && heightRest == 0 && depthRest == 0) {
 	return;
@@ -203,6 +218,7 @@ public class POC : MonoBehaviour
 
       int generateTrianglesKernelIndex = POCShader.FindKernel("generateTriangles");
 
+      POCShader.SetInts("c_numBlocks", new int[]{ width/8, height/4, depth/4 });
       POCShader.SetBuffer(generateTrianglesKernelIndex, "marchingCubesEdgeTable", marchingCubesEdgeTableBuffer);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "globalVertexOffset", globalVertexOffset);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "globalIndexOffset", globalIndexOffset);
