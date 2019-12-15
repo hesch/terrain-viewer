@@ -208,12 +208,12 @@ namespace Tests
 	  }
 
 	  int blockIdx = 0;
-	  for(int z = 0; z < depth; z += blockDim.z) {
-	    for(int y = 0; y < height; y += blockDim.y) {
-	      for(int x = 0; x < width; x += blockDim.x) {
+	  for(int z = 1; z < depth; z += blockDim.z-1) {
+	    for(int y = 1; y < height; y += blockDim.y-1) {
+	      for(int x = 1; x < width; x += blockDim.x-1) {
 		if (blockIdx%2==0) {
 		  voxels[x+y*width+z*width*height] = -(float)blockIdx/10.0f;
-		  voxels[(x+blockDim.x-2)+(y+blockDim.y-2)*width+(z+blockDim.z-2)*width*height] = (float)blockIdx/10.0f;
+		  voxels[(x+blockDim.x-3)+(y+blockDim.y-3)*width+(z+blockDim.z-3)*width*height] = (float)blockIdx/10.0f;
 		}
 		blockIdx++;
 	      }
@@ -245,12 +245,12 @@ namespace Tests
 	  }
 
 	  int blockIdx = 0;
-	  for(int z = 0; z < depth; z += blockDim.z) {
-	    for(int y = 0; y < height; y += blockDim.y) {
-	      for(int x = 0; x < width; x += blockDim.x) {
+	  for(int z = 1; z < depth; z += blockDim.z-1) {
+	    for(int y = 1; y < height; y += blockDim.y-1) {
+	      for(int x = 1; x < width; x += blockDim.x-1) {
 		if (blockIdx%2==0) {
 		  voxels[x+y*width+z*width*height] = -(float)blockIdx/10.0f;
-		  voxels[(x+blockDim.x-1)+(y+blockDim.y-1)*width+(z+blockDim.z-1)*width*height] = (float)blockIdx/10.0f;
+		  voxels[(x+blockDim.x-3)+(y+blockDim.y-3)*width+(z+blockDim.z-3)*width*height] = (float)blockIdx/10.0f;
 		}
 		blockIdx++;
 	      }
