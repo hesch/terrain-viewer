@@ -182,19 +182,19 @@ void generateTriangles(
 {
   uint3 c_gid = uint3(0, 0, 0);
 
-  uint len = c_numBlocks.x*c_numBlocks.y*c_numBlocks.z;
+  uint len = numBlocks.x*numBlocks.y*numBlocks.z;
 
   for(uint i = 0; i < len; i++) {
     uint blkIdx = compactedBlkArray[i];
     if (blkIdx == gid.x) {
-      c_gid.x = i%c_numBlocks.x;
-      c_gid.y = ((i-c_gid.x)/c_numBlocks.x)%c_numBlocks.y;
-      c_gid.z = (((i-c_gid.x)/c_numBlocks.x)-c_gid.y)/c_numBlocks.y;
+      c_gid.x = i%numBlocks.x;
+      c_gid.y = ((i-c_gid.x)/numBlocks.x)%numBlocks.y;
+      c_gid.z = (((i-c_gid.x)/numBlocks.x)-c_gid.y)/numBlocks.y;
       break;
     }
   }
 
-  uint3 c_dtid = c_gid*uint3(B_DIM_X, B_DIM_Y, B_DIM_Z) + gtid;
+  uint3 c_dtid = c_gid*uint3(B_DIM_X-1, B_DIM_Y-1, B_DIM_Z-1) + gtid;
   uint c_gidx = gtid.z*B_DIM_X*B_DIM_Y + gtid.y*B_DIM_X + gtid.x;
 
   int globalIndex = c_dtid.z*size.x*size.y + c_dtid.y*size.x + c_dtid.x;
@@ -212,7 +212,7 @@ void generateTriangles(
   cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 0, 0)) < isoValue ? 1 : 0);
   cubeCase = (cubeCase<<1)|(myVoxelValue < isoValue ? 1 : 0);
 
-  uint myNumTris = gtid.x < B_DIM_X - 1 && gtid.y < B_DIM_Y - 1 && gtid.z < B_DIM_Z -1 ? numTrisLookup[cubeCase] : 0;
+  uint myNumTris = gtid.x < B_DIM_X - 1 && gtid.y < B_DIM_Y - 1 && gtid.z < B_DIM_Z - 1 ? numTrisLookup[cubeCase] : 0;
   numTris[c_gidx] = myNumTris;
 
   float3 edgeVoxels = {
@@ -287,7 +287,7 @@ void generateTriangles(
     vertexBuffer[vertexOffset] = lerp(c_dtid, zVoxel, (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta);
   }
 
-  // indexBuffer[c_gidx] = myNumTris; //numVerts[c_gidx];
+  // indexBuffer[globalIndex] = numVerts[c_gidx];
   // return;
 
   uint tableOffset = edgeTableOffset[cubeCase];

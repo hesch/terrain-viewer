@@ -42,12 +42,12 @@ public class POC : MonoBehaviour
 
       Debug.Log(output);
       int blockMultiplier = 4;
-      int width = blockSize.x*blockMultiplier;
-      int height = blockSize.y*blockMultiplier;
-      int depth = blockSize.z*blockMultiplier;
+      int width = blockSize.x*blockMultiplier+1;
+      int height = blockSize.y*blockMultiplier+1;
+      int depth = blockSize.z*blockMultiplier+1;
       int size = width*height*depth;
 
-      Noise n = new PerlinNoise(1337, 1.0f);
+      Noise n = new PerlinNoise(1337, 2.0f);
 
       float[] voxels = new float[size];
       for(int z = 0; z < depth; z++) {

@@ -276,14 +276,14 @@ namespace Tests
         {
 	  float isoValue = .5f;
 	  int blockMultiplier = 1;
-	  int width = (blockDim.x-1)*blockMultiplier+1;
+	  int width = (blockDim.x-1)*(blockMultiplier+1)+1;
 	  int height = (blockDim.y-1)*blockMultiplier+1;
 	  int depth = (blockDim.z-1)*blockMultiplier+1;
 	  int size = width*height*depth;
 
 	  float[] voxels = new float[size];
 	  for(int i = 0; i < size; i++) {
-	    voxels[i] = i%32 < 16 ? 0.0f : 1.0f;
+	    voxels[i] = i%60 < 30 ? 0.0f : 1.0f;
 	  }
 
 	  string voxelString = "";
@@ -314,10 +314,10 @@ namespace Tests
 	  string indicesString = "";
 	  string cubeCases = "";
 
-	  for (int z = 0; z < depth; z++) {
+	  for (int z = 0; z < depth+1; z++) {
 	    for (int y = 0; y < height; y++) {
 	      for (int x = 0; x < width; x++) {
-		indicesString += indices[x+y*(blockDim.x-1)+z*(blockDim.x-1)*(blockDim.y-1)] + ",";
+		indicesString += indices[x+y*width+z*width*height] + ",";
 	      }
 	      indicesString += "\n";
 	    }
