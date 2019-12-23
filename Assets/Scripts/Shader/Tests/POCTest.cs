@@ -276,14 +276,14 @@ namespace Tests
         {
 	  float isoValue = .5f;
 	  int blockMultiplier = 1;
-	  int width = (blockDim.x-1)*(blockMultiplier+1)+1;
+	  int width = (blockDim.x-1)*(blockMultiplier+1);
 	  int height = (blockDim.y-1)*blockMultiplier+1;
 	  int depth = (blockDim.z-1)*blockMultiplier+1;
 	  int size = width*height*depth;
 
 	  float[] voxels = new float[size];
 	  for(int i = 0; i < size; i++) {
-	    voxels[i] = i%60 < 30 ? 0.0f : 1.0f;
+	    voxels[i] = i%56 < 28 ? 0.0f : 1.0f;
 	  }
 
 	  string voxelString = "";
@@ -301,9 +301,10 @@ namespace Tests
 	  int[] compactedBlkArray = poc.compactBlockArray(voxels, width, height, depth, isoValue);
 
 	  Vector3[] vertices;
+	  Vector3[] normals;
 	  int[] indices;
 	  
-	  poc.parallelMarchingBlocks(voxels, width, height, depth, isoValue, out vertices, out indices);
+	  poc.parallelMarchingBlocks(voxels, width, height, depth, isoValue, out vertices, out indices, out normals);
 
 	  Debug.Log("voxels: " + voxelString);
 	  Debug.Log("minMax: " + string.Join(",", minMax));
@@ -312,7 +313,6 @@ namespace Tests
 	  Debug.Log("vertices: " + string.Join(",", vertices));
 	  Debug.Log("numIndices: " + indices.Length);
 	  string indicesString = "";
-	  string cubeCases = "";
 
 	  for (int z = 0; z < depth+1; z++) {
 	    for (int y = 0; y < height; y++) {

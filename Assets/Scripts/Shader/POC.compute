@@ -173,6 +173,27 @@ float accessSharedVoxelBuffer(uint3 val) {
   }
 }
 
+float accessGlobalVoxelBuffer(int3 val) {
+  if (val.x >= size.x || val.y >= size.y || val.z >= size.z) {
+    return 0.0f;
+  } else {
+    return voxelBuffer[val.z*size.x*size.y + val.y*size.x + val.x];
+  }
+}
+
+float3 calcNormalFor(uint3 val) {
+  float3 normal = float3(
+    (accessGlobalVoxelBuffer(val + uint3(1, 0, 0)) - accessGlobalVoxelBuffer(val - uint3(1, 0, 0)))/2,
+    (accessGlobalVoxelBuffer(val + uint3(0, 1, 0)) - accessGlobalVoxelBuffer(val - uint3(0, 1, 0)))/2,
+    (accessGlobalVoxelBuffer(val + uint3(0, 0, 1)) - accessGlobalVoxelBuffer(val - uint3(0, 0, 1)))/2
+  );
+  if (length(normal) == 0) {
+    return normal;
+  } else {
+    return normalize(normal);
+  }
+}
+
 [numthreads(B_DIM_X, B_DIM_Y, B_DIM_Z)]
 void generateTriangles(
   uint3 gid : SV_GroupID,
@@ -263,12 +284,15 @@ void generateTriangles(
   numVerts[c_gidx] = vertsOffset + numVerts[B_DIM-1] - myNumVerts;
   GroupMemoryBarrierWithGroupSync();
 
+  float3 myNormalVector = calcNormalFor(c_dtid);
   uint vertexOffset = numVerts[c_gidx];
   if (myXyzEdges.x) {
     float3 xVoxel = c_dtid;
     xVoxel.x += 1;
     float delta = edgeVoxels.x - myVoxelValue;
-    vertexBuffer[vertexOffset] = lerp(c_dtid, xVoxel, (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta);
+    float lerpFactor = (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta;
+    normalBuffer[vertexOffset] = lerp(myNormalVector, calcNormalFor(xVoxel), lerpFactor);
+    vertexBuffer[vertexOffset] = lerp(c_dtid, xVoxel, lerpFactor);
     vertexOffset++;
   }
 
@@ -276,7 +300,9 @@ void generateTriangles(
     float3 yVoxel = c_dtid;
     yVoxel.y += 1;
     float delta = edgeVoxels.y - myVoxelValue;
-    vertexBuffer[vertexOffset] = lerp(c_dtid, yVoxel, (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta);
+    float lerpFactor = (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta;
+    normalBuffer[vertexOffset] = lerp(myNormalVector, calcNormalFor(yVoxel), lerpFactor);
+    vertexBuffer[vertexOffset] = lerp(c_dtid, yVoxel, lerpFactor);
     vertexOffset++;
   }
 
@@ -284,21 +310,18 @@ void generateTriangles(
     float3 zVoxel = c_dtid;
     zVoxel.z += 1;
     float delta = edgeVoxels.z - myVoxelValue;
-    vertexBuffer[vertexOffset] = lerp(c_dtid, zVoxel, (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta);
+    float lerpFactor = (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta;
+    normalBuffer[vertexOffset] = lerp(myNormalVector, calcNormalFor(zVoxel), lerpFactor);
+    vertexBuffer[vertexOffset] = lerp(c_dtid, zVoxel, lerpFactor);
   }
 
   // indexBuffer[globalIndex] = numVerts[c_gidx];
   // return;
 
-  uint tableOffset = edgeTableOffset[cubeCase];
   uint indexBufferBaseOffset = (numTris[c_gidx]-myNumTris)*3;
   for (uint indexOffset = 0; indexOffset < myNumTris*3; indexOffset++) {
     uint4 edgeMap = neighborMappingTable[marchingCubesEdgeTable[cubeCase*16+indexOffset]];
     uint3 edgeCellOffset = gtid + edgeMap.xyz;
-    /*if (edgeCellOffset.x >= B_DIM_X || edgeCellOffset.y >= B_DIM_Y || edgeCellOffset.z >= B_DIM_Z) {
-      indexOffset += 3;
-      continue;
-    }*/
     uint edgeCellOffsetIdx = vecToIdx(edgeCellOffset);
 
     bool3 neighborXyzEdges = sharedXyzEdges[edgeCellOffsetIdx];

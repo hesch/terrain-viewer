@@ -21,6 +21,7 @@ public class POC : MonoBehaviour
     public Material mat;
 
     ComputeBuffer vertexBuffer;
+    ComputeBuffer normalBuffer;
     ComputeBuffer indexBuffer;
     int vertexCount = 4;
     int indexCount = 6;
@@ -41,7 +42,7 @@ public class POC : MonoBehaviour
       }
 
       Debug.Log(output);
-      int blockMultiplier = 4;
+      int blockMultiplier = 10;
       int width = blockSize.x*blockMultiplier+1;
       int height = blockSize.y*blockMultiplier+1;
       int depth = blockSize.z*blockMultiplier+1;
@@ -59,18 +60,46 @@ public class POC : MonoBehaviour
 	}
       }
 
-      Vector3[] vert;
-      int[] index;
+      Vector3[] vert = new Vector3[4];
+      Vector3[] normals = new Vector3[4];
+      int[] index = new int[6];
 
-      parallelMarchingBlocks(voxels, width, height, depth, 0.5f, out vert, out index);
+      parallelMarchingBlocks(voxels, width, height, depth, 0.5f, out vert, out index, out normals);
       Debug.Log(string.Join(",", vert));
+      Debug.Log(string.Join(",", normals));
       Debug.Log(string.Join(",", index)); 
 
-      Mesh mesh = new Mesh();
+      indexCount = index.Length;
+
+     /* Mesh mesh = new Mesh();
       GetComponent<MeshFilter>().mesh = mesh;
       mesh.vertices = vert;
+      mesh.normals = normals;
       mesh.triangles = index;
-      mesh.RecalculateNormals();
+      */
+
+      /*vert[0] = new Vector3(0.0f, 0.0f, 0.0f);
+      vert[1] = new Vector3(1.0f, 0.0f, 0.0f);
+      vert[2] = new Vector3(0.0f, 1.0f, 0.0f);
+      vert[3] = new Vector3(1.0f, 1.0f, 0.0f);
+
+      index[0] = 0;
+      index[1] = 1;
+      index[2] = 2;
+
+      index[3] = 2;
+      index[4] = 1;
+      index[5] = 3;
+
+      */
+      vertexBuffer = new ComputeBuffer(vert.Length, sizeof(float)*3);
+      normalBuffer = new ComputeBuffer(normals.Length, sizeof(float)*3);
+      indexBuffer = new ComputeBuffer(index.Length, sizeof(int));
+
+      vertexBuffer.SetData(vert);
+      normalBuffer.SetData(normals);
+      indexBuffer.SetData(index);
+      
     }
 
     public MinMaxPair[] computeMinMax(float[] voxels, int width, int height, int depth) {
@@ -167,9 +196,10 @@ public class POC : MonoBehaviour
       return result;
     }
 
-    public void parallelMarchingBlocks(float[] voxels, int width, int height, int depth, float isoValue, out Vector3[] vertices, out int[] indices) {
-      Debug.Log("marchingCubesEdgeTable.Length: " + marchingCubesEdgeTable.Length);
+    public void parallelMarchingBlocks(float[] voxels, int width, int height, int depth, float isoValue, out Vector3[] vertices, out int[] indices, out Vector3[] normals) {
+      Debug.LogFormat("voxels({0}, {1}, {2})", width, height, depth);
       addPadding(ref voxels, ref width, ref height, ref depth);
+      Debug.LogFormat("addPadding({0}, {1}, {2})", width, height, depth);
       Vector3Int numBlocks = new Vector3Int((width-1)/blockSize.x, (height-1)/blockSize.y, (depth-1)/blockSize.z);
 
       ComputeBuffer voxelBuffer = new ComputeBuffer(voxels.Length, sizeof(float));
@@ -200,6 +230,7 @@ public class POC : MonoBehaviour
       activeBlkNum.GetData(numActiveBlocks);
 
       vertexBuffer = new ComputeBuffer(numActiveBlocks[0]*blockSize.x*blockSize.y*blockSize.z*3, sizeof(float)*3);
+      normalBuffer = new ComputeBuffer(numActiveBlocks[0]*blockSize.x*blockSize.y*blockSize.z*3, sizeof(float)*3);
       // TODO: evaluate this size
       indexBuffer = new ComputeBuffer(numActiveBlocks[0]*blockSize.x*blockSize.y*blockSize.z*3*5, sizeof(int));
       vertexCount = vertexBuffer.count;
@@ -218,19 +249,21 @@ public class POC : MonoBehaviour
 
       int generateTrianglesKernelIndex = POCShader.FindKernel("generateTriangles");
 
-      POCShader.SetInts("c_numBlocks", new int[]{ width/8, height/4, depth/4 });
       POCShader.SetBuffer(generateTrianglesKernelIndex, "marchingCubesEdgeTable", marchingCubesEdgeTableBuffer);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "globalVertexOffset", globalVertexOffset);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "globalIndexOffset", globalIndexOffset);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "voxelBuffer", voxelBuffer);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "compactedBlkArray", compactedBlkArray);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "vertexBuffer", vertexBuffer);
+      POCShader.SetBuffer(generateTrianglesKernelIndex, "normalBuffer", normalBuffer);
       POCShader.SetBuffer(generateTrianglesKernelIndex, "indexBuffer", indexBuffer);
       POCShader.Dispatch(generateTrianglesKernelIndex, numActiveBlocks[0], 1, 1);
 
       vertices = new Vector3[vertexBuffer.count];
+      normals = new Vector3[normalBuffer.count];
       indices = new int[indexBuffer.count];
       vertexBuffer.GetData(vertices);
+      normalBuffer.GetData(normals);
       indexBuffer.GetData(indices);
 
       voxelBuffer.Release();
@@ -238,6 +271,7 @@ public class POC : MonoBehaviour
       compactedBlkArray.Release();
       activeBlkNum.Release();
       vertexBuffer.Release();
+      normalBuffer.Release();
       indexBuffer.Release();
       globalVertexOffset.Release();
       globalIndexOffset.Release();
@@ -249,6 +283,7 @@ public class POC : MonoBehaviour
         mat.SetPass(0);
         mat.SetBuffer("vertexBuffer", vertexBuffer);
 	mat.SetBuffer("indexBuffer", indexBuffer);
+	mat.SetBuffer("normalBuffer", normalBuffer);
         Graphics.DrawProceduralNow(MeshTopology.Triangles, indexCount, 1);
     }
  
@@ -256,6 +291,7 @@ public class POC : MonoBehaviour
     {
         vertexBuffer.Release();
 	indexBuffer.Release();
+	normalBuffer.Release();
     }
 
     
