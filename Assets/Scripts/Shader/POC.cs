@@ -13,8 +13,6 @@ public struct MinMaxPair {
   }
 }
 
-
-
 public class POC : MonoBehaviour
 {
     public ComputeShader POCShader;

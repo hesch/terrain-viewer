@@ -1,7 +1,7 @@
 {
-    "name": "Shader",
+    "name": "ShaderAssembly",
     "references": [
-        "Plugins"
+        "PluginsAssembly"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
