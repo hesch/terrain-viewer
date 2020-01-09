@@ -3,10 +3,21 @@ using UnityEngine;
 public class ProceduralRenderer : MonoBehaviour
 {
     public int numVertices = 0;
+    public Material material;
 
-    void OnPostRender()
+    private Transform transform;
+
+    public void Awake()
     {
-        Debug.Log("post render: " + numVertices);
+        transform = GetComponent<Transform>();
+    }
+
+    void OnRenderObject()
+    {
+        Matrix4x4 mvp = Camera.current.projectionMatrix * Camera.current.worldToCameraMatrix * transform.localToWorldMatrix;
+
+        material.SetPass(0);
+        material.SetMatrix("mvp", mvp);
         Graphics.DrawProceduralNow(MeshTopology.Triangles, numVertices, 1);
     }
 }

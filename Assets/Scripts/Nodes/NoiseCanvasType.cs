@@ -89,13 +89,10 @@ public class NoiseCanvasType : NodeCanvas
                         n2.Offset = new Vector2Int(tuple.Item1, tuple.Item2);
                     }
                     nodeStopwatch.Restart();
-                    UnityEngine.Debug.Log("before calc");
                     n.Calculate();
-                    UnityEngine.Debug.Log("after calc");
                     nodeStopwatch.Stop();
                     performanceString += String.Format("\n\tNode {0} took\t{1}ms", n.Title, nodeStopwatch.ElapsedMilliseconds);
 
-                    UnityEngine.Debug.Log(String.Format("Still Calculating Node {0}", n.Title));
                     if (n.isOutput() && n is VertexNode)
                     {
                         UnityEngine.Debug.Log("vertexNoded");

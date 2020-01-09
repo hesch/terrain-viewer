@@ -156,22 +156,23 @@ public class VertexNode : Node
         sw.Restart();
         weldVertices(verts, indices, normals);
         sw.Stop();
-        UnityEngine.Debug.LogFormat("Vertex welding took {0}ms\n\t {1} vertices left", sw.ElapsedMilliseconds, verts.Count());
 
-        UnityEngine.Debug.Log("before new ComputeBuffer1");
-        Vertices = new ComputeBuffer(verts.Count, sizeof(float) * 3);
+        var task = MainThreadHelper.instance().scheduleOnMainThread(() =>
+        {
+            UnityEngine.Debug.LogFormat("Vertex welding took {0}ms\n\t {1} vertices left", sw.ElapsedMilliseconds, verts.Count());
 
-        UnityEngine.Debug.Log("before new ComputeBuffer2");
-        Indices = new ComputeBuffer(indices.Count, sizeof(int));
+            Vertices = new ComputeBuffer(verts.Count, sizeof(float) * 3);
+            Indices = new ComputeBuffer(indices.Count, sizeof(int));
 
-        UnityEngine.Debug.Log("before new ComputeBuffer3");
-        Normals = new ComputeBuffer(normals.Count, sizeof(float) * 3);
+            Normals = new ComputeBuffer(normals.Count, sizeof(float) * 3);
 
-        UnityEngine.Debug.Log("after new ComputeBuffer");
+            Vertices.SetData(verts);
+            Indices.SetData(indices);
+            Normals.SetData(normals);
+        });
 
-        Vertices.SetData(verts);
-        Indices.SetData(indices);
-        Normals.SetData(normals);
+        task.wait();
+
 
         UnityEngine.Debug.Log("after setData");
         Block = block;

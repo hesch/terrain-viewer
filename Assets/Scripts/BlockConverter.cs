@@ -18,13 +18,12 @@ public class BlockConverter
 
         GameObject go = new GameObject(String.Format("Block({0}, {1})", block.Offset.x, block.Offset.y));
         go.AddComponent<ProceduralRenderer>();
-        go.AddComponent<Renderer>();
         go.AddComponent<BoxCollider>();
         go.AddComponent<BlockInfo>();
         go.AddComponent<EventTrigger>();
 
         go.GetComponent<ProceduralRenderer>().numVertices = indices.count;
-        go.GetComponent<Renderer>().material = m;
+        go.GetComponent<ProceduralRenderer>().material = m;
         go.GetComponent<BlockInfo>().Block = block;
         go.transform.localPosition = new Vector3((block.Offset.x - 0.5f) * block.Width, -block.Height / 2, (block.Offset.y - 0.5f) * block.Length);
         go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);

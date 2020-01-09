@@ -1,5 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
+﻿
 Shader "Custom/BufferShader"
 {
     SubShader
@@ -23,6 +22,8 @@ Shader "Custom/BufferShader"
             uniform StructuredBuffer<float3> vertexBuffer;
             uniform StructuredBuffer<float3> normalBuffer;
             uniform StructuredBuffer<int> indexBuffer;
+
+            uniform matrix mvp;
  
             struct v2f
             {
@@ -33,11 +34,11 @@ Shader "Custom/BufferShader"
             v2f vert(uint id : SV_VertexID)
             {
                 float4 pos = float4(vertexBuffer[indexBuffer[id]], 1);
-		float3 normal = UnityObjectToWorldNormal(normalBuffer[indexBuffer[id]]);
+		        float3 normal = UnityObjectToWorldNormal(normalBuffer[indexBuffer[id]]);
  
                 v2f OUT;
-                OUT.pos = UnityObjectToClipPos(pos);
-		OUT.diff = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
+                OUT.pos = mul(mvp, pos);
+		        OUT.diff = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
                 return OUT;
             }
  
