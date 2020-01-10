@@ -11,7 +11,9 @@ public enum VerteGenerationMode
 {
     Cubes,
     Tetrahedron,
-    Voxel
+    Voxel,
+
+    PMB
 };
 
 [Node(false, "Vertex")]
@@ -91,6 +93,11 @@ public class VertexNode : Node
         normals.InsertRange(0, indexMap.OrderBy(kv => kv.Value).Select(kv => normalMap[kv.Key]));
     }
 
+    private bool ParallelMarchingBlocks()
+    {
+        return true;
+    }
+
     public override bool Calculate()
     {
         VoxelBlock<Voxel> block = input.GetValue<VoxelBlock<Voxel>>();
@@ -111,6 +118,8 @@ public class VertexNode : Node
             case VerteGenerationMode.Voxel:
                 marching = new VoxelGeneration();
                 break;
+            case VerteGenerationMode.PMB:
+                return ParallelMarchingBlocks();
         }
 
         //Surface is the value that represents the surface of mesh
@@ -157,13 +166,12 @@ public class VertexNode : Node
         weldVertices(verts, indices, normals);
         sw.Stop();
 
+        UnityEngine.Debug.LogFormat("Vertex welding took {0}ms\n\t {1} vertices left", sw.ElapsedMilliseconds, verts.Count());
+
         var task = MainThreadHelper.instance().scheduleOnMainThread(() =>
         {
-            UnityEngine.Debug.LogFormat("Vertex welding took {0}ms\n\t {1} vertices left", sw.ElapsedMilliseconds, verts.Count());
-
             Vertices = new ComputeBuffer(verts.Count, sizeof(float) * 3);
             Indices = new ComputeBuffer(indices.Count, sizeof(int));
-
             Normals = new ComputeBuffer(normals.Count, sizeof(float) * 3);
 
             Vertices.SetData(verts);

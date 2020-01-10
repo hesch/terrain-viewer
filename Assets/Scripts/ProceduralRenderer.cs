@@ -14,7 +14,7 @@ public class ProceduralRenderer : MonoBehaviour
 
     void OnRenderObject()
     {
-        Matrix4x4 mvp = Camera.current.projectionMatrix * Camera.current.worldToCameraMatrix * transform.localToWorldMatrix;
+        Matrix4x4 mvp = transform.localToWorldMatrix;
 
         material.SetPass(0);
         material.SetMatrix("mvp", mvp);

@@ -37,7 +37,7 @@ Shader "Custom/BufferShader"
 		        float3 normal = UnityObjectToWorldNormal(normalBuffer[indexBuffer[id]]);
  
                 v2f OUT;
-                OUT.pos = mul(mvp, pos);
+                OUT.pos = UnityObjectToClipPos(mul(mvp, pos));
 		        OUT.diff = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
                 return OUT;
             }

@@ -6,10 +6,8 @@ public class BlockInfo : MonoBehaviour
     public IVoxelBlock Block { get; set; }
 
 
-    private Mesh mesh;
     public void Start()
     {
-        mesh = GetComponent<MeshFilter>().mesh;
     }
 
     /*public void Update() {
