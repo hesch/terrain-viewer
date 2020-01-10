@@ -22,8 +22,12 @@ public class BlockConverter
         go.AddComponent<BlockInfo>();
         go.AddComponent<EventTrigger>();
 
-        go.GetComponent<ProceduralRenderer>().numVertices = indices.count;
-        go.GetComponent<ProceduralRenderer>().material = m;
+	ProceduralRenderer renderer = go.GetComponent<ProceduralRenderer>();
+        renderer.numVertices = indices.count;
+        renderer.material = m;
+        renderer.vertices = vertices;
+        renderer.indices = indices;
+        renderer.normals = normals;
         go.GetComponent<BlockInfo>().Block = block;
         go.transform.localPosition = new Vector3((block.Offset.x - 0.5f) * block.Width, -block.Height / 2, (block.Offset.y - 0.5f) * block.Length);
         go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);

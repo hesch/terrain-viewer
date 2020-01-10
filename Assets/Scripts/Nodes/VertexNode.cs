@@ -175,6 +175,9 @@ public class VertexNode : Node
     public override bool Calculate()
     {
         bool isPMB = false;
+	if (!input.connected()) {
+	  return false;
+	}
         VoxelBlock<Voxel> block = input.GetValue<VoxelBlock<Voxel>>();
         if (surfaceConnection.connected())
         {
@@ -224,8 +227,10 @@ public class VertexNode : Node
             UnityEngine.Debug.Log("scheduling PMB on main thread");
             var pmbTask = MainThreadHelper.instance().scheduleOnMainThread(() =>
             {
-                UnityEngine.Debug.Log("PMB is executing");
+		Stopwatch pmbWatch = Stopwatch.StartNew();
                 ParallelMarchingBlocks(voxels, width, height, length, surface);
+		pmbWatch.Stop();
+		UnityEngine.Debug.LogFormat("PMB took {0}ms\n\t{1} voxels", pmbWatch.ElapsedMilliseconds, voxels.Count());
             });
 
             UnityEngine.Debug.Log("waiting for PMB on main thread");
