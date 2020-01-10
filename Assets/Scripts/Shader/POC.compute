@@ -280,8 +280,13 @@ void generateTriangles(
 
   AllMemoryBarrierWithGroupSync();
 
-  numTris[c_gidx] = trisOffset + numTris[B_DIM-1];
-  numVerts[c_gidx] = vertsOffset + numVerts[B_DIM-1] - myNumVerts;
+  uint sharedTrisOffset = numTris[B_DIM-1];
+  uint sharedVertsOffset = numVerts[B_DIM-1];
+
+  GroupMemoryBarrierWithGroupSync();
+
+  numTris[c_gidx] = trisOffset + sharedTrisOffset;
+  numVerts[c_gidx] = vertsOffset + sharedVertsOffset - myNumVerts;
   GroupMemoryBarrierWithGroupSync();
 
   float3 myNormalVector = calcNormalFor(c_dtid);
