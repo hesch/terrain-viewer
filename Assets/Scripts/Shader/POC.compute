@@ -264,9 +264,12 @@ void generateTriangles(
   GroupMemoryBarrierWithGroupSync();
 
   for (uint offset = 1; offset < B_DIM; offset <<= 1) {
+    int t = numTris[c_gidx-offset];
+    int v = numVerts[c_gidx-offset];
+    GroupMemoryBarrierWithGroupSync();
     if (c_gidx >= offset) {
-      numTris[c_gidx] += numTris[c_gidx-offset];
-      numVerts[c_gidx] += numVerts[c_gidx-offset];
+      numTris[c_gidx] += t;
+      numVerts[c_gidx] += v;
     }
     GroupMemoryBarrierWithGroupSync();
   }

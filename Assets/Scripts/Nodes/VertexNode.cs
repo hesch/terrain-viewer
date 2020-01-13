@@ -230,7 +230,7 @@ public class VertexNode : Node
 		Stopwatch pmbWatch = Stopwatch.StartNew();
                 ParallelMarchingBlocks(voxels, width, height, length, surface);
 		pmbWatch.Stop();
-		UnityEngine.Debug.LogFormat("PMB took {0}ms\n\t{1} voxels", pmbWatch.ElapsedMilliseconds, voxels.Count());
+		UnityEngine.Debug.LogFormat("PMB took {0}ms\n\t{1} voxels\n\t{2} triangles", pmbWatch.ElapsedMilliseconds, voxels.Count(), Indices.count/3);
             });
 
             UnityEngine.Debug.Log("waiting for PMB on main thread");

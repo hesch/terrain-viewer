@@ -12,7 +12,7 @@ public class VoxelInputNode : InputNode<Voxel>
 	public override Vector2 DefaultSize { get { return new Vector2 (150, 100); } }
 
 	protected override VoxelBlock<Voxel> InitBlock(VoxelBlock<Voxel> block) {
-	  int size = 64;
+	  int size = 128;
 	  VoxelLayer<Voxel>[] layers = new VoxelLayer<Voxel>[size];
 	  for(int y = 0; y < size; y++) {
 	    Voxel[,] voxelLayer = new Voxel[size, size];
