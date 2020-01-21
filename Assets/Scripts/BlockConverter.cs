@@ -1,9 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using System.Collections.Generic;
-using System;
-using System.Linq;
-using System.Diagnostics;
 
 public class BlockConverter
 {
@@ -21,7 +20,7 @@ public class BlockConverter
         go.AddComponent<BlockInfo>();
         go.AddComponent<EventTrigger>();
 
-	    ProceduralRenderer renderer = go.GetComponent<ProceduralRenderer>();
+        ProceduralRenderer renderer = go.GetComponent<ProceduralRenderer>();
         renderer.numVertices = indices.count;
         renderer.material = m;
         renderer.vertices = vertices;

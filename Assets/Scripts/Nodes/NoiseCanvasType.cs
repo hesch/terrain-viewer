@@ -1,13 +1,11 @@
-﻿using UnityEngine;
-using NodeEditorFramework;
-using NodeEditorFramework.Standard;
-
-using System.Collections.Generic;
+﻿using NodeEditorFramework;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEngine;
 
 [NodeCanvasType("Noise Canvas")]
 public class NoiseCanvasType : NodeCanvas

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 namespace ProceduralNoiseProject
@@ -54,7 +53,7 @@ namespace ProceduralNoiseProject
         /// The frequencies for each octave.
         /// </summary>
         public float[] Frequencies { get; set; }
-		
+
         public FractalNoise(INoise noise, int octaves, float frequency, float amplitude = 1.0f)
         {
 
@@ -93,43 +92,43 @@ namespace ProceduralNoiseProject
         }
 
         protected virtual void UpdateTable(INoise[] noises)
-		{
-			Amplitudes = new float[Octaves];
-			Frequencies = new float[Octaves];
+        {
+            Amplitudes = new float[Octaves];
+            Frequencies = new float[Octaves];
             Noises = new INoise[Octaves];
 
             int numNoises = noises.Length;
-			
-			float amp = 0.5f;
-			float frq = Frequency;
-			for(int i = 0; i < Octaves; i++)
-			{
-                Noises[i] = noises[Math.Min(i, numNoises - 1)];
-				Frequencies[i] = frq;
-				Amplitudes[i] = amp;
-				amp *= Gain;
-				frq *= Lacunarity;
-			}
 
-		}
-		
+            float amp = 0.5f;
+            float frq = Frequency;
+            for (int i = 0; i < Octaves; i++)
+            {
+                Noises[i] = noises[Math.Min(i, numNoises - 1)];
+                Frequencies[i] = frq;
+                Amplitudes[i] = amp;
+                amp *= Gain;
+                frq *= Lacunarity;
+            }
+
+        }
+
         /// <summary>
         /// Returns the noise value from a octave in a 1D fractal.
         /// </summary>
         /// <param name="i">The octave to sample.</param>
         /// <param name="x">A value on the x axis.</param>
         /// <returns>A noise value between -Amp and Amp.</returns>
-		public virtual float Octave1D(int i, float x)
-		{
+        public virtual float Octave1D(int i, float x)
+        {
             if (i >= Octaves) return 0.0f;
             if (Noises[i] == null) return 0.0f;
 
-			x = x + Offset.x;
+            x = x + Offset.x;
 
-			float frq = Frequencies[i];
-			return Noises[i].Sample1D(x * frq) * Amplitudes[i] * Amplitude;
-		}
-		
+            float frq = Frequencies[i];
+            return Noises[i].Sample1D(x * frq) * Amplitudes[i] * Amplitude;
+        }
+
         /// <summary>
         /// Returns the noise value from a octave in a 2D fractal.
         /// </summary>
@@ -137,18 +136,18 @@ namespace ProceduralNoiseProject
         /// <param name="x">A value on the x axis.</param>
         /// <param name="y">A value on the y axis.</param>
         /// <returns>A noise value between -Amp and Amp.</returns>
-		public virtual float Octave2D(int i, float x, float y)
-		{
+        public virtual float Octave2D(int i, float x, float y)
+        {
             if (i >= Octaves) return 0.0f;
             if (Noises[i] == null) return 0.0f;
 
-			x = x + Offset.x;
-			y = y + Offset.y;
+            x = x + Offset.x;
+            y = y + Offset.y;
 
-			float frq = Frequencies[i];
+            float frq = Frequencies[i];
             return Noises[i].Sample2D(x * frq, y * frq) * Amplitudes[i] * Amplitude;
-		}
-		
+        }
+
         /// <summary>
         /// Returns the noise value from a octave in a 3D fractal.
         /// </summary>
@@ -157,18 +156,18 @@ namespace ProceduralNoiseProject
         /// <param name="y">A value on the y axis.</param>
         /// <param name="z">A value on the z axis.</param>
         /// <returns>A noise value between -Amp and Amp.</returns>
-		public virtual float Octave3D(int i, float x, float y, float z)
-		{
+        public virtual float Octave3D(int i, float x, float y, float z)
+        {
             if (i >= Octaves) return 0.0f;
             if (Noises[i] == null) return 0.0f;
 
-			x = x + Offset.x;
-			y = y + Offset.y;
-			z = z + Offset.z;
+            x = x + Offset.x;
+            y = y + Offset.y;
+            z = z + Offset.z;
 
-			float frq = Frequencies[i];
+            float frq = Frequencies[i];
             return Noises[i].Sample3D(x * frq, y * frq, z * frq) * Amplitudes[i] * Amplitude;
-		}
+        }
 
         /// <summary>
         /// Samples a 1D fractal.
@@ -177,17 +176,17 @@ namespace ProceduralNoiseProject
         /// <returns>A noise value between -Amp and Amp.</returns>
         public virtual float Sample1D(float x)
         {
-			x = x + Offset.x;
+            x = x + Offset.x;
 
-	        float sum = 0, frq;
-			for(int i = 0; i < Octaves; i++) 
-	        {	
-				frq = Frequencies[i];
+            float sum = 0, frq;
+            for (int i = 0; i < Octaves; i++)
+            {
+                frq = Frequencies[i];
 
                 if (Noises[i] != null)
                     sum += Noises[i].Sample1D(x * frq) * Amplitudes[i];
-	        }
-			return sum * Amplitude;
+            }
+            return sum * Amplitude;
         }
 
         /// <summary>
@@ -198,18 +197,18 @@ namespace ProceduralNoiseProject
         /// <returns>A noise value between -Amp and Amp.</returns>
         public virtual float Sample2D(float x, float y)
         {
-			x = x + Offset.x;
-			y = y + Offset.y;
+            x = x + Offset.x;
+            y = y + Offset.y;
 
-	        float sum = 0, frq;
-	        for(int i = 0; i < Octaves; i++) 
-	        {
-				frq = Frequencies[i];
+            float sum = 0, frq;
+            for (int i = 0; i < Octaves; i++)
+            {
+                frq = Frequencies[i];
 
                 if (Noises[i] != null)
                     sum += Noises[i].Sample2D(x * frq, y * frq) * Amplitudes[i];
-			}
-			return sum * Amplitude;
+            }
+            return sum * Amplitude;
         }
 
         /// <summary>
@@ -221,19 +220,19 @@ namespace ProceduralNoiseProject
         /// <returns>A noise value between -Amp and Amp.</returns>
         public virtual float Sample3D(float x, float y, float z)
         {
-			x = x + Offset.x;
-			y = y + Offset.y;
-			z = z + Offset.z;
+            x = x + Offset.x;
+            y = y + Offset.y;
+            z = z + Offset.z;
 
-	        float sum = 0, frq;
-			for(int i = 0; i < Octaves; i++) 
-	        {
-				frq = Frequencies[i];
+            float sum = 0, frq;
+            for (int i = 0; i < Octaves; i++)
+            {
+                frq = Frequencies[i];
 
                 if (Noises[i] != null)
                     sum += Noises[i].Sample3D(x * frq, y * frq, z * frq) * Amplitudes[i];
-	        }
-			return sum * Amplitude;
+            }
+            return sum * Amplitude;
         }
 
     }

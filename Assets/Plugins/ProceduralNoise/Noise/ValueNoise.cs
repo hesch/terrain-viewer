@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ProceduralNoiseProject
 {
@@ -9,14 +7,14 @@ namespace ProceduralNoiseProject
     /// Simple noise implementation by interpolating random values.
     /// Works same as Perlin noise but uses the values instead of gradients.
     /// Perlin noise uses gradients as it makes better noise but this still
-   ///  looks good and might be a little faster.
+    ///  looks good and might be a little faster.
     /// </summary>
-	public class ValueNoise : Noise
-	{
+    public class ValueNoise : Noise
+    {
 
         private PermutationTable Perm { get; set; }
 
-        public ValueNoise(int seed, float frequency, float amplitude = 1.0f) 
+        public ValueNoise(int seed, float frequency, float amplitude = 1.0f)
         {
 
             Frequency = frequency;
@@ -155,7 +153,7 @@ namespace ProceduralNoiseProject
 
         private float LERP(float t, float a, float b) { return a + t * (b - a); }
 
-	}
+    }
 
 }
 

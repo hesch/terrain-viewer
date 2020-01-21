@@ -1,11 +1,10 @@
-using UnityEngine;
+using MarchingCubesProject;
 using NodeEditorFramework;
 using NodeEditorFramework.Utilities;
-using ProceduralNoiseProject;
-using MarchingCubesProject;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics;
+using System.Linq;
+using UnityEngine;
 
 public enum VerteGenerationMode
 {

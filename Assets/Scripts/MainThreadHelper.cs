@@ -1,7 +1,6 @@
 using System;
-using System.Threading;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Threading;
 using UnityEngine;
 
 public class ThreadHelperTask

@@ -1,72 +1,72 @@
-﻿using UnityEngine;
+﻿using NodeEditorFramework.Utilities;
 using UnityEditor;
-using NodeEditorFramework.Utilities;
+using UnityEngine;
 
 namespace NodeEditorFramework.Standard
 {
-	[CustomEditor(typeof(Node), true)]
-	public class NodeInspector : Editor
-	{
-		public static GUIStyle titleStyle;
-		public static GUIStyle boldLabelStyle;
-		public Node node;
+    [CustomEditor(typeof(Node), true)]
+    public class NodeInspector : Editor
+    {
+        public static GUIStyle titleStyle;
+        public static GUIStyle boldLabelStyle;
+        public Node node;
 
-		public void OnEnable()
-		{
-			node = (Node)target;
-		}
+        public void OnEnable()
+        {
+            node = (Node)target;
+        }
 
-		public override void OnInspectorGUI()
-		{
-			if (node == null)
-				node = (Node)target;
-			if (node == null)
-				return;
-			if (titleStyle == null)
-			{
-				titleStyle = new GUIStyle(GUI.skin.label);
-				titleStyle.fontStyle = FontStyle.Bold;
-				titleStyle.alignment = TextAnchor.MiddleCenter;
-				titleStyle.fontSize = 16;
-			}
-			if (boldLabelStyle == null)
-			{
-				boldLabelStyle = new GUIStyle(GUI.skin.label);
-				boldLabelStyle.fontStyle = FontStyle.Bold;
-			}
+        public override void OnInspectorGUI()
+        {
+            if (node == null)
+                node = (Node)target;
+            if (node == null)
+                return;
+            if (titleStyle == null)
+            {
+                titleStyle = new GUIStyle(GUI.skin.label);
+                titleStyle.fontStyle = FontStyle.Bold;
+                titleStyle.alignment = TextAnchor.MiddleCenter;
+                titleStyle.fontSize = 16;
+            }
+            if (boldLabelStyle == null)
+            {
+                boldLabelStyle = new GUIStyle(GUI.skin.label);
+                boldLabelStyle.fontStyle = FontStyle.Bold;
+            }
 
-			OverlayGUI.StartOverlayGUI("NodeInspector");
+            OverlayGUI.StartOverlayGUI("NodeInspector");
 
-			EditorGUI.BeginChangeCheck();
+            EditorGUI.BeginChangeCheck();
 
-			GUILayout.Space(10);
+            GUILayout.Space(10);
 
-			GUILayout.Label(node.Title, titleStyle);
+            GUILayout.Label(node.Title, titleStyle);
 
-			GUILayout.Space(10);
+            GUILayout.Space(10);
 
-			GUILayout.Label("Rect: " + node.rect.ToString());
-			node.backgroundColor = EditorGUILayout.ColorField("Color", node.backgroundColor);
+            GUILayout.Label("Rect: " + node.rect.ToString());
+            node.backgroundColor = EditorGUILayout.ColorField("Color", node.backgroundColor);
 
-			GUILayout.Space(10);
+            GUILayout.Space(10);
 
-			GUILayout.Label("Connection Ports", boldLabelStyle);
-			foreach (ConnectionPort port in node.connectionPorts)
-			{
-				string labelPrefix = port.direction == Direction.In ? "Input " : (port.direction == Direction.Out ? "Output " : "");
-				string label = labelPrefix + port.styleID + " '" + port.name + "'";
-				EditorGUILayout.ObjectField(label, port, port.GetType(), true);
-			}
+            GUILayout.Label("Connection Ports", boldLabelStyle);
+            foreach (ConnectionPort port in node.connectionPorts)
+            {
+                string labelPrefix = port.direction == Direction.In ? "Input " : (port.direction == Direction.Out ? "Output " : "");
+                string label = labelPrefix + port.styleID + " '" + port.name + "'";
+                EditorGUILayout.ObjectField(label, port, port.GetType(), true);
+            }
 
-			GUILayout.Space(10);
+            GUILayout.Space(10);
 
-			GUILayout.Label("Property Editor", boldLabelStyle);
-			node.DrawNodePropertyEditor();
+            GUILayout.Label("Property Editor", boldLabelStyle);
+            node.DrawNodePropertyEditor();
 
-			if (EditorGUI.EndChangeCheck())
-				NodeEditor.RepaintClients();
+            if (EditorGUI.EndChangeCheck())
+                NodeEditor.RepaintClients();
 
-			OverlayGUI.EndOverlayGUI();
-		}
-	}
+            OverlayGUI.EndOverlayGUI();
+        }
+    }
 }

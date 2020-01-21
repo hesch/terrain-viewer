@@ -1,7 +1,7 @@
-using UnityEngine;
 using MarchingCubesProject;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class VoxelGeneration : Marching
 {

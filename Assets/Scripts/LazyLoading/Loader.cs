@@ -1,14 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.CodeDom.Compiler;
-using System.CodeDom;
-using Microsoft.CSharp;
-using System;
-using System.Reflection;
-using System.Linq;
-using UnityEngine;
+﻿using Microsoft.CSharp;
 using ProceduralNoiseProject;
+using System;
+using System.CodeDom.Compiler;
+using System.IO;
+using System.Reflection;
+using UnityEngine;
 
 public class Loader
 {

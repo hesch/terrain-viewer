@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ProceduralNoiseProject
 {
 
-    public enum NOISE_TYPE {  PERLIN, VALUE, SIMPLEX, VORONOI, WORLEY }
+    public enum NOISE_TYPE { PERLIN, VALUE, SIMPLEX, VORONOI, WORLEY }
 
     public class Example : MonoBehaviour
     {
@@ -39,14 +37,14 @@ namespace ProceduralNoiseProject
             float[,] arr = new float[width, height];
 
             //Sample the 2D noise and add it into a array.
-            for(int y = 0; y < height; y++)
+            for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     float fx = x / (width - 1.0f);
                     float fy = y / (height - 1.0f);
 
-                    arr[x,y] = fractal.Sample2D(fx, fy);
+                    arr[x, y] = fractal.Sample2D(fx, fy);
                 }
             }
 
@@ -69,7 +67,7 @@ namespace ProceduralNoiseProject
         void OnGUI()
         {
 
-            Vector2 center = new Vector2(Screen.width / 2, Screen.height/2);
+            Vector2 center = new Vector2(Screen.width / 2, Screen.height / 2);
             Vector2 offset = new Vector2(width / 2, height / 2);
 
             Rect rect = new Rect();

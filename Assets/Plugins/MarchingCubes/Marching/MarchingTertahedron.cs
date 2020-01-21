@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -19,9 +17,9 @@ namespace MarchingCubesProject
 
         private float[] TetrahedronValue { get; set; }
 
-	private float[] CubeValue { get; set; }
+        private float[] CubeValue { get; set; }
 
-	private int[] VertexInCube { get; set; }
+        private int[] VertexInCube { get; set; }
 
         public MarchingTertrahedron(float surface = 0.5f)
             : base(surface)
@@ -42,7 +40,7 @@ namespace MarchingCubesProject
         {
             int i, j;
 
-	    CubeValue = cube;
+            CubeValue = cube;
 
             //Make a local copy of the cube's corner positions
             for (i = 0; i < 8; i++)
@@ -98,16 +96,16 @@ namespace MarchingCubesProject
                     EdgeVertex[i].y = invOffset * TetrahedronPosition[vert0].y + offset * TetrahedronPosition[vert1].y;
                     EdgeVertex[i].z = invOffset * TetrahedronPosition[vert0].z + offset * TetrahedronPosition[vert1].z;
 
-		    NormalVertex[i].x = Mathf.Lerp((CubeValue[VertexSurround[0, VertexInCube[vert0], 1]] - CubeValue[VertexSurround[0, VertexInCube[vert0], 0]]) / 2,
-						   (CubeValue[VertexSurround[0, VertexInCube[vert1], 1]] - CubeValue[VertexSurround[0, VertexInCube[vert1], 0]]) / 2,
-						   offset);
-		    NormalVertex[i].y = Mathf.Lerp((CubeValue[VertexSurround[1, VertexInCube[vert0], 1]] - CubeValue[VertexSurround[1, VertexInCube[vert0], 0]]) / 2,
-						   (CubeValue[VertexSurround[1, VertexInCube[vert1], 1]] - CubeValue[VertexSurround[1, VertexInCube[vert1], 0]]) / 2,
-						   offset);
-		    NormalVertex[i].z = Mathf.Lerp((CubeValue[VertexSurround[2, VertexInCube[vert0], 1]] - CubeValue[VertexSurround[2, VertexInCube[vert0], 0]]) / 2,
-						   (CubeValue[VertexSurround[2, VertexInCube[vert1], 1]] - CubeValue[VertexSurround[2, VertexInCube[vert1], 0]]) / 2,
-						   offset);
-		    NormalVertex[i] = -NormalVertex[i].normalized;
+                    NormalVertex[i].x = Mathf.Lerp((CubeValue[VertexSurround[0, VertexInCube[vert0], 1]] - CubeValue[VertexSurround[0, VertexInCube[vert0], 0]]) / 2,
+                                   (CubeValue[VertexSurround[0, VertexInCube[vert1], 1]] - CubeValue[VertexSurround[0, VertexInCube[vert1], 0]]) / 2,
+                                   offset);
+                    NormalVertex[i].y = Mathf.Lerp((CubeValue[VertexSurround[1, VertexInCube[vert0], 1]] - CubeValue[VertexSurround[1, VertexInCube[vert0], 0]]) / 2,
+                                   (CubeValue[VertexSurround[1, VertexInCube[vert1], 1]] - CubeValue[VertexSurround[1, VertexInCube[vert1], 0]]) / 2,
+                                   offset);
+                    NormalVertex[i].z = Mathf.Lerp((CubeValue[VertexSurround[2, VertexInCube[vert0], 1]] - CubeValue[VertexSurround[2, VertexInCube[vert0], 0]]) / 2,
+                                   (CubeValue[VertexSurround[2, VertexInCube[vert1], 1]] - CubeValue[VertexSurround[2, VertexInCube[vert1], 0]]) / 2,
+                                   offset);
+                    NormalVertex[i] = -NormalVertex[i].normalized;
                 }
             }
 
@@ -133,9 +131,9 @@ namespace MarchingCubesProject
         /// tetrahedronEdgeConnection[6][2]
         /// </summary>
         private static readonly int[,] TetrahedronEdgeConnection = new int[,]
-	    {
-	        {0,1},  {1,2},  {2,0},  {0,3},  {1,3},  {2,3}
-	    };
+        {
+            {0,1},  {1,2},  {2,0},  {0,3},  {1,3},  {2,3}
+        };
 
         /// <summary>
         /// TetrahedronEdgeConnection lists the index of verticies from a cube 
@@ -143,14 +141,14 @@ namespace MarchingCubesProject
         /// tetrahedronsInACube[6][4]
         /// </summary>
         private static readonly int[,] TetrahedronsInACube = new int[,]
-	    {
-	        {0,5,1,6},
-	        {0,1,2,6},
-	        {0,2,3,6},
-	        {0,3,7,6},
-	        {0,7,4,6},
-	        {0,4,5,6}
-	    };
+        {
+            {0,5,1,6},
+            {0,1,2,6},
+            {0,2,3,6},
+            {0,3,7,6},
+            {0,7,4,6},
+            {0,4,5,6}
+        };
 
         /// <summary>
         /// For any edge, if one vertex is inside of the surface and the other is outside of 
@@ -163,9 +161,9 @@ namespace MarchingCubesProject
         /// tetrahedronEdgeFlags[16]
         /// </summary>
         private static readonly int[] TetrahedronEdgeFlags = new int[]
-	    {
-		    0x00, 0x0d, 0x13, 0x1e, 0x26, 0x2b, 0x35, 0x38, 0x38, 0x35, 0x2b, 0x26, 0x1e, 0x13, 0x0d, 0x00
-	    };
+        {
+            0x00, 0x0d, 0x13, 0x1e, 0x26, 0x2b, 0x35, 0x38, 0x38, 0x35, 0x2b, 0x26, 0x1e, 0x13, 0x0d, 0x00
+        };
 
         /// <summary>
         /// For each of the possible vertex states listed in tetrahedronEdgeFlags there
@@ -175,7 +173,7 @@ namespace MarchingCubesProject
         /// tetrahedronTriangles[16][7]
         /// </summary>
         private static readonly int[,] TetrahedronTriangles = new int[,]
-	    {
+        {
             {-1, -1, -1, -1, -1, -1, -1},
             { 0,  3,  2, -1, -1, -1, -1},
             { 0,  1,  4, -1, -1, -1, -1},
@@ -195,7 +193,7 @@ namespace MarchingCubesProject
             { 4,  1,  0, -1, -1, -1, -1},
             { 2,  3,  0, -1, -1, -1, -1},
             {-1, -1, -1, -1, -1, -1, -1}
-	    };
+        };
 
     }
 

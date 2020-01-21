@@ -5,266 +5,266 @@ using UnityEngine;
 
 namespace NodeEditorFramework.IO
 {
-	public class CanvasData
-	{
-		public NodeCanvas canvas;
+    public class CanvasData
+    {
+        public NodeCanvas canvas;
 
-		public string name;
-		public Type type;
+        public string name;
+        public Type type;
 
-		public EditorStateData[] editorStates;
-		public List<GroupData> groups = new List<GroupData>();
+        public EditorStateData[] editorStates;
+        public List<GroupData> groups = new List<GroupData>();
 
-		public Dictionary<int, NodeData> nodes = new Dictionary<int, NodeData>();
-		public List<ConnectionData> connections = new List<ConnectionData>();
-		public Dictionary<int, ObjectData> objects = new Dictionary<int, ObjectData>();
+        public Dictionary<int, NodeData> nodes = new Dictionary<int, NodeData>();
+        public List<ConnectionData> connections = new List<ConnectionData>();
+        public Dictionary<int, ObjectData> objects = new Dictionary<int, ObjectData>();
 
-		public CanvasData(NodeCanvas nodeCanvas)
-		{
-			canvas = nodeCanvas;
-			name = nodeCanvas.name;
-			type = nodeCanvas.GetType();
-		}
+        public CanvasData(NodeCanvas nodeCanvas)
+        {
+            canvas = nodeCanvas;
+            name = nodeCanvas.name;
+            type = nodeCanvas.GetType();
+        }
 
-		public CanvasData(Type canvasType, string canvasName)
-		{
-			type = canvasType;
-			name = canvasName;
-		}
+        public CanvasData(Type canvasType, string canvasName)
+        {
+            type = canvasType;
+            name = canvasName;
+        }
 
-		public ObjectData ReferenceObject(object obj)
-		{
-			if (obj == null)
-				return null;
-			foreach (ObjectData data in objects.Values)
-			{
-				if (data.data == obj)
-					return data;
-			}
-			ObjectData objData = new ObjectData(obj);
-			objects.Add(objData.refID, objData);
-			return objData;
-		}
+        public ObjectData ReferenceObject(object obj)
+        {
+            if (obj == null)
+                return null;
+            foreach (ObjectData data in objects.Values)
+            {
+                if (data.data == obj)
+                    return data;
+            }
+            ObjectData objData = new ObjectData(obj);
+            objects.Add(objData.refID, objData);
+            return objData;
+        }
 
-		public ObjectData FindObject(int refID)
-		{
-			ObjectData data;
-			objects.TryGetValue(refID, out data);
-			return data;
-		}
+        public ObjectData FindObject(int refID)
+        {
+            ObjectData data;
+            objects.TryGetValue(refID, out data);
+            return data;
+        }
 
-		public NodeData FindNode(Node node)
-		{
-			foreach (NodeData data in nodes.Values)
-			{
-				if (data.node == node)
-					return data;
-			}
-			return null;
-		}
+        public NodeData FindNode(Node node)
+        {
+            foreach (NodeData data in nodes.Values)
+            {
+                if (data.node == node)
+                    return data;
+            }
+            return null;
+        }
 
-		public NodeData FindNode(int nodeID)
-		{
-			NodeData data;
-			nodes.TryGetValue(nodeID, out data);
-			return data;
-		}
+        public NodeData FindNode(int nodeID)
+        {
+            NodeData data;
+            nodes.TryGetValue(nodeID, out data);
+            return data;
+        }
 
-		public bool RecordConnection(PortData portData1, PortData portData2)
-		{
-			if (!portData1.connections.Contains(portData2))
-				portData1.connections.Add(portData2);
-			if (!portData2.connections.Contains(portData1))
-				portData2.connections.Add(portData1);
-			if (!connections.Exists((ConnectionData conData) => conData.isPart(portData1) && conData.isPart(portData2)))
-			{ // Connection hasn't already been recorded
-				ConnectionData conData = new ConnectionData(portData1, portData2);
-				connections.Add(conData);
-				return true;
-			}
-			return false;
-		}
-	}
+        public bool RecordConnection(PortData portData1, PortData portData2)
+        {
+            if (!portData1.connections.Contains(portData2))
+                portData1.connections.Add(portData2);
+            if (!portData2.connections.Contains(portData1))
+                portData2.connections.Add(portData1);
+            if (!connections.Exists((ConnectionData conData) => conData.isPart(portData1) && conData.isPart(portData2)))
+            { // Connection hasn't already been recorded
+                ConnectionData conData = new ConnectionData(portData1, portData2);
+                connections.Add(conData);
+                return true;
+            }
+            return false;
+        }
+    }
 
-	public class EditorStateData
-	{
-		public NodeData selectedNode;
-		public Vector2 panOffset;
-		public float zoom;
+    public class EditorStateData
+    {
+        public NodeData selectedNode;
+        public Vector2 panOffset;
+        public float zoom;
 
-		public EditorStateData(NodeData SelectedNode, Vector2 PanOffset, float Zoom)
-		{
-			selectedNode = SelectedNode;
-			panOffset = PanOffset;
-			zoom = Zoom;
-		}
-	}
+        public EditorStateData(NodeData SelectedNode, Vector2 PanOffset, float Zoom)
+        {
+            selectedNode = SelectedNode;
+            panOffset = PanOffset;
+            zoom = Zoom;
+        }
+    }
 
-	public class GroupData
-	{
-		public string name;
-		public Rect rect;
-		public Color color;
+    public class GroupData
+    {
+        public string name;
+        public Rect rect;
+        public Color color;
 
-		public GroupData(NodeGroup group)
-		{
-			name = group.title;
-			rect = group.rect;
-			color = group.color;
-		}
+        public GroupData(NodeGroup group)
+        {
+            name = group.title;
+            rect = group.rect;
+            color = group.color;
+        }
 
-		public GroupData(string Name, Rect Rect, Color Color)
-		{
-			name = Name;
-			rect = Rect;
-			color = Color;
-		}
-	}
+        public GroupData(string Name, Rect Rect, Color Color)
+        {
+            name = Name;
+            rect = Rect;
+            color = Color;
+        }
+    }
 
-	public class NodeData
-	{
-		public Node node;
+    public class NodeData
+    {
+        public Node node;
 
-		public string name;
-		public int nodeID;
-		public string typeID;
-		public Vector2 nodePos;
-		public Type type;
-		
-		public List<PortData> connectionPorts = new List<PortData>();
-		public List<VariableData> variables = new List<VariableData>();
+        public string name;
+        public int nodeID;
+        public string typeID;
+        public Vector2 nodePos;
+        public Type type;
 
-		public NodeData(Node n)
-		{
-			node = n;
-			name = n.name;
-			typeID = node.GetID;
-			nodeID = node.GetHashCode();
-			nodePos = node.rect.position;
-			type = n.GetType();
-		}
+        public List<PortData> connectionPorts = new List<PortData>();
+        public List<VariableData> variables = new List<VariableData>();
 
-		public NodeData(string Name, string TypeID, int NodeID, Vector2 Pos)
-		{
-			name = Name;
-			typeID = TypeID;
-			nodeID = NodeID;
-			nodePos = Pos;
-			type = NodeTypes.getNodeData(typeID).type;
-		}
-	}
+        public NodeData(Node n)
+        {
+            node = n;
+            name = n.name;
+            typeID = node.GetID;
+            nodeID = node.GetHashCode();
+            nodePos = node.rect.position;
+            type = n.GetType();
+        }
 
-	public class PortData
-	{
-		public ConnectionPort port;
+        public NodeData(string Name, string TypeID, int NodeID, Vector2 Pos)
+        {
+            name = Name;
+            typeID = TypeID;
+            nodeID = NodeID;
+            nodePos = Pos;
+            type = NodeTypes.getNodeData(typeID).type;
+        }
+    }
 
-		public int portID;
-		public NodeData body;
-		public string name;
+    public class PortData
+    {
+        public ConnectionPort port;
 
-		public bool dynamic = false;
-		public Type dynaType;
+        public int portID;
+        public NodeData body;
+        public string name;
 
-		public List<PortData> connections = new List<PortData>();
+        public bool dynamic = false;
+        public Type dynaType;
 
-		// STATIC
+        public List<PortData> connections = new List<PortData>();
 
-		public PortData(NodeData Body, ConnectionPort Port, string VarName)
-		{
-			port = Port;
-			portID = port.GetHashCode();
-			body = Body;
-			name = VarName;
-		}
+        // STATIC
 
-		public PortData(NodeData Body, string VarName, int PortID)
-		{
-			portID = PortID;
-			body = Body;
-			name = VarName;
-		}
+        public PortData(NodeData Body, ConnectionPort Port, string VarName)
+        {
+            port = Port;
+            portID = port.GetHashCode();
+            body = Body;
+            name = VarName;
+        }
 
-		// DYNAMIC
+        public PortData(NodeData Body, string VarName, int PortID)
+        {
+            portID = PortID;
+            body = Body;
+            name = VarName;
+        }
 
-		public PortData(NodeData Body, ConnectionPort DynamicPort)
-		{
-			dynamic = true;
-			port = DynamicPort;
-			portID = port.GetHashCode();
-			body = Body;
-			name = DynamicPort.name;
-			dynaType = DynamicPort.GetType();
-		}
+        // DYNAMIC
 
-		public PortData(NodeData Body, ConnectionPort DynamicPort, int PortID)
-		{
-			dynamic = true;
-			port = DynamicPort;
-			portID = PortID;
-			body = Body;
-			name = DynamicPort.name;
-			dynaType = DynamicPort.GetType();
-		}
+        public PortData(NodeData Body, ConnectionPort DynamicPort)
+        {
+            dynamic = true;
+            port = DynamicPort;
+            portID = port.GetHashCode();
+            body = Body;
+            name = DynamicPort.name;
+            dynaType = DynamicPort.GetType();
+        }
 
-	}
+        public PortData(NodeData Body, ConnectionPort DynamicPort, int PortID)
+        {
+            dynamic = true;
+            port = DynamicPort;
+            portID = PortID;
+            body = Body;
+            name = DynamicPort.name;
+            dynaType = DynamicPort.GetType();
+        }
 
-	public class ConnectionData
-	{
-		public PortData port1;
-		public PortData port2;
+    }
 
-		public ConnectionData(PortData Port1, PortData Port2)
-		{
-			port1 = Port1;
-			port2 = Port2;
-		}
+    public class ConnectionData
+    {
+        public PortData port1;
+        public PortData port2;
 
-		public bool isPart (PortData port)
-		{
-			return port1 == port || port2 == port;
-		}
-	}
+        public ConnectionData(PortData Port1, PortData Port2)
+        {
+            port1 = Port1;
+            port2 = Port2;
+        }
 
-	public class VariableData
-	{
-		public string name;
-		public ObjectData refObject;
-		public object value;
+        public bool isPart(PortData port)
+        {
+            return port1 == port || port2 == port;
+        }
+    }
 
-		public VariableData(FieldInfo field)
-		{
-			name = field.Name;
-		}
+    public class VariableData
+    {
+        public string name;
+        public ObjectData refObject;
+        public object value;
 
-		public VariableData(string fieldName)
-		{
-			name = fieldName;
-		}
-	}
+        public VariableData(FieldInfo field)
+        {
+            name = field.Name;
+        }
 
-	public class ObjectData
-	{
-		public int refID;
-		public Type type;
-		public object data;
+        public VariableData(string fieldName)
+        {
+            name = fieldName;
+        }
+    }
 
-		public ObjectData(object obj)
-		{
-			if (obj == null)
-				throw new ArgumentNullException("obj");
-			refID = obj.GetHashCode();
-			// Some types like MonoScript implement no proper GetHashCode function
-			if (Mathf.Abs (refID) < 10) 
-				refID = (int)UnityEngine.Random.value * int.MaxValue;
-			type = obj.GetType();
-			data = obj;
-		}
+    public class ObjectData
+    {
+        public int refID;
+        public Type type;
+        public object data;
 
-		public ObjectData(int objRefID, object obj)
-		{
-			refID = objRefID;
-			type = obj.GetType();
-			data = obj;
-		}
-	}
+        public ObjectData(object obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            refID = obj.GetHashCode();
+            // Some types like MonoScript implement no proper GetHashCode function
+            if (Mathf.Abs(refID) < 10)
+                refID = (int)UnityEngine.Random.value * int.MaxValue;
+            type = obj.GetType();
+            data = obj;
+        }
+
+        public ObjectData(int objRefID, object obj)
+        {
+            refID = objRefID;
+            type = obj.GetType();
+            data = obj;
+        }
+    }
 }

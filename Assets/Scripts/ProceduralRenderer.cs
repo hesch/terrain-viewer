@@ -9,13 +9,6 @@ public class ProceduralRenderer : MonoBehaviour
     public ComputeBuffer indices;
     public ComputeBuffer normals;
 
-    private Transform transform;
-
-    public void Awake()
-    {
-        transform = GetComponent<Transform>();
-    }
-
     void OnRenderObject()
     {
         Matrix4x4 mvp = transform.localToWorldMatrix;

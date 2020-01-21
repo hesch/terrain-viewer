@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ProceduralNoiseProject
 {
@@ -8,7 +6,7 @@ namespace ProceduralNoiseProject
     /// Abstract class for generating noise.
     /// </summary>
 	public abstract class Noise : INoise
-	{
+    {
 
         /// <summary>
         /// The frequency of the fractal.
@@ -29,9 +27,9 @@ namespace ProceduralNoiseProject
         /// Create a noise object.
         /// </summary>
 		public Noise()
-		{
-            
-		}
+        {
+
+        }
 
         /// <summary>
         /// Sample the noise in 1 dimension.
@@ -52,8 +50,8 @@ namespace ProceduralNoiseProject
         /// Update the seed.
         /// </summary>
         public abstract void UpdateSeed(int seed);
-		
-	}
+
+    }
 
 }
 

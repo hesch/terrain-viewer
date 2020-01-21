@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using System;
-using System.Reflection;
+﻿using System;
 using System.Linq;
+using System.Reflection;
+using UnityEngine;
 
 namespace NodeEditorFramework.Utilities
 {

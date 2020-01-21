@@ -1,6 +1,5 @@
-using UnityEngine;
 using NodeEditorFramework;
-using NodeEditorFramework.Utilities;
+using UnityEngine;
 
 [Node(false, "VoxelInput")]
 public class VoxelInputNode : InputNode<Voxel>

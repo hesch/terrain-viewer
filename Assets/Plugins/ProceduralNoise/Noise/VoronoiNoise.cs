@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 namespace ProceduralNoiseProject
@@ -235,7 +234,7 @@ namespace ProceduralNoiseProject
 
         private float Distance2(float p1x, float p1y, float p2x, float p2y)
         {
-            switch(Distance)
+            switch (Distance)
             {
                 case VORONOI_DISTANCE.EUCLIDIAN:
                     return (p1x - p2x) * (p1x - p2x) + (p1y - p2y) * (p1y - p2y);
@@ -269,7 +268,7 @@ namespace ProceduralNoiseProject
 
         private float Combine(Vector3 arr)
         {
-            switch(Combination)
+            switch (Combination)
             {
                 case VORONOI_COMBINATION.D0:
                     return arr[0];
