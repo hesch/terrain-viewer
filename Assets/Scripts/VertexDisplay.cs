@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System;
 
 public class VertexDisplay : MonoBehaviour
@@ -95,10 +94,7 @@ public class VertexDisplay : MonoBehaviour
                 Destroy(oldMesh);
             }
 
-	    Stopwatch sw = Stopwatch.StartNew();
             GameObject go = BlockConverter.BlockToGameObject(vertices, indices, normals, block, m_material, MeshEventDelegate);
-	    sw.Stop();
-	    UnityEngine.Debug.LogFormat("Creating Gameobject takes {0}ms", sw.ElapsedMilliseconds);
             go.transform.parent = transform;
             go.GetComponent<LineRenderer>().enabled = gridlinesVisible;
             if (hiddenState && block.Offset != OnlyShowObjectAt)

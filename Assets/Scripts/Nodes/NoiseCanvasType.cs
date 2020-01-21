@@ -82,7 +82,7 @@ public class NoiseCanvasType : NodeCanvas
                 stopwatch.Restart();
                 foreach (Node n in cache)
                 {
-                    UnityEngine.Debug.Log(String.Format("Calculating Node {0}, out: {1}, n is VertexNode {2}", n.Title, n.isOutput(), n is VertexNode));
+                    //UnityEngine.Debug.Log(String.Format("Calculating Node {0}, out: {1}, n is VertexNode {2}", n.Title, n.isOutput(), n is VertexNode));
                     if (n.isInput() && n is VoxelInputNode)
                     {
                         VoxelInputNode n2 = n as VoxelInputNode;
@@ -95,7 +95,6 @@ public class NoiseCanvasType : NodeCanvas
 
                     if (n.isOutput() && n is VertexNode)
                     {
-                        UnityEngine.Debug.Log("vertexNoded");
                         VertexNode vertexNode = n as VertexNode;
                         callback(vertexNode.Vertices, vertexNode.Indices, vertexNode.Normals, vertexNode.Block);
                     }

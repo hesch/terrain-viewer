@@ -37,9 +37,10 @@ void minMax (
 
   GroupMemoryBarrierWithGroupSync();
   for(uint i=B_DIM/2; i > 0; i>>=1) {
+    MinMaxPair pair1 = sharedMinMaxBuffer[gidx];
+    MinMaxPair pair2 = sharedMinMaxBuffer[gidx+i];
+    GroupMemoryBarrierWithGroupSync();
     if(gidx < i) {
-      MinMaxPair pair1 = sharedMinMaxBuffer[gidx];
-      MinMaxPair pair2 = sharedMinMaxBuffer[gidx+i];
       sharedMinMaxBuffer[gidx].min = min(pair1.min, pair2.min);
       sharedMinMaxBuffer[gidx].max = max(pair1.max, pair2.max);
     }
@@ -77,8 +78,10 @@ void compactActiveBlocks(
   GroupMemoryBarrierWithGroupSync();
 
   for (uint offset = 1; offset < B_DIM; offset <<= 1) {
+    uint otherActive = sharedCompactedBlkArray[gidx-offset];
+    GroupMemoryBarrierWithGroupSync();
     if (gidx >= offset) {
-      sharedCompactedBlkArray[gidx] += sharedCompactedBlkArray[gidx-offset];
+      sharedCompactedBlkArray[gidx] += otherActive;
     }
     GroupMemoryBarrierWithGroupSync();
   }

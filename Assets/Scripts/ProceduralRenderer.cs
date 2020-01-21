@@ -22,18 +22,23 @@ public class ProceduralRenderer : MonoBehaviour
 
         material.SetPass(0);
         material.SetMatrix("mvp", mvp);
+        //material.SetMatrix("normalTransform", transform.localToWorldMatrix.inverse.transpose);
         Graphics.DrawProceduralNow(MeshTopology.Triangles, numVertices, 1);
     }
 
-    public void OnDestroy() {
-      if (vertices != null) {
-	vertices.Release();
-      }
-      if (indices != null) {
-	indices.Release();
-      }
-      if (normals != null) {
-	normals.Release();
-      }
+    public void OnDestroy()
+    {
+        if (vertices != null)
+        {
+            vertices.Release();
+        }
+        if (indices != null)
+        {
+            indices.Release();
+        }
+        if (normals != null)
+        {
+            normals.Release();
+        }
     }
 }

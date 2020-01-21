@@ -10,7 +10,6 @@ public class BlockConverter
 
     public static GameObject BlockToGameObject(ComputeBuffer vertices, ComputeBuffer indices, ComputeBuffer normals, IVoxelBlock block, Material material, Action<PointerEventData, GameObject> clickCallback)
     {
-        UnityEngine.Debug.Log("creating GameObject with " + vertices.count + " vertices");
         Material m = new Material(Shader.Find("Custom/BufferShader"));
         m.SetBuffer("vertexBuffer", vertices);
         m.SetBuffer("indexBuffer", indices);
@@ -22,7 +21,7 @@ public class BlockConverter
         go.AddComponent<BlockInfo>();
         go.AddComponent<EventTrigger>();
 
-	ProceduralRenderer renderer = go.GetComponent<ProceduralRenderer>();
+	    ProceduralRenderer renderer = go.GetComponent<ProceduralRenderer>();
         renderer.numVertices = indices.count;
         renderer.material = m;
         renderer.vertices = vertices;
