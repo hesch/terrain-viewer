@@ -5,9 +5,9 @@ Shader "Custom/BufferShader"
     {
        Pass
        {
-            ZTest Always
+            ZTest LEqual
 	    Cull Off
-	    ZWrite Off
+	    ZWrite On
 
 	    Tags {"LightMode"="ForwardBase"}
  
