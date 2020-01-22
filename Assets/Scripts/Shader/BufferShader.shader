@@ -23,7 +23,8 @@ Shader "Custom/BufferShader"
             uniform StructuredBuffer<float3> normalBuffer;
             uniform StructuredBuffer<int> indexBuffer;
 
-            uniform matrix mvp;
+            uniform matrix model_matrix;
+            uniform matrix inv_model_matrix;
  
             struct v2f
             {
@@ -34,10 +35,10 @@ Shader "Custom/BufferShader"
             v2f vert(uint id : SV_VertexID)
             {
                 float4 pos = float4(vertexBuffer[indexBuffer[id]], 1);
-		        float3 normal = UnityObjectToWorldNormal(normalBuffer[indexBuffer[id]]);
+		        float3 normal = normalize(mul(normalBuffer[indexBuffer[id]], inv_model_matrix));
  
                 v2f OUT;
-                OUT.pos = UnityObjectToClipPos(mul(mvp, pos));
+                OUT.pos = UnityObjectToClipPos(mul(model_matrix, pos));
 		        OUT.diff = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
                 return OUT;
             }

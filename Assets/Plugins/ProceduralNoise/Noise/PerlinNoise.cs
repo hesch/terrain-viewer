@@ -1,136 +1,137 @@
+using System;
 using UnityEngine;
 
 namespace ProceduralNoiseProject
 {
 
-    public class PerlinNoise : Noise
-    {
+	public class PerlinNoise : Noise
+	{
 
         private PermutationTable Perm { get; set; }
 
         public PerlinNoise(int seed, float frequency, float amplitude = 1.0f)
-        {
+		{
 
             Frequency = frequency;
             Amplitude = amplitude;
             Offset = Vector3.zero;
 
             Perm = new PermutationTable(1024, 255, seed);
-        }
+		}
 
         public override void UpdateSeed(int seed)
         {
             Perm.Build(seed);
         }
-
+		
         /// <summary>
         /// Sample the noise in 1 dimension.
         /// </summary>
-        public override float Sample1D(float x)
-        {
+		public override float Sample1D( float x )
+		{
             x = (x + Offset.x) * Frequency;
 
-            int ix0;
-            float fx0, fx1;
-            float s, n0, n1;
-
-            ix0 = (int)Mathf.Floor(x);  // Integer part of x
-            fx0 = x - ix0;              // Fractional part of x
-            fx1 = fx0 - 1.0f;
-
-            s = FADE(fx0);
-
-            n0 = Grad(Perm[ix0], fx0);
-            n1 = Grad(Perm[ix0 + 1], fx1);
+		    int ix0;
+		    float fx0, fx1;
+		    float s, n0, n1;
+		
+		    ix0 = (int)Mathf.Floor(x); 	// Integer part of x
+		    fx0 = x - ix0;              // Fractional part of x
+		    fx1 = fx0 - 1.0f;
+			
+		    s = FADE(fx0);
+		
+		    n0 = Grad(Perm[ix0], fx0);
+		    n1 = Grad(Perm[ix0 + 1], fx1);
 
             return 0.25f * LERP(s, n0, n1) * Amplitude;
-        }
-
+		}
+		
         /// <summary>
         /// Sample the noise in 2 dimensions.
         /// </summary>
-        public override float Sample2D(float x, float y)
-        {
+		public override float Sample2D( float x, float y )
+		{
             x = (x + Offset.x) * Frequency;
             y = (y + Offset.y) * Frequency;
 
-            int ix0, iy0;
-            float fx0, fy0, fx1, fy1, s, t, nx0, nx1, n0, n1;
+		    int ix0, iy0;
+		    float fx0, fy0, fx1, fy1, s, t, nx0, nx1, n0, n1;
+		
+			ix0 = (int)Mathf.Floor(x); 		// Integer part of x
+			iy0 = (int)Mathf.Floor(y); 		// Integer part of y
 
-            ix0 = (int)Mathf.Floor(x);      // Integer part of x
-            iy0 = (int)Mathf.Floor(y);      // Integer part of y
+		    fx0 = x - ix0;        		// Fractional part of x
+		    fy0 = y - iy0;        		// Fractional part of y
+		    fx1 = fx0 - 1.0f;
+		    fy1 = fy0 - 1.0f;
+		    
+		    t = FADE( fy0 );
+		    s = FADE( fx0 );
 
-            fx0 = x - ix0;              // Fractional part of x
-            fy0 = y - iy0;              // Fractional part of y
-            fx1 = fx0 - 1.0f;
-            fy1 = fy0 - 1.0f;
-
-            t = FADE(fy0);
-            s = FADE(fx0);
-
-            nx0 = Grad(Perm[ix0, iy0], fx0, fy0);
+			nx0 = Grad(Perm[ix0, iy0], fx0, fy0);
             nx1 = Grad(Perm[ix0, iy0 + 1], fx0, fy1);
 
-            n0 = LERP(t, nx0, nx1);
+		    n0 = LERP( t, nx0, nx1 );
 
-            nx0 = Grad(Perm[ix0 + 1, iy0], fx1, fy0);
-            nx1 = Grad(Perm[ix0 + 1, iy0 + 1], fx1, fy1);
+		    nx0 = Grad(Perm[ix0 + 1, iy0], fx1, fy0);
+		    nx1 = Grad(Perm[ix0 + 1, iy0 + 1], fx1, fy1);
 
-            n1 = LERP(t, nx0, nx1);
+		    n1 = LERP(t, nx0, nx1);
 
             return 0.66666f * LERP(s, n0, n1) * Amplitude;
-        }
-
+		}
+		
         /// <summary>
         /// Sample the noise in 3 dimensions.
         /// </summary>
-        public override float Sample3D(float x, float y, float z)
-        {
+		public override float Sample3D( float x, float y, float z )
+		{
             x = (x + Offset.x) * Frequency;
             y = (y + Offset.y) * Frequency;
             z = (z + Offset.z) * Frequency;
 
             int ix0, iy0, iz0;
-            float fx0, fy0, fz0, fx1, fy1, fz1;
-            float s, t, r;
-            float nxy0, nxy1, nx0, nx1, n0, n1;
-
-            ix0 = (int)Mathf.Floor(x);          // Integer part of x
-            iy0 = (int)Mathf.Floor(y);          // Integer part of y
-            iz0 = (int)Mathf.Floor(z);          // Integer part of z
-            fx0 = x - ix0;                      // Fractional part of x
-            fy0 = y - iy0;                      // Fractional part of y
-            fz0 = z - iz0;                      // Fractional part of z
-            fx1 = fx0 - 1.0f;
-            fy1 = fy0 - 1.0f;
-            fz1 = fz0 - 1.0f;
-
-            r = FADE(fz0);
-            t = FADE(fy0);
-            s = FADE(fx0);
-
-            nxy0 = Grad(Perm[ix0, iy0, iz0], fx0, fy0, fz0);
-            nxy1 = Grad(Perm[ix0, iy0, iz0 + 1], fx0, fy0, fz1);
-            nx0 = LERP(r, nxy0, nxy1);
-
-            nxy0 = Grad(Perm[ix0, iy0 + 1, iz0], fx0, fy1, fz0);
-            nxy1 = Grad(Perm[ix0, iy0 + 1, iz0 + 1], fx0, fy1, fz1);
-            nx1 = LERP(r, nxy0, nxy1);
-
-            n0 = LERP(t, nx0, nx1);
-
-            nxy0 = Grad(Perm[ix0 + 1, iy0, iz0], fx1, fy0, fz0);
-            nxy1 = Grad(Perm[ix0 + 1, iy0, iz0 + 1], fx1, fy0, fz1);
-            nx0 = LERP(r, nxy0, nxy1);
-
-            nxy0 = Grad(Perm[ix0 + 1, iy0 + 1, iz0], fx1, fy1, fz0);
-            nxy1 = Grad(Perm[ix0 + 1, iy0 + 1, iz0 + 1], fx1, fy1, fz1);
-            nx1 = LERP(r, nxy0, nxy1);
-
-            n1 = LERP(t, nx0, nx1);
+		    float fx0, fy0, fz0, fx1, fy1, fz1;
+		    float s, t, r;
+		    float nxy0, nxy1, nx0, nx1, n0, n1;
+		
+			ix0 = (int)Mathf.Floor(x);   		// Integer part of x
+			iy0 = (int)Mathf.Floor(y);   		// Integer part of y
+			iz0 = (int)Mathf.Floor(z);   		// Integer part of z
+		    fx0 = x - ix0;        		        // Fractional part of x
+		    fy0 = y - iy0;        		        // Fractional part of y
+		    fz0 = z - iz0;        		        // Fractional part of z
+		    fx1 = fx0 - 1.0f;
+		    fy1 = fy0 - 1.0f;
+		    fz1 = fz0 - 1.0f;
+		    
+		    r = FADE( fz0 );
+		    t = FADE( fy0 );
+		    s = FADE( fx0 );
+		
+			nxy0 = Grad(Perm[ix0, iy0, iz0], fx0, fy0, fz0);
+		    nxy1 = Grad(Perm[ix0, iy0, iz0 + 1], fx0, fy0, fz1);
+		    nx0 = LERP( r, nxy0, nxy1 );
+		
+		    nxy0 = Grad(Perm[ix0, iy0 + 1, iz0], fx0, fy1, fz0);
+		    nxy1 = Grad(Perm[ix0, iy0 + 1, iz0 + 1], fx0, fy1, fz1);
+		    nx1 = LERP( r, nxy0, nxy1 );
+		
+		    n0 = LERP( t, nx0, nx1 );
+		
+		    nxy0 = Grad(Perm[ix0 + 1, iy0, iz0], fx1, fy0, fz0);
+		    nxy1 = Grad(Perm[ix0 + 1, iy0, iz0 + 1], fx1, fy0, fz1);
+		    nx0 = LERP( r, nxy0, nxy1 );
+		
+		    nxy0 = Grad(Perm[ix0 + 1, iy0 + 1, iz0], fx1, fy1, fz0);
+		   	nxy1 = Grad(Perm[ix0 + 1, iy0 + 1, iz0 + 1], fx1, fy1, fz1);
+		    nx1 = LERP( r, nxy0, nxy1 );
+		
+		    n1 = LERP( t, nx0, nx1 );
 
             return 1.1111f * LERP(s, n0, n1) * Amplitude;
-        }
+		}
 
         private float FADE(float t) { return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f); }
 

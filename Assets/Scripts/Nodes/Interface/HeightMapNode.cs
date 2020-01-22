@@ -1,30 +1,30 @@
-using NodeEditorFramework;
 using UnityEngine;
+using NodeEditorFramework;
+using NodeEditorFramework.Utilities;
+using System.Collections.Generic;
 
-public abstract class HeightMapNode<T> : Node where T : Voxel
+public abstract class HeightMapNode<T> : Node where T: Voxel
 {
-    [ValueConnectionKnob("Input", Direction.In, "Block")]
+  [ValueConnectionKnob("Input", Direction.In, "Block")]
     public ValueConnectionKnob input;
-    [ValueConnectionKnob("Output", Direction.Out, "Block")]
+  [ValueConnectionKnob("Output", Direction.Out, "Block")]
     public ValueConnectionKnob output;
 
-    protected virtual void CalculationSetup(VoxelBlock<T> block) { }
-    protected virtual void CalculationTeardown() { }
+  protected virtual void CalculationSetup(VoxelBlock<T> block) {}
+  protected virtual void CalculationTeardown() {}
 
-    protected abstract bool CalculateHeight(out float height, int x, int z);
+  protected abstract bool CalculateHeight(out float height, int x, int z);
+  
+  public override bool Calculate() {
+    VoxelBlock<T> block = input.GetValue<VoxelBlock<T>>();
+    if(block == null || block.Layers == null) {
+      return false;
+    }
 
-    public override bool Calculate()
-    {
-        VoxelBlock<T> block = input.GetValue<VoxelBlock<T>>();
-        if (block == null || block.Layers == null)
-        {
-            return false;
-        }
+    CalculationSetup(block);
 
-        CalculationSetup(block);
-
-        Vector3Int voxelCount = block.VoxelCount;
-
+    Vector3Int voxelCount = block.VoxelCount;
+        
         bool success = true;
 
         for (int x = 0; x < voxelCount.x && success; x++)
@@ -63,15 +63,14 @@ public abstract class HeightMapNode<T> : Node where T : Voxel
             }
         }
 
-        if (!success)
-        {
-            CalculationTeardown();
-            return false;
-        }
-
-        CalculationTeardown();
-        output.SetValue(block);
-
-        return true;
+    if(!success) {
+      CalculationTeardown();
+      return false;
     }
+    
+    CalculationTeardown();
+    output.SetValue(block);
+
+    return true;
+  }
 }

@@ -96,6 +96,7 @@ public class PMB
     {
         globalVertexOffset.SetData(new int[] { 0 });
         globalIndexOffset.SetData(new int[] { 0 });
+        activeBlkNum.SetData(new int[] { 0 });
 
         addPadding(ref voxels, ref width, ref height, ref depth);
         voxelBuffer.SetData(voxels);

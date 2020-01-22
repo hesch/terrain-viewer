@@ -1,8 +1,8 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System;
 
 public class VertexDisplay : MonoBehaviour
 {

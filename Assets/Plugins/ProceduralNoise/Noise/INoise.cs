@@ -1,12 +1,14 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 
 namespace ProceduralNoiseProject
 {
     /// <summary>
     /// Interface for generating noise.
     /// </summary>
-	public interface INoise
-    {
+	public interface INoise 
+	{
 
         /// <summary>
         /// The frequency of the fractal.
@@ -43,6 +45,6 @@ namespace ProceduralNoiseProject
         /// </summary>
         void UpdateSeed(int seed);
 
-    }
+	}
 
 }

@@ -1,8 +1,7 @@
-public enum NoiseType
-{
-    Perlin,
-    Simplex,
-    Value,
-    Voronoi,
-    Worley
+public enum NoiseType {
+  Perlin,
+  Simplex,
+  Value,
+  Voronoi,
+  Worley
 }

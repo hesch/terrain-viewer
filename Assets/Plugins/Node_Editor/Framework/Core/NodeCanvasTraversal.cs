@@ -2,21 +2,21 @@
 
 namespace NodeEditorFramework
 {
-    [Serializable]
-    public abstract class NodeCanvasTraversal
-    {
-        public NodeCanvas nodeCanvas;
+	[Serializable]
+	public abstract class NodeCanvasTraversal
+	{
+		public NodeCanvas nodeCanvas;
 
-        public NodeCanvasTraversal(NodeCanvas canvas)
-        {
-            nodeCanvas = canvas;
-        }
+		public NodeCanvasTraversal (NodeCanvas canvas)
+		{
+			nodeCanvas = canvas;
+		}
 
-        public virtual void OnLoadCanvas() { }
-        public virtual void OnSaveCanvas() { }
+		public virtual void OnLoadCanvas () { }
+		public virtual void OnSaveCanvas () { }
 
-        public abstract void TraverseAll();
-        public virtual void OnChange(Node node) { }
-    }
+		public abstract void TraverseAll ();
+		public virtual void OnChange (Node node) {}
+	}
 }
 

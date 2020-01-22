@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ProceduralNoiseProject
@@ -198,8 +199,8 @@ namespace ProceduralNoiseProject
                 for (int j = 0; j < 3; j++)
                 {
 
-                    px = Perm[(int)pX[i], (int)pY[j], Pi2 - 1];
-                    py = Perm[(int)pX[i], (int)pY[j], Pi2];
+                    px = Perm[(int)pX[i], (int)pY[j], Pi2 - 1]; 
+                    py = Perm[(int)pX[i], (int)pY[j], Pi2]; 
                     pz = Perm[(int)pX[i], (int)pY[j], Pi2 + 1];
 
                     oxx = Frac(px * K) - Ko;

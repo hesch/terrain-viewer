@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ProceduralNoiseProject
 {
@@ -35,7 +36,7 @@ namespace ProceduralNoiseProject
 
             System.Random rnd = new System.Random(Seed);
 
-            for (int i = 0; i < Size; i++)
+            for(int i = 0; i < Size; i++)
             {
                 Table[i] = rnd.Next();
             }

@@ -11,11 +11,19 @@ public class ProceduralRenderer : MonoBehaviour
 
     void OnRenderObject()
     {
-        Matrix4x4 mvp = transform.localToWorldMatrix;
+        Matrix4x4 model_matrix = transform.localToWorldMatrix;
 
         material.SetPass(0);
-        material.SetMatrix("mvp", mvp);
-        //material.SetMatrix("normalTransform", transform.localToWorldMatrix.inverse.transpose);
+        material.SetMatrix("model_matrix", model_matrix);
+        //reset translation
+        model_matrix[0, 3] = 0;
+        model_matrix[1, 3] = 0;
+        model_matrix[2, 3] = 0;
+        model_matrix[3, 3] = 1;
+        model_matrix[3, 0] = 0;
+        model_matrix[3, 1] = 0;
+        model_matrix[3, 2] = 0;
+        material.SetMatrix("inv_model_matrix", model_matrix.inverse);
         Graphics.DrawProceduralNow(MeshTopology.Triangles, numVertices, 1);
     }
 
