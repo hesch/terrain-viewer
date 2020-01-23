@@ -40,9 +40,23 @@ public class VertexNode : Node
     public ComputeBuffer Normals { get; set; }
     public VoxelBlock<Voxel> Block { get; set; }
 
-    public void OnEnable()
+    public void Awake()
     {
-        pmb = new PMB(FindObjectOfType<PMBShader>().shaderRef);
+        PMBShader shader = FindObjectOfType<PMBShader>();
+        if (shader == null)
+        {
+            UnityEngine.Debug.LogWarning("could not find object of Type PMBShader");
+            return;
+        }
+        pmb = new PMB(shader.shaderRef);
+    }
+
+    public void OnDestroy()
+    {
+        if (pmb != null)
+        {
+            pmb.Dispose();
+        }
     }
 
     public override void NodeGUI()

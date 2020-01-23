@@ -20,6 +20,8 @@ class PerformanceComparison : MonoBehaviour
     Vector3Int[] testSizes = new Vector3Int[]
     {
         new Vector3Int(64, 64, 64),
+        new Vector3Int(128, 64, 64),
+        new Vector3Int(128, 128, 64),
         new Vector3Int(128, 128, 128),
         new Vector3Int(256, 256, 256),
         new Vector3Int(512, 512, 512),
@@ -34,7 +36,10 @@ class PerformanceComparison : MonoBehaviour
         shader = FindObjectOfType<PMBShader>().shaderRef;
         pmb = new PMB(shader);
         globalStopwatch = Stopwatch.StartNew();
+        
     }
+
+    bool first = true;
 
     private void Update()
     {
@@ -49,26 +54,44 @@ class PerformanceComparison : MonoBehaviour
 
         try
         {
-            // test Checkerboard
-            UnityEngine.Debug.Log("Starting Test Checkerboard:");
-
-            foreach (Vector3Int size in testSizes)
+            if (first)
             {
-                UnityEngine.Debug.Log("size: " + size);
-                float[] voxel = new float[size.x * size.y * size.z];
-                for (int x = 0; x < size.x; x++)
+                UnityEngine.Debug.Log("Starting Coroutine");
+                StartCoroutine(testCheckerboard());
+                first = false;
+            }
+        }
+        finally
+        {
+            //finished = true;
+        }
+    }
+
+    public IEnumerator<object> testCheckerboard()
+    {
+        int CPU_LIMIT = 2;
+        int limitCounter = 0;
+        UnityEngine.Debug.Log("Starting Test Checkerboard:");
+
+        foreach (Vector3Int size in testSizes)
+        {
+            UnityEngine.Debug.Log("size: " + size);
+            float[] voxel = new float[size.x * size.y * size.z];
+            for (int x = 0; x < size.x; x++)
+            {
+                for (int y = 0; y < size.y; y++)
                 {
-                    for (int y = 0; y < size.y; y++)
+                    for (int z = 0; z < size.z; z++)
                     {
-                        for (int z = 0; z < size.z; z++)
-                        {
-                            voxel[z * size.x * size.y + y * size.x + x] = (x + y + z) % 2;
-                        }
+                        voxel[z * size.x * size.y + y * size.x + x] = (x + y + z) % 2;
                     }
                 }
+            }
 
-                Stopwatch checkerboardWatch = Stopwatch.StartNew();
+            Stopwatch checkerboardWatch = Stopwatch.StartNew();
 
+            if (limitCounter < CPU_LIMIT)
+            {
                 List<Vector3> verts = new List<Vector3>();
                 List<int> indices = new List<int>();
                 List<Vector3> normals = new List<Vector3>();
@@ -76,19 +99,17 @@ class PerformanceComparison : MonoBehaviour
 
                 UnityEngine.Debug.LogFormat("\tCPU took {0}ms", checkerboardWatch.ElapsedMilliseconds);
                 checkerboardWatch.Restart();
-
-                VoxelBlock<Voxel> block = InitBlock(size);
-
-                pmb.ReInit(block);
-                pmb.calculate(voxel, size.x, size.y, size.z, 0.5f);
-
-                UnityEngine.Debug.LogFormat("\tPMB took {0}ms", checkerboardWatch.ElapsedMilliseconds);
-                checkerboardWatch.Stop();
+                limitCounter++;
             }
-        }
-        finally
-        {
-            finished = true;
+
+            VoxelBlock<Voxel> block = InitBlock(size);
+
+            pmb.ReInit(block);
+            pmb.calculate(voxel, size.x, size.y, size.z, 0.5f);
+
+            UnityEngine.Debug.LogFormat("\tPMB took {0}ms", checkerboardWatch.ElapsedMilliseconds);
+            checkerboardWatch.Stop();
+            yield return null;
         }
     }
 

@@ -1,4 +1,4 @@
-
+using System;
 using UnityEngine;
 
 public struct RenderBuffers
@@ -8,7 +8,7 @@ public struct RenderBuffers
     public ComputeBuffer normalBuffer;
 }
 
-public class PMB
+public class PMB : IDisposable
 {
     public static Vector3Int blockSize = new Vector3Int(7, 3, 3);
     ComputeShader PMBShader;
@@ -161,9 +161,8 @@ public class PMB
         depth = newDepth;
     }
 
-    ~PMB()
+    public void Dispose()
     {
-        Debug.Log("Finalizer called for instance: " + this.GetHashCode());
         globalVertexOffset.Release();
         globalIndexOffset.Release();
         activeBlkNum.Release();
