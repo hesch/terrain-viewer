@@ -72,8 +72,20 @@ public class PMB : IDisposable
         addPadding(ref dummyVoxels, ref blockWidth, ref blockHeight, ref blockLength);
         numBlocks = new Vector3Int((blockWidth - 1) / blockSize.x, (blockHeight - 1) / blockSize.y, (blockLength - 1) / blockSize.z);
 
+        if (voxelBuffer != null)
+        {
+            voxelBuffer.Dispose();
+        }
         voxelBuffer = new ComputeBuffer(dummyVoxels.Length, sizeof(float));
+        if (minMaxBuffer != null)
+        {
+            minMaxBuffer.Dispose();
+        }
         minMaxBuffer = new ComputeBuffer(numBlocks.x * numBlocks.y * numBlocks.z, 2 * sizeof(float));
+        if (compactedBlkArray != null)
+        {
+            compactedBlkArray.Dispose();
+        }
         compactedBlkArray = new ComputeBuffer(numBlocks.x * numBlocks.y * numBlocks.z, sizeof(int));
 
         PMBShader.SetBuffer(minMaxKernelIndex, "voxelBuffer", voxelBuffer);
@@ -108,6 +120,16 @@ public class PMB : IDisposable
 
         int[] numActiveBlocks = new int[1];
         activeBlkNum.GetData(numActiveBlocks);
+        if(numActiveBlocks[0] == 0)
+        {
+            // no triangles calculated; return empty buffers
+            return new RenderBuffers
+            {
+                vertexBuffer = new ComputeBuffer(1, sizeof(float)*3),
+                indexBuffer = new ComputeBuffer(1, sizeof(float) * 3),
+                normalBuffer = new ComputeBuffer(1, sizeof(int)),
+            };
+        }
 
         ComputeBuffer vertexBuffer = new ComputeBuffer(numActiveBlocks[0] * blockSize.x * blockSize.y * blockSize.z * 3, sizeof(float) * 3);
         ComputeBuffer normalBuffer = new ComputeBuffer(numActiveBlocks[0] * blockSize.x * blockSize.y * blockSize.z * 3, sizeof(float) * 3);

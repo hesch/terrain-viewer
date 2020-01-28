@@ -1,24 +1,31 @@
-﻿using System;
-using System.IO;
+﻿using MarchingCubesProject;
+using ProceduralNoiseProject;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using MarchingCubesProject;
-using ProceduralNoiseProject;
-using System.Diagnostics;
 
 struct PerfData
 {
     public string testName;
+    public TestSize[] sizes;
+}
+
+struct TestSize
+{
+    public string sizeName;
     public int[] cpuTime;
     public int[] pmbTime;
 }
 
 enum Tests
 {
-    Checkerboard
+    Checkerboard,
+    Empty,
+    SimpleNoise,
 }
 
 class PerformanceComparison : MonoBehaviour
@@ -42,84 +49,77 @@ class PerformanceComparison : MonoBehaviour
         new Vector3Int(512, 512, 512)
     };
 
-    int sizeCounter = 0;
-    bool finished = false;
+    bool[] finished;
 
     private void Awake()
     {
         int numTests = Enum.GetNames(typeof(Tests)).Length;
         perfData = new PerfData[numTests];
+        finished = new bool[numTests];
 
         shader = FindObjectOfType<PMBShader>().shaderRef;
         pmb = new PMB(shader);
-        globalStopwatch = Stopwatch.StartNew();   
+        globalStopwatch = Stopwatch.StartNew();
+
+        Noise n = new PerlinNoise(42, 1.2f);
+        UnityEngine.Debug.Log("Starting Coroutines");
+        StartCoroutine(genericTest(Tests.Checkerboard, "checkerboard", 1, 3, (s, x, y, z) => (x + y + z) % 2));
+        StartCoroutine(genericTest(Tests.Empty, "empty", 3, 3, (s, x, y, z) => 0));
+        StartCoroutine(genericTest(Tests.SimpleNoise, "simple-noise", 2, 3, (s, x, y, z) => n.Sample3D(x, y, z)));
     }
 
-    bool first = true;
-
-    private void Update()
+    public void OnDestroy()
     {
-        if (finished)
-        {
-            return;
-        }
-
-        try
-        {
-            if (first)
-            {
-                UnityEngine.Debug.Log("Starting Coroutine");
-                StartCoroutine(testCheckerboard());
-                first = false;
-            }
-        }
-        finally
-        {
-            //finished = true;
-        }
+        pmb.Dispose();
     }
 
     void finishTesting()
     {
         UnityEngine.Debug.LogFormat("Finished Test in {0}ms", globalStopwatch.ElapsedMilliseconds);
         globalStopwatch.Stop();
+        pmb.Dispose();
         exportCSV();
         UnityEditor.EditorApplication.isPlaying = false;
         Application.Quit();
-        finished = true;
     }
 
-    public IEnumerator<object> testCheckerboard()
+    public IEnumerator<object> genericTest(Tests type, string name, int cpuLimit, int pmbLimit, Func<Vector3Int, int, int, int, float> voxelGenerator)
     {
-        int CPU_LIMIT = 1;
-        int PMB_LIMIT = 1;
-        UnityEngine.Debug.Log("Starting Test Checkerboard:");
-        perfData[(int)Tests.Checkerboard] = new PerfData
+        int CPU_LIMIT = cpuLimit;
+        int PMB_LIMIT = pmbLimit;
+        UnityEngine.Debug.Log("Starting Test " + name);
+        perfData[(int)type] = new PerfData
         {
-            testName = "checkerboard pattern",
-            cpuTime = new int[ROUNDS],
-            pmbTime = new int[ROUNDS],
+            testName = name,
+            sizes = new TestSize[testSizes.Length],
         };
 
-        for (int round = 0; round < ROUNDS; round++)
+        int limitCounter = 0;
+        for (int i = 0; i < testSizes.Length; i++)
         {
-            int limitCounter = 0;
-            foreach (Vector3Int size in testSizes)
+            Vector3Int size = (Vector3Int)testSizes[i];
+            UnityEngine.Debug.Log("size: " + size);
+            perfData[(int)type].sizes[i] = new TestSize
             {
-                UnityEngine.Debug.Log("size: " + size);
-                float[] voxel = new float[size.x * size.y * size.z];
-                for (int x = 0; x < size.x; x++)
+                sizeName = string.Format("({0}, {1}, {2})", size.x, size.y, size.z),
+                cpuTime = new int[ROUNDS],
+                pmbTime = new int[ROUNDS],
+            };
+            float[] voxel = new float[size.x * size.y * size.z];
+            for (int x = 0; x < size.x; x++)
+            {
+                for (int y = 0; y < size.y; y++)
                 {
-                    for (int y = 0; y < size.y; y++)
+                    for (int z = 0; z < size.z; z++)
                     {
-                        for (int z = 0; z < size.z; z++)
-                        {
-                            voxel[z * size.x * size.y + y * size.x + x] = (x + y + z) % 2;
-                        }
+                        voxel[z * size.x * size.y + y * size.x + x] = voxelGenerator(size, x, y, z);
                     }
                 }
+            }
 
-                Stopwatch checkerboardWatch = Stopwatch.StartNew();
+            for (int round = 0; round < ROUNDS; round++)
+            {
+                Stopwatch watch = Stopwatch.StartNew();
 
                 if (limitCounter < CPU_LIMIT)
                 {
@@ -128,9 +128,14 @@ class PerformanceComparison : MonoBehaviour
                     List<Vector3> normals = new List<Vector3>();
                     marching.Generate(voxel, size.x, size.y, size.z, verts, indices, normals);
 
-                    UnityEngine.Debug.LogFormat("\tCPU took {0}ms", checkerboardWatch.ElapsedMilliseconds);
-                    perfData[(int)Tests.Checkerboard].cpuTime[round] = (int)checkerboardWatch.ElapsedMilliseconds;
-                    checkerboardWatch.Restart();
+                    UnityEngine.Debug.LogFormat("\tCPU took {0}ms", watch.ElapsedMilliseconds);
+                    perfData[(int)type].sizes[i].cpuTime[round] = (int)watch.ElapsedMilliseconds;
+
+                    watch.Restart();
+                }
+                else
+                {
+                    perfData[(int)type].sizes[i].cpuTime[round] = -1;
                 }
 
                 if (limitCounter < PMB_LIMIT)
@@ -138,21 +143,31 @@ class PerformanceComparison : MonoBehaviour
                     VoxelBlock<Voxel> block = InitBlock(size);
 
                     pmb.ReInit(block);
-                    pmb.calculate(voxel, size.x, size.y, size.z, 0.5f);
+                    RenderBuffers buffers = pmb.calculate(voxel, size.x, size.y, size.z, 0.5f);
 
-                    checkerboardWatch.Stop();
-                    UnityEngine.Debug.LogFormat("\tPMB took {0}ms", checkerboardWatch.ElapsedMilliseconds);
-                    perfData[(int)Tests.Checkerboard].pmbTime[round] = (int)checkerboardWatch.ElapsedMilliseconds;
-                } else {
-                    checkerboardWatch.Stop();
+                    watch.Stop();
+                    buffers.vertexBuffer.Dispose();
+                    buffers.indexBuffer.Dispose();
+                    buffers.normalBuffer.Dispose();
+                    UnityEngine.Debug.LogFormat("\tPMB took {0}ms", watch.ElapsedMilliseconds);
+                    perfData[(int)type].sizes[i].pmbTime[round] = (int)watch.ElapsedMilliseconds;
                 }
-                
-                limitCounter++;
+                else
+                {
+                    perfData[(int)type].sizes[i].pmbTime[round] = -1;
+                    watch.Stop();
+                }
+
                 yield return null;
             }
+            limitCounter++;
         }
 
-        finishTesting();
+        finished[(int)type] = true;
+        if (finished.All(f => f))
+        {
+            finishTesting();
+        }
     }
 
     VoxelBlock<Voxel> InitBlock(Vector3Int size)
@@ -193,7 +208,10 @@ class PerformanceComparison : MonoBehaviour
 
         foreach (PerfData data in perfData)
         {
-            stringBuilder.AppendFormat("\n{0},{1},{2}", data.testName, string.Join(",", data.cpuTime), string.Join(",", data.pmbTime));
+            foreach (TestSize size in data.sizes)
+            {
+                stringBuilder.AppendFormat("\n{0}{1},{2},{3}", data.testName, size.sizeName, string.Join(",", size.cpuTime), string.Join(",", size.pmbTime));
+            }
         }
         file.WriteLine(stringBuilder.ToString());
         file.Flush();
