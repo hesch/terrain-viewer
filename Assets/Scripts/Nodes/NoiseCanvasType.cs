@@ -59,6 +59,7 @@ public class NoiseCanvasType : NodeCanvas
 
     public void ConfigureComputation(Func<IEnumerable<(int, int)>> offsetGenerator, Action<ComputeBuffer, ComputeBuffer, ComputeBuffer, VoxelBlock<Voxel>> callback)
     {
+        UnityEngine.Debug.Log("NoiseCanvasType.ConfigureComputation");
         this.offsetGenerator = offsetGenerator;
         this.callback = callback;
         Traversal.OnChange(null);
@@ -79,6 +80,7 @@ public class NoiseCanvasType : NodeCanvas
             var performanceString = "";
             foreach ((int, int) tuple in offsets)
             {
+                UnityEngine.Debug.Log("offset: " + tuple);
                 stopwatch.Restart();
                 foreach (Node n in cache)
                 {
@@ -126,6 +128,9 @@ public class NoiseCanvasType : NodeCanvas
             {
                 task.Wait();
             }
+        } catch
+        {
+            // do nothing
         }
         finally
         {

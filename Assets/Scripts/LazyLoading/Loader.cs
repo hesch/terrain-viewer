@@ -19,10 +19,12 @@ public class Loader
 
     static Loader()
     {
-        Debug.Log(Directory.GetCurrentDirectory());
         watcher = new FileSystemWatcher();
+#if (UNITY_EDITOR)
+        // only LazyLoad when in editor
         watch();
         loadFile("");
+#endif
     }
 
     public static void watch()
@@ -42,7 +44,6 @@ public class Loader
         if (x)
         {
             Debug.Log("File Changed: " + args.FullPath);
-            Debug.Log(args.ChangeType);
             loadFile(args.FullPath);
         }
         x = true;
@@ -86,7 +87,6 @@ public class Loader
             Debug.LogError(error);
         }
 
-        Debug.Log("calling listeners");
         currentAssembly = results.CompiledAssembly;
         listener(results.CompiledAssembly);
     }

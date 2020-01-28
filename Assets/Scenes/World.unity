@@ -750,6 +750,7 @@ GameObject:
   - component: {fileID: 659031546}
   - component: {fileID: 659031545}
   - component: {fileID: 659031544}
+  - component: {fileID: 659031547}
   m_Layer: 5
   m_Name: TerrainPreviewCanvas
   m_TagString: Untagged
@@ -839,6 +840,20 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &659031547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 659031542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f947405dab167a4d9b67bfd1dd62d36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectionMaterial: {fileID: 2100000, guid: 5fc4b8612d4cec0aea1618d6844b6935, type: 2}
+  blockPositon: {fileID: 1864640141}
 --- !u!1 &678727099
 GameObject:
   m_ObjectHideFlags: 0
@@ -964,7 +979,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1632167726}
         m_MethodName: setLayerIndex
         m_Mode: 0
         m_Arguments:
@@ -1810,6 +1825,7 @@ GameObject:
   - component: {fileID: 1385311346}
   - component: {fileID: 1385311349}
   - component: {fileID: 1385311350}
+  - component: {fileID: 1385311345}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -1817,6 +1833,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1385311345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385311344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9092345e815bf2144a2e37107e726e3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controlledCamera: {fileID: 1385311346}
 --- !u!20 &1385311346
 Camera:
   m_ObjectHideFlags: 0
@@ -2088,6 +2117,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1632167722}
   - component: {fileID: 1632167725}
+  - component: {fileID: 1632167726}
   - component: {fileID: 1632167724}
   - component: {fileID: 1632167723}
   m_Layer: 5
@@ -2183,6 +2213,24 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &1632167726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632167721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb80deb71308d1f49a6fc7f113f485bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectionMaterial: {fileID: 2100000, guid: 5fc4b8612d4cec0aea1618d6844b6935, type: 2}
+  layerSliderText: {fileID: 1076878415}
+  layerSlider: {fileID: 716967772}
+  voxelInfoText: {fileID: 1044807733}
+  controlledCamera: {fileID: 1385311346}
+  displayedObject: {fileID: 0}
 --- !u!1 &1640454325
 GameObject:
   m_ObjectHideFlags: 0

@@ -23,6 +23,8 @@ public class NoiseNodeEditor : MonoBehaviour
   {
     rt = transform as RectTransform;
     NormalReInit();
+        Debug.Log("NoiseNodeEditor.Awake()");
+    canvasCache.nodeCanvas.TraverseAll();
   }
 
   private void Update () 

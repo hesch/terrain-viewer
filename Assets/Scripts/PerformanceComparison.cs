@@ -79,7 +79,9 @@ class PerformanceComparison : MonoBehaviour
         globalStopwatch.Stop();
         pmb.Dispose();
         exportCSV();
+#if (UNITY_EDITOR)
         UnityEditor.EditorApplication.isPlaying = false;
+#endif
         Application.Quit();
     }
 

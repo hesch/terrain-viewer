@@ -185,6 +185,7 @@ public class PMB : IDisposable
 
     public void Dispose()
     {
+        Debug.Log("Dispose called on instance: " + this.GetHashCode());
         globalVertexOffset.Release();
         globalIndexOffset.Release();
         activeBlkNum.Release();

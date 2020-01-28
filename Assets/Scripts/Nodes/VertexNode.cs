@@ -9,11 +9,10 @@ using System.Diagnostics;
 
 public enum VerteGenerationMode
 {
+    PMB,
     Cubes,
     Tetrahedron,
-    Voxel,
-
-    PMB
+    Voxel
 };
 
 [Node(false, "Vertex")]
@@ -56,6 +55,18 @@ public class VertexNode : Node
         if (pmb != null)
         {
             pmb.Dispose();
+        }
+        if (Vertices != null)
+        {
+            Vertices.Dispose();
+        }
+        if (Indices != null)
+        {
+            Indices.Dispose();
+        }
+        if (Normals != null)
+        {
+            Normals.Dispose();
         }
     }
 
@@ -231,8 +242,6 @@ public class VertexNode : Node
 
         task.wait();
 
-
-        UnityEngine.Debug.Log("after setData");
         Block = block;
 
         return true;

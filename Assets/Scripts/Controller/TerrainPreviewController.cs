@@ -22,14 +22,15 @@ public class TerrainPreviewController : MonoBehaviour
 
     public void Start()
     {
+        vertexDisplay = UnityEngine.Object.FindObjectOfType<VertexDisplay>();
+
         selection = GameObject.CreatePrimitive(PrimitiveType.Cube);
         selection.name = "Selection";
-        selection.transform.parent = transform;
+        selection.transform.parent = vertexDisplay.transform;
         selection.GetComponent<Renderer>().material = selectionMaterial;
         Destroy(selection.GetComponent<BoxCollider>());
 
         detailController = UnityEngine.Object.FindObjectOfType<DetailCanvasController>();
-        vertexDisplay = UnityEngine.Object.FindObjectOfType<VertexDisplay>();
         NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
         noiseCanvas = editor.GetCanvas() as NoiseCanvasType;
         configureComputation();
