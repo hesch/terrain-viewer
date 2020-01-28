@@ -130,7 +130,6 @@ GameObject:
   m_Component:
   - component: {fileID: 82345057}
   - component: {fileID: 82345056}
-  - component: {fileID: 82345058}
   - component: {fileID: 82345059}
   - component: {fileID: 82345060}
   m_Layer: 0
@@ -167,20 +166,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &82345058
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 82345055}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c645429d064f4cee796091d4bd174ebb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  selectionMaterial: {fileID: 2100000, guid: 5fc4b8612d4cec0aea1618d6844b6935, type: 2}
-  blockPositon: {fileID: 1864640141}
 --- !u!114 &82345059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -765,7 +750,6 @@ GameObject:
   - component: {fileID: 659031546}
   - component: {fileID: 659031545}
   - component: {fileID: 659031544}
-  - component: {fileID: 659031547}
   m_Layer: 5
   m_Name: TerrainPreviewCanvas
   m_TagString: Untagged
@@ -855,20 +839,6 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!114 &659031547
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 659031542}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c645429d064f4cee796091d4bd174ebb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  selectionMaterial: {fileID: 2100000, guid: 5fc4b8612d4cec0aea1618d6844b6935, type: 2}
-  blockPositon: {fileID: 1864640141}
 --- !u!1 &678727099
 GameObject:
   m_ObjectHideFlags: 0
@@ -994,7 +964,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1632167726}
+      - m_Target: {fileID: 0}
         m_MethodName: setLayerIndex
         m_Mode: 0
         m_Arguments:
@@ -1838,7 +1808,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1385311347}
   - component: {fileID: 1385311346}
-  - component: {fileID: 1385311348}
   - component: {fileID: 1385311349}
   - component: {fileID: 1385311350}
   m_Layer: 0
@@ -1905,19 +1874,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: 0, z: 0}
---- !u!114 &1385311348
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1385311344}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fbe906a4b3796f411a0f78e27f1481e1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  controlledCamera: {fileID: 0}
 --- !u!114 &1385311349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2134,7 +2090,6 @@ GameObject:
   - component: {fileID: 1632167725}
   - component: {fileID: 1632167724}
   - component: {fileID: 1632167723}
-  - component: {fileID: 1632167726}
   m_Layer: 5
   m_Name: TerrainDetailCanvas
   m_TagString: Untagged
@@ -2228,24 +2183,6 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!114 &1632167726
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1632167721}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67e530716e0316c3180b24bccbb70c68, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  selectionMaterial: {fileID: 2100000, guid: 5fc4b8612d4cec0aea1618d6844b6935, type: 2}
-  layerSliderText: {fileID: 1076878415}
-  layerSlider: {fileID: 716967772}
-  voxelInfoText: {fileID: 1044807733}
-  controlledCamera: {fileID: 1385311346}
-  displayedObject: {fileID: 0}
 --- !u!1 &1640454325
 GameObject:
   m_ObjectHideFlags: 0
