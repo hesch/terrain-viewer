@@ -6,6 +6,7 @@ public struct RenderBuffers
     public ComputeBuffer vertexBuffer;
     public ComputeBuffer indexBuffer;
     public ComputeBuffer normalBuffer;
+    public ComputeBuffer argsBuffer;
 }
 
 public class PMB : IDisposable
@@ -18,7 +19,6 @@ public class PMB : IDisposable
 
     ComputeBuffer marchingCubesEdgeTableBuffer;
     ComputeBuffer globalVertexOffset = new ComputeBuffer(1, sizeof(int));
-    ComputeBuffer globalIndexOffset = new ComputeBuffer(1, sizeof(int));
     ComputeBuffer activeBlkNum = new ComputeBuffer(1, sizeof(int));
 
     ComputeBuffer voxelBuffer;
@@ -32,7 +32,6 @@ public class PMB : IDisposable
 
     public PMB(ComputeShader shader)
     {
-        Debug.Log("Constructor called for instance: " + this.GetHashCode());
         PMBShader = shader;
         minMaxKernelIndex = PMBShader.FindKernel("minMax");
         compactActiveBlocksKernelIndex = PMBShader.FindKernel("compactActiveBlocks");
@@ -99,7 +98,6 @@ public class PMB : IDisposable
 
         PMBShader.SetBuffer(generateTrianglesKernelIndex, "marchingCubesEdgeTable", marchingCubesEdgeTableBuffer);
         PMBShader.SetBuffer(generateTrianglesKernelIndex, "globalVertexOffset", globalVertexOffset);
-        PMBShader.SetBuffer(generateTrianglesKernelIndex, "globalIndexOffset", globalIndexOffset);
         PMBShader.SetBuffer(generateTrianglesKernelIndex, "voxelBuffer", voxelBuffer);
         PMBShader.SetBuffer(generateTrianglesKernelIndex, "compactedBlkArray", compactedBlkArray);
     }
@@ -107,7 +105,6 @@ public class PMB : IDisposable
     public RenderBuffers calculate(float[] voxels, int width, int height, int depth, float isoValue)
     {
         globalVertexOffset.SetData(new int[] { 0 });
-        globalIndexOffset.SetData(new int[] { 0 });
         activeBlkNum.SetData(new int[] { 0 });
 
         addPadding(ref voxels, ref width, ref height, ref depth);
@@ -135,10 +132,13 @@ public class PMB : IDisposable
         ComputeBuffer normalBuffer = new ComputeBuffer(numActiveBlocks[0] * blockSize.x * blockSize.y * blockSize.z * 3, sizeof(float) * 3);
         // TODO: evaluate this size
         ComputeBuffer indexBuffer = new ComputeBuffer(numActiveBlocks[0] * blockSize.x * blockSize.y * blockSize.z * 3 * 5, sizeof(int));
+        ComputeBuffer globalIndexOffset = new ComputeBuffer(4, sizeof(int), ComputeBufferType.IndirectArguments);
+        globalIndexOffset.SetData(new int[] { 0, 1, 0, 0 });
 
         PMBShader.SetBuffer(generateTrianglesKernelIndex, "vertexBuffer", vertexBuffer);
         PMBShader.SetBuffer(generateTrianglesKernelIndex, "normalBuffer", normalBuffer);
         PMBShader.SetBuffer(generateTrianglesKernelIndex, "indexBuffer", indexBuffer);
+        PMBShader.SetBuffer(generateTrianglesKernelIndex, "globalIndexOffset", globalIndexOffset);
         PMBShader.Dispatch(generateTrianglesKernelIndex, numActiveBlocks[0], 1, 1);
 
         return new RenderBuffers
@@ -146,6 +146,7 @@ public class PMB : IDisposable
             vertexBuffer = vertexBuffer,
             indexBuffer = indexBuffer,
             normalBuffer = normalBuffer,
+            argsBuffer = globalIndexOffset,
         };
     }
 
@@ -185,9 +186,7 @@ public class PMB : IDisposable
 
     public void Dispose()
     {
-        Debug.Log("Dispose called on instance: " + this.GetHashCode());
         globalVertexOffset.Release();
-        globalIndexOffset.Release();
         activeBlkNum.Release();
         marchingCubesEdgeTableBuffer.Release();
         if (voxelBuffer != null)

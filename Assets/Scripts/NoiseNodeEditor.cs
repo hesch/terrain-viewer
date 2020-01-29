@@ -19,9 +19,10 @@ public class NoiseNodeEditor : MonoBehaviour
     return canvasCache.nodeCanvas;
   }
 
-  public void Awake () 
+  public void Awake ()
   {
-    rt = transform as RectTransform;
+        Application.targetFrameRate = 30;
+        rt = transform as RectTransform;
     NormalReInit();
         Debug.Log("NoiseNodeEditor.Awake()");
     canvasCache.nodeCanvas.TraverseAll();

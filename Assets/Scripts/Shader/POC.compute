@@ -132,7 +132,7 @@ static const uint numTrisLookup[] = {
 3,3,2,3,4,2,1,3,2,4,1,2,1,1,0,
 };
 
-RWStructuredBuffer<int> marchingCubesEdgeTable;
+uniform StructuredBuffer<int> marchingCubesEdgeTable;
 RWStructuredBuffer<float3> vertexBuffer;
 RWStructuredBuffer<float3> normalBuffer;
 RWStructuredBuffer<int> indexBuffer;
@@ -143,7 +143,7 @@ RWStructuredBuffer<int> globalIndexOffset;
 groupshared float sharedVoxelBuffer[B_DIM];
 groupshared bool3 sharedXyzEdges[B_DIM];
 groupshared int numVerts[B_DIM];
-groupshared int numTris[B_DIM];
+groupshared int numIndices[B_DIM];
 
 int vecToIdx(uint3 vec) {
   return vec.z*B_DIM_X*B_DIM_Y + vec.y*B_DIM_X + vec.x;
@@ -218,8 +218,8 @@ void generateTriangles(
   cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 0, 0)) < isoValue ? 1 : 0);
   cubeCase = (cubeCase<<1)|(myVoxelValue < isoValue ? 1 : 0);
 
-  uint myNumTris = gtid.x < B_DIM_X - 1 && gtid.y < B_DIM_Y - 1 && gtid.z < B_DIM_Z - 1 ? numTrisLookup[cubeCase] : 0;
-  numTris[gidx] = myNumTris;
+  uint myNumIndices = gtid.x < B_DIM_X - 1 && gtid.y < B_DIM_Y - 1 && gtid.z < B_DIM_Z - 1 ? numTrisLookup[cubeCase]*3 : 0;
+  numIndices[gidx] = myNumIndices;
 
   float3 edgeVoxels = {
     accessSharedVoxelBuffer(gtid + uint3(1, 0, 0)),
@@ -249,31 +249,31 @@ void generateTriangles(
   GroupMemoryBarrierWithGroupSync();
 
   for (uint offset = 1; offset < B_DIM; offset <<= 1) {
-    int t = numTris[gidx-offset];
+    int t = numIndices[gidx-offset];
     int v = numVerts[gidx-offset];
     GroupMemoryBarrierWithGroupSync();
     if (gidx >= offset) {
-      numTris[gidx] += t;
+      numIndices[gidx] += t;
       numVerts[gidx] += v;
     }
     GroupMemoryBarrierWithGroupSync();
   }
 
-  uint trisOffset = numTris[gidx];
+  uint indicesOffset = numIndices[gidx];
   uint vertsOffset = numVerts[gidx];
   if (gidx == B_DIM-1) {
     InterlockedAdd(globalVertexOffset[0], numVerts[gidx], numVerts[gidx]);
-    InterlockedAdd(globalIndexOffset[0], numTris[gidx], numTris[gidx]);
+    InterlockedAdd(globalIndexOffset[0], numIndices[gidx], numIndices[gidx]);
   }
 
   AllMemoryBarrierWithGroupSync();
 
-  uint sharedTrisOffset = numTris[B_DIM-1];
+  uint sharedIndicesOffset = numIndices[B_DIM-1];
   uint sharedVertsOffset = numVerts[B_DIM-1];
 
   GroupMemoryBarrierWithGroupSync();
 
-  numTris[gidx] = trisOffset + sharedTrisOffset;
+  numIndices[gidx] = indicesOffset + sharedIndicesOffset;
   numVerts[gidx] = vertsOffset + sharedVertsOffset - myNumVerts;
   GroupMemoryBarrierWithGroupSync();
 
@@ -311,8 +311,8 @@ void generateTriangles(
   // indexBuffer[globalIndex] = numVerts[gidx];
   // return;
 
-  uint indexBufferBaseOffset = (numTris[gidx]-myNumTris)*3;
-  for (uint indexOffset = 0; indexOffset < myNumTris*3; indexOffset++) {
+  uint indexBufferBaseOffset = numIndices[gidx]-myNumIndices;
+  for (uint indexOffset = 0; indexOffset < myNumIndices; indexOffset++) {
     uint4 edgeMap = neighborMappingTable[marchingCubesEdgeTable[cubeCase*16+indexOffset]];
     uint3 edgeCellOffset = gtid + edgeMap.xyz;
     uint edgeCellOffsetIdx = vecToIdx(edgeCellOffset);

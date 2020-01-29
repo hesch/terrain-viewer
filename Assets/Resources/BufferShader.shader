@@ -6,10 +6,10 @@ Shader "Custom/BufferShader"
        Pass
        {
             ZTest LEqual
-	    Cull Off
-	    ZWrite On
+	        Cull Off
+	        ZWrite On
 
-	    Tags {"LightMode"="ForwardBase"}
+	        Tags {"LightMode"="ForwardBase"}
  
             CGPROGRAM
             #include "UnityCG.cginc"

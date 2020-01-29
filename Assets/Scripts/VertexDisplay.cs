@@ -9,7 +9,7 @@ public class VertexDisplay : MonoBehaviour
     public Material m_material;
 
     private Dictionary<Vector2Int, GameObject> Meshes = new Dictionary<Vector2Int, GameObject>();
-    private ConcurrentQueue<(ComputeBuffer, ComputeBuffer, ComputeBuffer, IVoxelBlock)> meshQueue = new ConcurrentQueue<(ComputeBuffer, ComputeBuffer, ComputeBuffer, IVoxelBlock)>();
+    private ConcurrentQueue<(RenderBuffers, IVoxelBlock)> meshQueue = new ConcurrentQueue<(RenderBuffers, IVoxelBlock)>();
 
     private bool gridlinesVisible = true;
     public bool GridlinesVisible
@@ -53,9 +53,9 @@ public class VertexDisplay : MonoBehaviour
         MeshAddedDelegate -= del;
     }
 
-    public void PushNewMeshForOffset(ComputeBuffer meshVertices, ComputeBuffer meshIndices, ComputeBuffer meshNormals, IVoxelBlock block)
+    public void PushNewMeshForOffset(RenderBuffers buffers, IVoxelBlock block)
     {
-        meshQueue.Enqueue((meshVertices, meshIndices, meshNormals, block));
+        meshQueue.Enqueue((buffers, block));
     }
 
     public void hideAllBut(GameObject it)
@@ -83,10 +83,10 @@ public class VertexDisplay : MonoBehaviour
 
     private void TryAddBlock()
     {
-        (ComputeBuffer, ComputeBuffer, ComputeBuffer, IVoxelBlock) tuple;
+        (RenderBuffers, IVoxelBlock) tuple;
         if (meshQueue.TryDequeue(out tuple))
         {
-            var (vertices, indices, normals, block) = tuple;
+            var (buffers, block) = tuple;
 
             if (Meshes.ContainsKey(block.Offset))
             {
@@ -94,7 +94,7 @@ public class VertexDisplay : MonoBehaviour
                 Destroy(oldMesh);
             }
 
-            GameObject go = BlockConverter.BlockToGameObject(vertices, indices, normals, block, m_material, MeshEventDelegate);
+            GameObject go = BlockConverter.BlockToGameObject(buffers, block, m_material, MeshEventDelegate);
             go.transform.parent = transform;
             go.GetComponent<LineRenderer>().enabled = gridlinesVisible;
             if (hiddenState && block.Offset != OnlyShowObjectAt)

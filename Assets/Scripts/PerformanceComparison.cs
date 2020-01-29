@@ -151,6 +151,7 @@ class PerformanceComparison : MonoBehaviour
                     buffers.vertexBuffer.Dispose();
                     buffers.indexBuffer.Dispose();
                     buffers.normalBuffer.Dispose();
+                    buffers.argsBuffer.Dispose();
                     UnityEngine.Debug.LogFormat("\tPMB took {0}ms", watch.ElapsedMilliseconds);
                     perfData[(int)type].sizes[i].pmbTime[round] = (int)watch.ElapsedMilliseconds;
                 }

@@ -7,12 +7,12 @@ using UnityEngine.EventSystems;
 public class BlockConverter
 {
 
-    public static GameObject BlockToGameObject(ComputeBuffer vertices, ComputeBuffer indices, ComputeBuffer normals, IVoxelBlock block, Material material, Action<PointerEventData, GameObject> clickCallback)
+    public static GameObject BlockToGameObject(RenderBuffers buffers, IVoxelBlock block, Material material, Action<PointerEventData, GameObject> clickCallback)
     {
         Material m = new Material(Shader.Find("Custom/BufferShader"));
-        m.SetBuffer("vertexBuffer", vertices);
-        m.SetBuffer("indexBuffer", indices);
-        m.SetBuffer("normalBuffer", normals);
+        m.SetBuffer("vertexBuffer", buffers.vertexBuffer);
+        m.SetBuffer("indexBuffer", buffers.indexBuffer);
+        m.SetBuffer("normalBuffer", buffers.normalBuffer);
 
         GameObject go = new GameObject(String.Format("Block({0}, {1})", block.Offset.x, block.Offset.y));
         go.AddComponent<ProceduralRenderer>();
@@ -21,11 +21,8 @@ public class BlockConverter
         go.AddComponent<EventTrigger>();
 
         ProceduralRenderer renderer = go.GetComponent<ProceduralRenderer>();
-        renderer.numVertices = indices.count;
         renderer.material = m;
-        renderer.vertices = vertices;
-        renderer.indices = indices;
-        renderer.normals = normals;
+        renderer.buffers = buffers;
         go.GetComponent<BlockInfo>().Block = block;
         go.transform.localPosition = new Vector3((block.Offset.x - 0.5f) * block.Width, -block.Height / 2, (block.Offset.y - 0.5f) * block.Length);
         go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);

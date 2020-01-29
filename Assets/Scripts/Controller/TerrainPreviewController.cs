@@ -40,7 +40,7 @@ public class TerrainPreviewController : MonoBehaviour
 
     public void configureComputation()
     {
-        noiseCanvas.ConfigureComputation(() => Spiral(5), (verts, indices, normals, block) => vertexDisplay.PushNewMeshForOffset(verts, indices, normals, block));
+        noiseCanvas.ConfigureComputation(() => Spiral(5), (buffers, block) => vertexDisplay.PushNewMeshForOffset(buffers, block));
     }
 
     private void handleSelection(PointerEventData eventData, GameObject selected)

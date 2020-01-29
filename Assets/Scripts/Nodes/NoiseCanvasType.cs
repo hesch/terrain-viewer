@@ -13,7 +13,7 @@ using System.IO;
 public class NoiseCanvasType : NodeCanvas
 {
     private Func<IEnumerable<(int, int)>> offsetGenerator;
-    private Action<ComputeBuffer, ComputeBuffer, ComputeBuffer, VoxelBlock<Voxel>> callback;
+    private Action<RenderBuffers, VoxelBlock<Voxel>> callback;
     private CancellationTokenSource tokenSource;
     private Task task;
     private Stopwatch stopwatch = new Stopwatch();
@@ -57,7 +57,7 @@ public class NoiseCanvasType : NodeCanvas
         return true;
     }
 
-    public void ConfigureComputation(Func<IEnumerable<(int, int)>> offsetGenerator, Action<ComputeBuffer, ComputeBuffer, ComputeBuffer, VoxelBlock<Voxel>> callback)
+    public void ConfigureComputation(Func<IEnumerable<(int, int)>> offsetGenerator, Action<RenderBuffers, VoxelBlock<Voxel>> callback)
     {
         UnityEngine.Debug.Log("NoiseCanvasType.ConfigureComputation");
         this.offsetGenerator = offsetGenerator;
@@ -80,7 +80,6 @@ public class NoiseCanvasType : NodeCanvas
             var performanceString = "";
             foreach ((int, int) tuple in offsets)
             {
-                UnityEngine.Debug.Log("offset: " + tuple);
                 stopwatch.Restart();
                 foreach (Node n in cache)
                 {
@@ -91,14 +90,14 @@ public class NoiseCanvasType : NodeCanvas
                         n2.Offset = new Vector2Int(tuple.Item1, tuple.Item2);
                     }
                     nodeStopwatch.Restart();
-                    n.Calculate();
+                    bool result = n.Calculate();
                     nodeStopwatch.Stop();
                     performanceString += String.Format("\n\tNode {0} took\t{1}ms", n.Title, nodeStopwatch.ElapsedMilliseconds);
 
-                    if (n.isOutput() && n is VertexNode)
+                    if (n.isOutput() && n is VertexNode && result)
                     {
                         VertexNode vertexNode = n as VertexNode;
-                        callback(vertexNode.Vertices, vertexNode.Indices, vertexNode.Normals, vertexNode.Block);
+                        callback(vertexNode.buffers, vertexNode.Block);
                     }
                     token.ThrowIfCancellationRequested();
                 }

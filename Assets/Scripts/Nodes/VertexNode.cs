@@ -34,9 +34,7 @@ public class VertexNode : Node
 
     private PMB pmb;
 
-    public ComputeBuffer Vertices { get; set; }
-    public ComputeBuffer Indices { get; set; }
-    public ComputeBuffer Normals { get; set; }
+    public RenderBuffers buffers { get; set; }
     public VoxelBlock<Voxel> Block { get; set; }
 
     public void Awake()
@@ -56,17 +54,21 @@ public class VertexNode : Node
         {
             pmb.Dispose();
         }
-        if (Vertices != null)
+        if (buffers.vertexBuffer != null)
         {
-            Vertices.Dispose();
+            buffers.vertexBuffer.Dispose();
         }
-        if (Indices != null)
+        if (buffers.indexBuffer != null)
         {
-            Indices.Dispose();
+            buffers.indexBuffer.Dispose();
         }
-        if (Normals != null)
+        if (buffers.normalBuffer != null)
         {
-            Normals.Dispose();
+            buffers.normalBuffer.Dispose();
+        }
+        if (buffers.argsBuffer != null)
+        {
+            buffers.argsBuffer.Dispose();
         }
     }
 
@@ -183,12 +185,9 @@ public class VertexNode : Node
             {
                 pmb.ReInit(block);
                 Stopwatch pmbWatch = Stopwatch.StartNew();
-                RenderBuffers buffers = pmb.calculate(voxels, width, height, length, surface);
-                Vertices = buffers.vertexBuffer;
-                Indices = buffers.indexBuffer;
-                Normals = buffers.normalBuffer;
+                buffers = pmb.calculate(voxels, width, height, length, surface);
                 pmbWatch.Stop();
-                UnityEngine.Debug.LogFormat("PMB took {0}ms\n\t{1} voxels\n\t{2} triangles", pmbWatch.ElapsedMilliseconds, voxels.Count(), Indices.count / 3);
+                UnityEngine.Debug.LogFormat("PMB took {0}ms\n\t{1} voxels\n\t{2} triangles", pmbWatch.ElapsedMilliseconds, voxels.Count(), buffers.indexBuffer.count / 3);
             });
 
             UnityEngine.Debug.Log("waiting for PMB on main thread");
@@ -231,13 +230,17 @@ public class VertexNode : Node
 
         var task = MainThreadHelper.instance().scheduleOnMainThread(() =>
         {
-            Vertices = new ComputeBuffer(verts.Count, sizeof(float) * 3);
-            Indices = new ComputeBuffer(indices.Count, sizeof(int));
-            Normals = new ComputeBuffer(normals.Count, sizeof(float) * 3);
+            buffers = new RenderBuffers {
+                vertexBuffer = new ComputeBuffer(verts.Count, sizeof(float) * 3),
+                indexBuffer = new ComputeBuffer(indices.Count, sizeof(int)),
+                normalBuffer = new ComputeBuffer(normals.Count, sizeof(float) * 3),
+                argsBuffer = new ComputeBuffer(4, sizeof(int)),
+            };
 
-            Vertices.SetData(verts);
-            Indices.SetData(indices);
-            Normals.SetData(normals);
+            buffers.vertexBuffer.SetData(verts);
+            buffers.indexBuffer.SetData(indices);
+            buffers.normalBuffer.SetData(normals);
+            buffers.argsBuffer.SetData(new int[] { indices.Count, 1, 0, 0 });
         });
 
         task.wait();
