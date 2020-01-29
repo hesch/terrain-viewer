@@ -234,7 +234,7 @@ public class VertexNode : Node
                 vertexBuffer = new ComputeBuffer(verts.Count, sizeof(float) * 3),
                 indexBuffer = new ComputeBuffer(indices.Count, sizeof(int)),
                 normalBuffer = new ComputeBuffer(normals.Count, sizeof(float) * 3),
-                argsBuffer = new ComputeBuffer(4, sizeof(int)),
+                argsBuffer = new ComputeBuffer(4, sizeof(int), ComputeBufferType.IndirectArguments),
             };
 
             buffers.vertexBuffer.SetData(verts);

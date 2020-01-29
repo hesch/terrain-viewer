@@ -125,6 +125,7 @@ public class PMB : IDisposable
                 vertexBuffer = new ComputeBuffer(1, sizeof(float)*3),
                 indexBuffer = new ComputeBuffer(1, sizeof(float) * 3),
                 normalBuffer = new ComputeBuffer(1, sizeof(int)),
+                argsBuffer = new ComputeBuffer(4, sizeof(int), ComputeBufferType.IndirectArguments),
             };
         }
 

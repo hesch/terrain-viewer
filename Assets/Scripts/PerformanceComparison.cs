@@ -19,6 +19,8 @@ struct TestSize
     public string sizeName;
     public int[] cpuTime;
     public int[] pmbTime;
+    public int cpuTriangles;
+    public int pmbTriangles;
 }
 
 enum Tests
@@ -64,8 +66,8 @@ class PerformanceComparison : MonoBehaviour
         Noise n = new PerlinNoise(42, 1.2f);
         UnityEngine.Debug.Log("Starting Coroutines");
         StartCoroutine(genericTest(Tests.Checkerboard, "checkerboard", 1, 3, (s, x, y, z) => (x + y + z) % 2));
-        StartCoroutine(genericTest(Tests.Empty, "empty", 3, 3, (s, x, y, z) => 0));
-        StartCoroutine(genericTest(Tests.SimpleNoise, "simple-noise", 2, 3, (s, x, y, z) => n.Sample3D(x, y, z)));
+        StartCoroutine(genericTest(Tests.Empty, "empty", 1, 5, (s, x, y, z) => 0));
+        StartCoroutine(genericTest(Tests.SimpleNoise, "simple-noise", 1, 5, (s, x, y, z) => n.Sample3D(x, y, z)));
     }
 
     public void OnDestroy()
@@ -106,6 +108,8 @@ class PerformanceComparison : MonoBehaviour
                 sizeName = string.Format("({0}, {1}, {2})", size.x, size.y, size.z),
                 cpuTime = new int[ROUNDS],
                 pmbTime = new int[ROUNDS],
+                cpuTriangles = 0,
+                pmbTriangles = 0,
             };
             float[] voxel = new float[size.x * size.y * size.z];
             for (int x = 0; x < size.x; x++)
@@ -132,6 +136,7 @@ class PerformanceComparison : MonoBehaviour
 
                     UnityEngine.Debug.LogFormat("\tCPU took {0}ms", watch.ElapsedMilliseconds);
                     perfData[(int)type].sizes[i].cpuTime[round] = (int)watch.ElapsedMilliseconds;
+                    perfData[(int)type].sizes[i].cpuTriangles = indices.Count / 3;
 
                     watch.Restart();
                 }
@@ -148,12 +153,17 @@ class PerformanceComparison : MonoBehaviour
                     RenderBuffers buffers = pmb.calculate(voxel, size.x, size.y, size.z, 0.5f);
 
                     watch.Stop();
+                    int[] args = new int[4];
+                    buffers.argsBuffer.GetData(args);
+
+                    UnityEngine.Debug.LogFormat("\tPMB took {0}ms", watch.ElapsedMilliseconds);
+                    perfData[(int)type].sizes[i].pmbTime[round] = (int)watch.ElapsedMilliseconds;
+                    perfData[(int)type].sizes[i].pmbTriangles = args[0] / 3;
+
                     buffers.vertexBuffer.Dispose();
                     buffers.indexBuffer.Dispose();
                     buffers.normalBuffer.Dispose();
                     buffers.argsBuffer.Dispose();
-                    UnityEngine.Debug.LogFormat("\tPMB took {0}ms", watch.ElapsedMilliseconds);
-                    perfData[(int)type].sizes[i].pmbTime[round] = (int)watch.ElapsedMilliseconds;
                 }
                 else
                 {
@@ -201,6 +211,8 @@ class PerformanceComparison : MonoBehaviour
         stringBuilder.Append("Test-Title");
         StringBuilder cpuHeader = new StringBuilder();
         StringBuilder pmbHeader = new StringBuilder();
+        cpuHeader.Append("CPU-numTris");
+        pmbHeader.Append("PMB-numTris");
         for (int i = 0; i < ROUNDS; i++)
         {
             cpuHeader.AppendFormat(",CPU-R{0}", i);
@@ -213,7 +225,7 @@ class PerformanceComparison : MonoBehaviour
         {
             foreach (TestSize size in data.sizes)
             {
-                stringBuilder.AppendFormat("\n{0}{1},{2},{3}", data.testName, size.sizeName, string.Join(",", size.cpuTime), string.Join(",", size.pmbTime));
+                stringBuilder.AppendFormat("\n{0}{1},{2},{3},{4},{5}", data.testName, size.sizeName, size.cpuTriangles, string.Join(",", size.cpuTime), size.pmbTriangles, string.Join(",", size.pmbTime));
             }
         }
         file.WriteLine(stringBuilder.ToString());
