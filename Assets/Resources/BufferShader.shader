@@ -3,19 +3,18 @@ Shader "Custom/BufferShader"
 {
     SubShader
     {
+       Tags { "Queue" = "Geometry" "RenderType" = "Opaque" }
        Pass
        {
-            ZTest LEqual
 	        Cull Off
-	        ZWrite On
+            ZWrite On
+            ZTest LEqual
 
-	        Tags {"LightMode"="ForwardBase"}
- 
             CGPROGRAM
             #include "UnityCG.cginc"
             #include "UnityLightingCommon.cginc"
 
-            #pragma target 5.0
+            #pragma target 3.5
             #pragma vertex vert
             #pragma fragment frag
 
@@ -43,9 +42,9 @@ Shader "Custom/BufferShader"
                 return OUT;
             }
  
-            float4 frag(v2f IN) : COLOR
+            fixed4 frag(v2f IN) : SV_Target
             {
-                return float4(0, 0, 1, 1)*IN.diff;
+                return fixed4(0,0,1,1)*IN.diff;
             }
  
             ENDCG

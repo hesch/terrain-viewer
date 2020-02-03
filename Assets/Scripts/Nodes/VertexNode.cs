@@ -180,7 +180,6 @@ public class VertexNode : Node
 
         if (isPMB)
         {
-            UnityEngine.Debug.Log("scheduling PMB on main thread");
             var pmbTask = MainThreadHelper.instance().scheduleOnMainThread(() =>
             {
                 pmb.ReInit(block);
@@ -190,7 +189,6 @@ public class VertexNode : Node
                 UnityEngine.Debug.LogFormat("PMB took {0}ms\n\t{1} voxels\n\t{2} triangles", pmbWatch.ElapsedMilliseconds, voxels.Count(), buffers.indexBuffer.count / 3);
             });
 
-            UnityEngine.Debug.Log("waiting for PMB on main thread");
             pmbTask.wait();
 
             if (!pmbTask.completed)
@@ -198,7 +196,6 @@ public class VertexNode : Node
                 return false;
             }
 
-            UnityEngine.Debug.Log("finished PMB on main thread");
             Block = block;
             return true;
         }

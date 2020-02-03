@@ -9,7 +9,7 @@ public class ProceduralRenderer : MonoBehaviour
 
     void OnRenderObject()
     {
-        if (material == null)
+        if (material == null || buffers.argsBuffer == null)
         {
             return;
         }

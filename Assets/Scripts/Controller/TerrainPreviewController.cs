@@ -20,6 +20,19 @@ public class TerrainPreviewController : MonoBehaviour
     private NoiseCanvasType noiseCanvas;
     private VertexDisplay vertexDisplay;
 
+    public void Awake()
+    {
+        NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
+        editor.canvasDelegate += noiseCanvas =>
+        {
+            this.noiseCanvas = noiseCanvas;
+            if (detailController && !detailController.Active)
+            {
+                configureComputation();
+            }
+        };
+    }
+
     public void Start()
     {
         vertexDisplay = UnityEngine.Object.FindObjectOfType<VertexDisplay>();
@@ -31,10 +44,8 @@ public class TerrainPreviewController : MonoBehaviour
         Destroy(selection.GetComponent<BoxCollider>());
 
         detailController = UnityEngine.Object.FindObjectOfType<DetailCanvasController>();
-        NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
-        noiseCanvas = editor.GetCanvas() as NoiseCanvasType;
         configureComputation();
-
+        
         vertexDisplay.addMeshEventDelegate(handleSelection);
     }
 

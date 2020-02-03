@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using NodeEditorFramework.Utilities;
 using NodeEditorFramework.Standard;
 using NodeEditorFramework;
@@ -15,16 +16,17 @@ public class NoiseNodeEditor : MonoBehaviour
 
   private RectTransform rt;
 
-  public NodeCanvas GetCanvas() {
-    return canvasCache.nodeCanvas;
-  }
+    public Action<NoiseCanvasType> canvasDelegate;
+
+    NoiseNodeEditor() {
+        canvasDelegate = c => canvas = c;
+    }
 
   public void Awake ()
   {
         Application.targetFrameRate = 30;
         rt = transform as RectTransform;
     NormalReInit();
-        Debug.Log("NoiseNodeEditor.Awake()");
     canvasCache.nodeCanvas.TraverseAll();
   }
 

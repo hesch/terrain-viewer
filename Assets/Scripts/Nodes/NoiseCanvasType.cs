@@ -18,7 +18,7 @@ public class NoiseCanvasType : NodeCanvas
     private Task task;
     private Stopwatch stopwatch = new Stopwatch();
     private Stopwatch nodeStopwatch = new Stopwatch();
-    private StreamWriter file;
+    private static StreamWriter file;
 
     public override string canvasName { get { return "Noise"; } }
 
@@ -34,11 +34,11 @@ public class NoiseCanvasType : NodeCanvas
 
     private void OnEnable()
     {
-
         if (Traversal == null)
             Traversal = new NoiseTraversal(this);
         // Register to other callbacks
         //NodeEditorCallbacks.OnDeleteNode += CheckDeleteNode;
+        FindObjectOfType<NoiseNodeEditor>().canvasDelegate(this);
     }
 
     protected override void ValidateSelf()
@@ -59,14 +59,17 @@ public class NoiseCanvasType : NodeCanvas
 
     public void ConfigureComputation(Func<IEnumerable<(int, int)>> offsetGenerator, Action<RenderBuffers, VoxelBlock<Voxel>> callback)
     {
-        UnityEngine.Debug.Log("NoiseCanvasType.ConfigureComputation");
         this.offsetGenerator = offsetGenerator;
         this.callback = callback;
-        Traversal.OnChange(null);
+        Traversal.TraverseAll();
     }
 
     public void StartComputation(List<Node> cache)
     {
+        if (task != null)
+        {
+            StopComputation();
+        }
         tokenSource = new CancellationTokenSource();
         CancellationToken token = tokenSource.Token;
         Action taskAction = () =>
@@ -102,11 +105,13 @@ public class NoiseCanvasType : NodeCanvas
                     token.ThrowIfCancellationRequested();
                 }
                 stopwatch.Stop();
+
                 performanceString = String.Format("Calculation of block({0}, {1}) took\t{2}ms{3}", tuple.Item1, tuple.Item2, stopwatch.ElapsedMilliseconds, performanceString);
                 if (file == null)
                 {
                     file = new StreamWriter("performance.txt");
                 }
+
                 file.WriteLine(performanceString);
                 file.Flush();
                 performanceString = "";
@@ -135,6 +140,16 @@ public class NoiseCanvasType : NodeCanvas
         {
             tokenSource.Dispose();
             tokenSource = null;
+            task.Dispose();
+            task = null;
+        }
+    }
+
+    public void OnDestroy()
+    {
+        if (file != null)
+        {
+            file.Dispose();
         }
     }
 }

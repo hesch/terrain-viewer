@@ -39,10 +39,7 @@ public class DetailCanvasController : MonoBehaviour
             if (value)
             {
                 display.hideAllBut(displayedObject);
-                noiseCanvas.ConfigureComputation(() => offsetGenerator(), (buffers, block) =>
-                {
-                    display.PushNewMeshForOffset(buffers, block);
-                });
+                configureComputation();
                 previousCameraPosition = controlledCamera.transform.position;
                 previousCameraOrientation = controlledCamera.transform.localRotation;
                 controlledCamera.transform.position = displayedObject.transform.position + new Vector3(100.0f, 100.0f, 100.0f);
@@ -90,14 +87,25 @@ public class DetailCanvasController : MonoBehaviour
         }
     }
 
+    public void Awake()
+    {
+        NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
+        editor.canvasDelegate += noiseCanvas =>
+        {
+            this.noiseCanvas = noiseCanvas;
+            if (this.Active)
+            {
+                configureComputation();
+            }
+        };
+    }
+
     public void Start()
     {
         canvas = GetComponent<Canvas>();
         texture = GetComponentInChildren<LayerTexture>();
         display = UnityEngine.Object.FindObjectOfType<VertexDisplay>();
         terrainPreviewController = UnityEngine.Object.FindObjectOfType<TerrainPreviewController>();
-        NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
-        noiseCanvas = editor.GetCanvas() as NoiseCanvasType;
         canvas.enabled = false;
 
         display.addMeshAddedDelegate(gameObject =>
@@ -117,6 +125,14 @@ public class DetailCanvasController : MonoBehaviour
         layerSelection.GetComponent<Renderer>().material = selectionMaterial;
         layerSelection.SetActive(false);
         Destroy(layerSelection.GetComponent<BoxCollider>());
+    }
+
+    private void configureComputation()
+    {
+        noiseCanvas.ConfigureComputation(() => offsetGenerator(), (buffers, block) =>
+        {
+            display.PushNewMeshForOffset(buffers, block);
+        });
     }
 
     public void setLayerIndex(float index)
