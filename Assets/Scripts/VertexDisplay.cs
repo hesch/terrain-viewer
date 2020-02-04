@@ -91,19 +91,22 @@ public class VertexDisplay : MonoBehaviour
             if (Meshes.ContainsKey(block.Offset))
             {
                 GameObject oldMesh = Meshes[block.Offset];
-                Destroy(oldMesh);
-            }
-
-            GameObject go = BlockConverter.BlockToGameObject(buffers, block, m_material, MeshEventDelegate);
-            go.transform.parent = transform;
-            go.GetComponent<LineRenderer>().enabled = gridlinesVisible;
-            if (hiddenState && block.Offset != OnlyShowObjectAt)
+                oldMesh.GetComponent<ProceduralRenderer>().buffers = buffers;
+                oldMesh.GetComponent<BlockInfo>().Block = block;
+            } else
             {
-                go.SetActive(false);
+                GameObject go = BlockConverter.BlockToGameObject(buffers, block, m_material, MeshEventDelegate);
+                go.transform.parent = transform;
+                go.GetComponent<LineRenderer>().enabled = gridlinesVisible;
+                if (hiddenState && block.Offset != OnlyShowObjectAt)
+                {
+                    go.SetActive(false);
+                }
+
+                Meshes[block.Offset] = go;
             }
 
-            Meshes[block.Offset] = go;
-            MeshAddedDelegate(go);
+            MeshAddedDelegate(Meshes[block.Offset]);
         }
     }
 
