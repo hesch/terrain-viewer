@@ -87,19 +87,6 @@ public class DetailCanvasController : MonoBehaviour
         }
     }
 
-    public void Awake()
-    {
-        NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
-        editor.canvasDelegate += noiseCanvas =>
-        {
-            this.noiseCanvas = noiseCanvas;
-            if (this.Active)
-            {
-                configureComputation();
-            }
-        };
-    }
-
     public void Start()
     {
         canvas = GetComponent<Canvas>();
@@ -125,6 +112,16 @@ public class DetailCanvasController : MonoBehaviour
         layerSelection.GetComponent<Renderer>().material = selectionMaterial;
         layerSelection.SetActive(false);
         Destroy(layerSelection.GetComponent<BoxCollider>());
+
+        NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
+        editor.registerCanvasDelegate(noiseCanvas =>
+        {
+            this.noiseCanvas = noiseCanvas;
+            if (this.Active)
+            {
+                configureComputation();
+            }
+        });
     }
 
     private void configureComputation()

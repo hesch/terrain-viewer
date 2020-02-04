@@ -98,13 +98,11 @@ public class VertexDisplay : MonoBehaviour
                 GameObject go = BlockConverter.BlockToGameObject(buffers, block, m_material, MeshEventDelegate);
                 go.transform.parent = transform;
                 go.GetComponent<LineRenderer>().enabled = gridlinesVisible;
-                if (hiddenState && block.Offset != OnlyShowObjectAt)
-                {
-                    go.SetActive(false);
-                }
-
+                
                 Meshes[block.Offset] = go;
             }
+
+            Meshes[block.Offset].SetActive(!(hiddenState && block.Offset != OnlyShowObjectAt));
 
             MeshAddedDelegate(Meshes[block.Offset]);
         }

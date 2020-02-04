@@ -23,14 +23,14 @@ public class TerrainPreviewController : MonoBehaviour
     public void Awake()
     {
         NoiseNodeEditor editor = UnityEngine.Object.FindObjectOfType<NoiseNodeEditor>();
-        editor.canvasDelegate += noiseCanvas =>
+        editor.registerCanvasDelegate(noiseCanvas =>
         {
             this.noiseCanvas = noiseCanvas;
             if (detailController && !detailController.Active)
             {
                 configureComputation();
             }
-        };
+        });
     }
 
     public void Start()

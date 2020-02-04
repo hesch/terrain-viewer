@@ -4,22 +4,30 @@ using NodeEditorFramework.Utilities;
 using NodeEditorFramework.Standard;
 using NodeEditorFramework;
 
-public class NoiseNodeEditor : MonoBehaviour 
+public class NoiseNodeEditor : MonoBehaviour
 {
-  public NodeCanvas canvas;
-  public string loadSceneName;
-  private NodeEditorUserCache canvasCache;
-  private NodeEditorInterface editorInterface;
+    public NodeCanvas canvas;
+    public string loadSceneName;
+    private NodeEditorUserCache canvasCache;
+    private NodeEditorInterface editorInterface;
 
-  private Rect rootRect = new Rect(0, 0, 1000, 500);
-  private Rect canvasRect = new Rect(50, 50, 900, 400);
+    private Rect rootRect = new Rect(0, 0, 1000, 500);
+    private Rect canvasRect = new Rect(50, 50, 900, 400);
 
-  private RectTransform rt;
+    private RectTransform rt;
 
     public Action<NoiseCanvasType> canvasDelegate;
 
     NoiseNodeEditor() {
         canvasDelegate = c => canvas = c;
+    }
+
+    public void registerCanvasDelegate(Action<NoiseCanvasType> newCanvasDelegate) {
+        if (canvas != null)
+        {
+            newCanvasDelegate(canvas as NoiseCanvasType);
+        }
+        canvasDelegate += newCanvasDelegate;
     }
 
   public void Awake ()
