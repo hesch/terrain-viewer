@@ -193,6 +193,11 @@ public class VertexNode : Node
 
             if (!pmbTask.completed)
             {
+                buffers.vertexBuffer.Dispose();
+                buffers.indexBuffer.Dispose();
+                buffers.normalBuffer.Dispose();
+                buffers.argsBuffer.Dispose();
+
                 return false;
             }
 

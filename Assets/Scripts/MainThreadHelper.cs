@@ -8,6 +8,7 @@ public class ThreadHelperTask
 {
     public Action action;
     public bool completed = false;
+    public bool canceled = false;
 
     public ThreadHelperTask(Action a)
     {
@@ -21,7 +22,7 @@ public class ThreadHelperTask
         {
             Thread.Sleep(10);
             i++;
-            if (i > 100)
+            if (i > 1000 || canceled)
             {
                 Debug.LogWarning("canceled wait");
                 return;
@@ -72,13 +73,30 @@ public class MainThreadHelper : MonoBehaviour
         return task;
     }
 
+    public void cancelAllPendingTasks()
+    {
+        
+        while (!tasks.IsEmpty)
+        {
+            ThreadHelperTask task;
+            if (tasks.TryDequeue(out task))
+            {
+                Debug.Log("canceled Task");
+                task.canceled = true;
+            }
+        }
+    }
+
     public void Update()
     {
         ThreadHelperTask task;
         if (tasks.TryDequeue(out task))
         {
-            task.action();
-            task.completed = true;
+            if (!task.canceled)
+            {
+                task.action();
+                task.completed = true;
+            }
         }
     }
 }

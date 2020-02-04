@@ -15,6 +15,7 @@ public class NoiseCanvasType : NodeCanvas
     private Func<IEnumerable<(int, int)>> offsetGenerator;
     private Action<RenderBuffers, VoxelBlock<Voxel>> callback;
     private CancellationTokenSource tokenSource;
+    private MainThreadHelper helper;
     private Task task;
     private Stopwatch stopwatch = new Stopwatch();
     private Stopwatch nodeStopwatch = new Stopwatch();
@@ -39,6 +40,7 @@ public class NoiseCanvasType : NodeCanvas
         // Register to other callbacks
         //NodeEditorCallbacks.OnDeleteNode += CheckDeleteNode;
         FindObjectOfType<NoiseNodeEditor>().canvasDelegate(this);
+        helper = FindObjectOfType<MainThreadHelper>();
     }
 
     protected override void ValidateSelf()
@@ -83,6 +85,7 @@ public class NoiseCanvasType : NodeCanvas
             var performanceString = "";
             foreach ((int, int) tuple in offsets)
             {
+                token.ThrowIfCancellationRequested();
                 stopwatch.Restart();
                 foreach (Node n in cache)
                 {
@@ -102,7 +105,6 @@ public class NoiseCanvasType : NodeCanvas
                         VertexNode vertexNode = n as VertexNode;
                         callback(vertexNode.buffers, vertexNode.Block);
                     }
-                    token.ThrowIfCancellationRequested();
                 }
                 stopwatch.Stop();
 
@@ -126,11 +128,18 @@ public class NoiseCanvasType : NodeCanvas
         if (tokenSource == null)
             return;
         tokenSource.Cancel();
+        
         try
         {
             if (task != null)
             {
-                task.Wait();
+                while (!task.Wait(5))
+                {
+                    if (helper != null)
+                    {
+                        helper.cancelAllPendingTasks();
+                    }
+                }
             }
         } catch
         {

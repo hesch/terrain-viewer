@@ -36,14 +36,8 @@ public class TransparentDebugger : MonoBehaviour
         buffers.indexBuffer.SetData(indices);
         buffers.normalBuffer.SetData(normals);
         buffers.argsBuffer.SetData(args);
-        Material mat = new Material(Shader.Find("Custom/BufferShader"));
-
-        mat.SetBuffer("vertexBuffer", buffers.vertexBuffer);
-        mat.SetBuffer("indexBuffer", buffers.indexBuffer);
-        mat.SetBuffer("normalBuffer", buffers.normalBuffer);
 
         renderer.buffers = buffers;
-        renderer.material = mat;
     }
 
     // Update is called once per frame
