@@ -1,6 +1,8 @@
 ﻿using MarchingCubesProject;
 using ProceduralNoiseProject;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -36,6 +38,7 @@ class PerformanceComparison : MonoBehaviour
     Stopwatch globalStopwatch;
     ComputeShader shader;
     PMB pmb;
+    MainThreadHelper helper;
 
     Marching marching = new MarchingCubes();
 
@@ -51,23 +54,38 @@ class PerformanceComparison : MonoBehaviour
         new Vector3Int(512, 512, 512)
     };
 
-    bool[] finished;
+    bool finished = false;
 
     private void Awake()
     {
+        if (finished)
+        {
+            return;
+        }
         int numTests = Enum.GetNames(typeof(Tests)).Length;
         perfData = new PerfData[numTests];
-        finished = new bool[numTests];
 
         shader = FindObjectOfType<PMBShader>().shaderRef;
         pmb = new PMB(shader);
         globalStopwatch = Stopwatch.StartNew();
 
+        helper = FindObjectOfType<MainThreadHelper>();
+
         Noise n = new PerlinNoise(42, 1.2f);
         UnityEngine.Debug.Log("Starting Coroutines");
-        StartCoroutine(genericTest(Tests.Checkerboard, "checkerboard", 1, 3, (s, x, y, z) => (x + y + z) % 2));
-        StartCoroutine(genericTest(Tests.Empty, "empty", 1, 5, (s, x, y, z) => 0));
-        StartCoroutine(genericTest(Tests.SimpleNoise, "simple-noise", 1, 5, (s, x, y, z) => n.Sample3D(x, y, z)));
+        Task.Factory.StartNew(() => {
+            if (finished)
+            {
+                return;
+            }
+            var checkerboard = genericTest(Tests.Checkerboard, "checkerboard", 1, 3, (s, x, y, z) => (x + y + z) % 2);
+            while (checkerboard.MoveNext());
+            var empty = genericTest(Tests.Empty, "empty", 1, 4, (s, x, y, z) => 0);
+            while (empty.MoveNext());
+            var simpleNoise = genericTest(Tests.SimpleNoise, "simple-noise", 1, 4, (s, x, y, z) => n.Sample3D(x, y, z));
+            while (simpleNoise.MoveNext());
+            finishTesting();
+        });
     }
 
     public void OnDestroy()
@@ -77,14 +95,18 @@ class PerformanceComparison : MonoBehaviour
 
     void finishTesting()
     {
-        UnityEngine.Debug.LogFormat("Finished Test in {0}ms", globalStopwatch.ElapsedMilliseconds);
-        globalStopwatch.Stop();
-        pmb.Dispose();
-        exportCSV();
+        finished = true;
+        helper.scheduleOnMainThread(() =>
+        {
+            UnityEngine.Debug.LogFormat("Finished Test in {0}ms", globalStopwatch.ElapsedMilliseconds);
+            globalStopwatch.Stop();
+            pmb.Dispose();
+            exportCSV();
 #if (UNITY_EDITOR)
-        UnityEditor.EditorApplication.isPlaying = false;
+            UnityEditor.EditorApplication.ExitPlaymode();
 #endif
-        Application.Quit();
+            Application.Quit();
+        }).wait();
     }
 
     public IEnumerator<object> genericTest(Tests type, string name, int cpuLimit, int pmbLimit, Func<Vector3Int, int, int, int, float> voxelGenerator)
@@ -134,11 +156,11 @@ class PerformanceComparison : MonoBehaviour
                     List<Vector3> normals = new List<Vector3>();
                     marching.Generate(voxel, size.x, size.y, size.z, verts, indices, normals);
 
+                    watch.Stop();
+
                     UnityEngine.Debug.LogFormat("\tCPU took {0}ms", watch.ElapsedMilliseconds);
                     perfData[(int)type].sizes[i].cpuTime[round] = (int)watch.ElapsedMilliseconds;
                     perfData[(int)type].sizes[i].cpuTriangles = indices.Count / 3;
-
-                    watch.Restart();
                 }
                 else
                 {
@@ -149,21 +171,28 @@ class PerformanceComparison : MonoBehaviour
                 {
                     VoxelBlock<Voxel> block = InitBlock(size);
 
-                    pmb.ReInit(block);
-                    RenderBuffers buffers = pmb.calculate(voxel, size.x, size.y, size.z, 0.5f);
+                    helper.scheduleOnMainThread(() =>
+                    {
+                        watch.Start();
+                        pmb.ReInit(block);
+                        RenderBuffers buffers = pmb.calculate(voxel, size.x, size.y, size.z, 0.5f);
 
-                    watch.Stop();
-                    int[] args = new int[4];
-                    buffers.argsBuffer.GetData(args);
+                        watch.Stop();
+                        int[] args = new int[4];
+                        buffers.argsBuffer.GetData(args);
 
-                    UnityEngine.Debug.LogFormat("\tPMB took {0}ms", watch.ElapsedMilliseconds);
-                    perfData[(int)type].sizes[i].pmbTime[round] = (int)watch.ElapsedMilliseconds;
-                    perfData[(int)type].sizes[i].pmbTriangles = args[0] / 3;
+                        UnityEngine.Debug.LogFormat("\tPMB took {0}ms", watch.ElapsedMilliseconds);
+                        var typedPerfData = perfData[(int)type];
+                        var sizedPerfData = typedPerfData.sizes[i];
+                        UnityEngine.Debug.Log("round: " + round + ", pmbTime size: " + sizedPerfData.pmbTime.Length);
+                        sizedPerfData.pmbTime[round] = (int)watch.ElapsedMilliseconds;
+                        sizedPerfData.pmbTriangles = args[0] / 3;
 
-                    buffers.vertexBuffer.Dispose();
-                    buffers.indexBuffer.Dispose();
-                    buffers.normalBuffer.Dispose();
-                    buffers.argsBuffer.Dispose();
+                        buffers.vertexBuffer.Dispose();
+                        buffers.indexBuffer.Dispose();
+                        buffers.normalBuffer.Dispose();
+                        buffers.argsBuffer.Dispose();
+                    }).wait();
                 }
                 else
                 {
@@ -174,12 +203,6 @@ class PerformanceComparison : MonoBehaviour
                 yield return null;
             }
             limitCounter++;
-        }
-
-        finished[(int)type] = true;
-        if (finished.All(f => f))
-        {
-            finishTesting();
         }
     }
 
@@ -205,6 +228,7 @@ class PerformanceComparison : MonoBehaviour
 
     private void exportCSV()
     {
+        UnityEngine.Debug.Log("exporting CSV");
         StreamWriter file = new StreamWriter("performance.csv");
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -215,8 +239,8 @@ class PerformanceComparison : MonoBehaviour
         pmbHeader.Append("PMB-numTris");
         for (int i = 0; i < ROUNDS; i++)
         {
-            cpuHeader.AppendFormat(",CPU-R{0}", i);
-            pmbHeader.AppendFormat(",PMB-R{0}", i);
+            cpuHeader.AppendFormat(";CPU-R{0}", i);
+            pmbHeader.AppendFormat(";PMB-R{0}", i);
         }
         stringBuilder.Append(cpuHeader);
         stringBuilder.Append(pmbHeader);
@@ -225,7 +249,7 @@ class PerformanceComparison : MonoBehaviour
         {
             foreach (TestSize size in data.sizes)
             {
-                stringBuilder.AppendFormat("\n{0}{1},{2},{3},{4},{5}", data.testName, size.sizeName, size.cpuTriangles, string.Join(",", size.cpuTime), size.pmbTriangles, string.Join(",", size.pmbTime));
+                stringBuilder.AppendFormat("\n{0}{1};{2};{3};{4};{5}", data.testName, size.sizeName, size.cpuTriangles, string.Join(";", size.cpuTime), size.pmbTriangles, string.Join(";", size.pmbTime));
             }
         }
         file.WriteLine(stringBuilder.ToString());
