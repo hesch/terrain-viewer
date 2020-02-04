@@ -9,11 +9,6 @@ public class BlockConverter
 
     public static GameObject BlockToGameObject(RenderBuffers buffers, IVoxelBlock block, Material material, Action<PointerEventData, GameObject> clickCallback)
     {
-        Material m = new Material(Shader.Find("Custom/BufferShader"));
-        m.SetBuffer("vertexBuffer", buffers.vertexBuffer);
-        m.SetBuffer("indexBuffer", buffers.indexBuffer);
-        m.SetBuffer("normalBuffer", buffers.normalBuffer);
-
         GameObject go = new GameObject(String.Format("Block({0}, {1})", block.Offset.x, block.Offset.y));
         go.AddComponent<ProceduralRenderer>();
         go.AddComponent<BoxCollider>();
@@ -21,8 +16,9 @@ public class BlockConverter
         go.AddComponent<EventTrigger>();
 
         ProceduralRenderer renderer = go.GetComponent<ProceduralRenderer>();
-        renderer.material = m;
         renderer.buffers = buffers;
+        renderer.bounds.min = new Vector3(0.0f, 0.0f, 0.0f);
+        renderer.bounds.size = new Vector3(block.Width, block.Height, block.Length);
         go.GetComponent<BlockInfo>().Block = block;
         go.transform.localPosition = new Vector3((block.Offset.x - 0.5f) * block.Width, -block.Height / 2, (block.Offset.y - 0.5f) * block.Length);
         go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);

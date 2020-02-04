@@ -3,14 +3,37 @@ using UnityEngine;
 public class ProceduralRenderer : MonoBehaviour
 {
     public int numVertices = 0;
-    public Material material;
+    private Material material;
 
-    public RenderBuffers buffers;
-
-    void OnRenderObject()
-    {
-        if (material == null || buffers.argsBuffer == null)
+    private RenderBuffers _buffers;
+    public RenderBuffers buffers {
+        set
         {
+            disposeBuffers();
+            _buffers = value;
+            if (material != null)
+            {
+                material.SetBuffer("vertexBuffer", _buffers.vertexBuffer);
+                material.SetBuffer("indexBuffer", _buffers.indexBuffer);
+                material.SetBuffer("normalBuffer", _buffers.normalBuffer);
+            }
+        }
+    }
+    public Bounds bounds = new Bounds();
+
+    private void Awake()
+    {
+        material = new Material(Shader.Find("Custom/BufferShader"));
+        material.SetBuffer("vertexBuffer", _buffers.vertexBuffer);
+        material.SetBuffer("indexBuffer", _buffers.indexBuffer);
+        material.SetBuffer("normalBuffer", _buffers.normalBuffer);
+    }
+
+    void LateUpdate()
+    {
+        if (material == null || _buffers.argsBuffer == null)
+        {
+            Debug.LogWarning("material or argsBuffer null");
             return;
         }
         Matrix4x4 model_matrix = transform.localToWorldMatrix;
@@ -26,26 +49,42 @@ public class ProceduralRenderer : MonoBehaviour
         model_matrix[3, 1] = 0;
         model_matrix[3, 2] = 0;
         material.SetMatrix("inv_model_matrix", model_matrix.inverse);
-        Graphics.DrawProceduralIndirectNow(MeshTopology.Triangles, buffers.argsBuffer, 0);
+        Graphics.DrawProceduralIndirect(
+            material,
+            bounds,
+            MeshTopology.Triangles,
+            _buffers.argsBuffer,
+            0,
+            GetComponent<Camera>(),
+            new MaterialPropertyBlock(),
+            UnityEngine.Rendering.ShadowCastingMode.Off,
+            false,
+            0
+        );
     }
 
     public void OnDestroy()
     {
-        if (buffers.vertexBuffer != null)
+        disposeBuffers();
+    }
+
+    private void disposeBuffers()
+    {
+        if (_buffers.vertexBuffer != null)
         {
-            buffers.vertexBuffer.Release();
+            _buffers.vertexBuffer.Release();
         }
-        if (buffers.indexBuffer != null)
+        if (_buffers.indexBuffer != null)
         {
-            buffers.indexBuffer.Release();
+            _buffers.indexBuffer.Release();
         }
-        if (buffers.normalBuffer != null)
+        if (_buffers.normalBuffer != null)
         {
-            buffers.normalBuffer.Release();
+            _buffers.normalBuffer.Release();
         }
-        if (buffers.argsBuffer != null)
+        if (_buffers.argsBuffer != null)
         {
-            buffers.argsBuffer.Release();
+            _buffers.argsBuffer.Release();
         }
     }
 }
