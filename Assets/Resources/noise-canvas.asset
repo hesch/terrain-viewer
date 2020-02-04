@@ -78,7 +78,7 @@ MonoBehaviour:
   - {fileID: -2484982340298912646}
   - {fileID: 8997662303436540055}
   groups: []
-  rootNode: {fileID: 0}
+  rootNode: {fileID: -2484982340298912646}
 --- !u!114 &114067186356892634
 MonoBehaviour:
   m_ObjectHideFlags: 1
