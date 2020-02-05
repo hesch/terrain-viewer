@@ -33,8 +33,9 @@ Shader "Custom/BufferShader"
  
             v2f vert(uint id : SV_VertexID)
             {
-                float4 pos = float4(vertexBuffer[indexBuffer[id]], 1);
-		        float3 normal = normalize(mul(normalBuffer[indexBuffer[id]], inv_model_matrix));
+                int index = indexBuffer[id];
+                float4 pos = float4(vertexBuffer[index], 1);
+		        float3 normal = normalize(mul(normalBuffer[index], inv_model_matrix));
  
                 v2f OUT;
                 OUT.pos = UnityObjectToClipPos(mul(model_matrix, pos));

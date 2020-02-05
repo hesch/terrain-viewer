@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using System.Runtime.Serialization.Formatters.Binary;
 
 struct PerfData
 {
@@ -34,6 +35,7 @@ enum Tests
 
 class PerformanceComparison : MonoBehaviour
 {
+    private static string performanceDataDir = Path.Combine(Directory.GetCurrentDirectory(), "performance_data");
     private const int ROUNDS = 2;
     Stopwatch globalStopwatch;
     ComputeShader shader;
@@ -54,10 +56,11 @@ class PerformanceComparison : MonoBehaviour
         new Vector3Int(512, 512, 512)
     };
 
-    bool finished = false;
+    static bool finished = false;
 
     private void Awake()
     {
+        Directory.CreateDirectory(performanceDataDir);
         if (finished)
         {
             return;
@@ -72,7 +75,7 @@ class PerformanceComparison : MonoBehaviour
         helper = FindObjectOfType<MainThreadHelper>();
 
         Noise n = new PerlinNoise(42, 1.2f);
-        UnityEngine.Debug.Log("Starting Coroutines");
+        UnityEngine.Debug.Log("Starting Task");
         Task.Factory.StartNew(() => {
             if (finished)
             {
@@ -80,12 +83,26 @@ class PerformanceComparison : MonoBehaviour
             }
             var checkerboard = genericTest(Tests.Checkerboard, "checkerboard", 1, 3, (s, x, y, z) => (x + y + z) % 2);
             while (checkerboard.MoveNext());
-            var empty = genericTest(Tests.Empty, "empty", 1, 4, (s, x, y, z) => 0);
+            var empty = genericTest(Tests.Empty, "empty", 1, 6, (s, x, y, z) => 0);
             while (empty.MoveNext());
             var simpleNoise = genericTest(Tests.SimpleNoise, "simple-noise", 1, 4, (s, x, y, z) => n.Sample3D(x, y, z));
             while (simpleNoise.MoveNext());
+            UnityEngine.Debug.Log("finish testing");
             finishTesting();
         });
+    }
+
+    public void Update()
+    {
+        if (finished)
+        {
+            UnityEngine.Debug.LogWarning("still trying to quit");
+            helper.cancelAllPendingTasks();
+#if (UNITY_EDITOR)
+            UnityEditor.EditorApplication.ExitPlaymode();
+#endif
+            Application.Quit();
+        }
     }
 
     public void OnDestroy()
@@ -106,7 +123,7 @@ class PerformanceComparison : MonoBehaviour
             UnityEditor.EditorApplication.ExitPlaymode();
 #endif
             Application.Quit();
-        }).wait();
+        });
     }
 
     public IEnumerator<object> genericTest(Tests type, string name, int cpuLimit, int pmbLimit, Func<Vector3Int, int, int, int, float> voxelGenerator)
@@ -133,17 +150,40 @@ class PerformanceComparison : MonoBehaviour
                 cpuTriangles = 0,
                 pmbTriangles = 0,
             };
-            float[] voxel = new float[size.x * size.y * size.z];
-            for (int x = 0; x < size.x; x++)
+
+
+            float[] voxel;
+
+            string path = Path.Combine(performanceDataDir, string.Format("{0}{1}.dat", name, perfData[(int)type].sizes[i].sizeName));
+            if (File.Exists(path))
             {
-                for (int y = 0; y < size.y; y++)
+                UnityEngine.Debug.Log("loading voxelData from file:");
+                Stream voxelStream = File.OpenRead(path);
+                BinaryFormatter deserializer = new BinaryFormatter();
+                voxel = (float[])deserializer.Deserialize(voxelStream);
+                voxelStream.Close();
+            }
+            else
+            {
+                UnityEngine.Debug.Log("recreating voxelData:");
+                voxel = new float[size.x * size.y * size.z];
+                for (int x = 0; x < size.x; x++)
                 {
-                    for (int z = 0; z < size.z; z++)
+                    for (int y = 0; y < size.y; y++)
                     {
-                        voxel[z * size.x * size.y + y * size.x + x] = voxelGenerator(size, x, y, z);
+                        for (int z = 0; z < size.z; z++)
+                        {
+                            voxel[z * size.x * size.y + y * size.x + x] = voxelGenerator(size, x, y, z);
+                        }
                     }
                 }
+                Stream SaveFileStream = File.Create(path);
+                BinaryFormatter serializer = new BinaryFormatter();
+                serializer.Serialize(SaveFileStream, voxel);
+                SaveFileStream.Close();
             }
+            
+            UnityEngine.Debug.Log("executing Test:");
 
             for (int round = 0; round < ROUNDS; round++)
             {
@@ -164,6 +204,7 @@ class PerformanceComparison : MonoBehaviour
                 }
                 else
                 {
+                    UnityEngine.Debug.Log("\tCPU skipped");
                     perfData[(int)type].sizes[i].cpuTime[round] = -1;
                 }
 
@@ -177,14 +218,14 @@ class PerformanceComparison : MonoBehaviour
                         pmb.ReInit(block);
                         RenderBuffers buffers = pmb.calculate(voxel, size.x, size.y, size.z, 0.5f);
 
-                        watch.Stop();
                         int[] args = new int[4];
                         buffers.argsBuffer.GetData(args);
+                        watch.Stop();
 
                         UnityEngine.Debug.LogFormat("\tPMB took {0}ms", watch.ElapsedMilliseconds);
                         var typedPerfData = perfData[(int)type];
                         var sizedPerfData = typedPerfData.sizes[i];
-                        UnityEngine.Debug.Log("round: " + round + ", pmbTime size: " + sizedPerfData.pmbTime.Length);
+                        UnityEngine.Debug.Log("round: " + round + ", pmbTime size: " + sizedPerfData.pmbTime.Length + " triags: " + sizedPerfData.pmbTriangles);
                         sizedPerfData.pmbTime[round] = (int)watch.ElapsedMilliseconds;
                         sizedPerfData.pmbTriangles = args[0] / 3;
 
@@ -196,6 +237,7 @@ class PerformanceComparison : MonoBehaviour
                 }
                 else
                 {
+                    UnityEngine.Debug.Log("\tPMB skipped");
                     perfData[(int)type].sizes[i].pmbTime[round] = -1;
                     watch.Stop();
                 }
@@ -232,7 +274,7 @@ class PerformanceComparison : MonoBehaviour
         StreamWriter file = new StreamWriter("performance.csv");
 
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.Append("Test-Title");
+        stringBuilder.Append("Test-Title;");
         StringBuilder cpuHeader = new StringBuilder();
         StringBuilder pmbHeader = new StringBuilder();
         cpuHeader.Append("CPU-numTris");
@@ -243,6 +285,7 @@ class PerformanceComparison : MonoBehaviour
             pmbHeader.AppendFormat(";PMB-R{0}", i);
         }
         stringBuilder.Append(cpuHeader);
+        stringBuilder.Append(";");
         stringBuilder.Append(pmbHeader);
 
         foreach (PerfData data in perfData)

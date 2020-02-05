@@ -208,24 +208,24 @@ void generateTriangles(
   sharedVoxelBuffer[gidx] = myVoxelValue;
   GroupMemoryBarrierWithGroupSync();
 
-  uint cubeCase = 0;
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(0, 1, 1)) < isoValue);
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 1, 1)) < isoValue);
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 0, 1)) < isoValue);
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(0, 0, 1)) < isoValue);
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(0, 1, 0)) < isoValue);
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 1, 0)) < isoValue);
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 0, 0)) < isoValue ? 1 : 0);
-  cubeCase = (cubeCase<<1)|(myVoxelValue < isoValue ? 1 : 0);
-
-  uint myNumIndices = gtid.x < B_DIM_X - 1 && gtid.y < B_DIM_Y - 1 && gtid.z < B_DIM_Z - 1 ? numTrisLookup[cubeCase]*3 : 0;
-  numIndices[gidx] = myNumIndices;
-
   float3 edgeVoxels = {
     accessSharedVoxelBuffer(gtid + uint3(1, 0, 0)),
     accessSharedVoxelBuffer(gtid + uint3(0, 1, 0)),
     accessSharedVoxelBuffer(gtid + uint3(0, 0, 1))
   };
+
+  uint cubeCase = 0;
+  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(0, 1, 1)) < isoValue);
+  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 1, 1)) < isoValue);
+  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 0, 1)) < isoValue);
+  cubeCase = (cubeCase<<1)|(edgeVoxels.z < isoValue);
+  cubeCase = (cubeCase<<1)|(edgeVoxels.y < isoValue);
+  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 1, 0)) < isoValue);
+  cubeCase = (cubeCase<<1)|(edgeVoxels.x < isoValue ? 1 : 0);
+  cubeCase = (cubeCase<<1)|(myVoxelValue < isoValue ? 1 : 0);
+
+  uint myNumIndices = gtid.x < B_DIM_X - 1 && gtid.y < B_DIM_Y - 1 && gtid.z < B_DIM_Z - 1 ? numTrisLookup[cubeCase]*3 : 0;
+  numIndices[gidx] = myNumIndices;
 
   bool3 myXyzEdges;
   if (myVoxelValue <= isoValue) {
