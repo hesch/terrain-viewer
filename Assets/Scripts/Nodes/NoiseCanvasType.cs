@@ -46,7 +46,11 @@ public class NoiseCanvasType : NodeCanvas
         // Register to other callbacks
         //NodeEditorCallbacks.OnDeleteNode += CheckDeleteNode;
         UnityEngine.Debug.Log("NoiseCanvasType.OnEnable()");
-        FindObjectOfType<NoiseNodeEditor>().canvasDelegate(this);
+        NoiseNodeEditor editor = FindObjectOfType<NoiseNodeEditor>();
+        if (editor != null)
+        {
+            editor.canvasDelegate(this);
+        }
         helper = FindObjectOfType<MainThreadHelper>();
     }
 
