@@ -57,21 +57,22 @@ RWStructuredBuffer<uint> activeBlkNum;
 RWStructuredBuffer<int> compactedBlkArray;
 groupshared int sharedCompactedBlkArray[B_DIM];
 
-[numthreads(B_DIM_X, B_DIM_Y, B_DIM_Z)]
+[numthreads(B_DIM, 1, 1)]
 void compactActiveBlocks(
   uint3 dtid : SV_DispatchThreadID,
-  uint3 gtid : SV_GroupThreadID,
   uint3 gid : SV_GroupID,
   uint gidx : SV_GroupIndex
 )
 {
-  uint3 numBlocksInGroup = numBlocks - gid * uint3(B_DIM_X, B_DIM_Y, B_DIM_Z);
-  uint maxValidGidx = min(B_DIM, (numBlocksInGroup.z-1)*B_DIM_X*B_DIM_Y + (numBlocksInGroup.y-1)*B_DIM_X + numBlocksInGroup.x) - 1;
+    uint stride = 0;
+    uint minMaxLength = 0;
+    minMaxBuffer.GetDimensions(minMaxLength, stride);
 
-  bool valid = gtid.x < numBlocksInGroup.x && gtid.y < numBlocksInGroup.y && gtid.z < numBlocksInGroup.z;
+  uint maxValidGidx = (minMaxLength > (gid.x+1)*B_DIM ? B_DIM : minMaxLength - gid.x*B_DIM) - 1;
 
-  uint blockIdx = dtid.z*numBlocks.x*numBlocks.y + dtid.y*numBlocks.x + dtid.x;
-  MinMaxPair pair = minMaxBuffer[blockIdx];
+  bool valid = gidx <= maxValidGidx;
+
+  MinMaxPair pair = minMaxBuffer[dtid.x];
   bool active = pair.min < isoValue && pair.max > isoValue && valid;
   sharedCompactedBlkArray[gidx] = active;
 
@@ -93,8 +94,8 @@ void compactActiveBlocks(
 
   AllMemoryBarrierWithGroupSync();
 
-  if (valid) {
-    compactedBlkArray[blockIdx] = active ? index + sharedCompactedBlkArray[maxValidGidx] - 1 : -1;
+  if (valid && active) {
+      compactedBlkArray[index + sharedCompactedBlkArray[maxValidGidx] - 1] = dtid.x;
   }
 }
 
@@ -189,17 +190,10 @@ void generateTriangles(
 {
   uint3 c_gid = uint3(0, 0, 0);
 
-  uint len = numBlocks.x*numBlocks.y*numBlocks.z;
-
-  for(uint i = 0; i < len; i++) {
-    uint blkIdx = compactedBlkArray[i];
-    if (blkIdx == gid.x) {
-      c_gid.x = i%numBlocks.x;
-      c_gid.y = ((i-c_gid.x)/numBlocks.x)%numBlocks.y;
-      c_gid.z = (((i-c_gid.x)/numBlocks.x)-c_gid.y)/numBlocks.y;
-      break;
-    }
-  }
+  uint blkIdx = compactedBlkArray[gid.x];
+  c_gid.x = blkIdx%numBlocks.x;
+  c_gid.y = ((blkIdx-c_gid.x)/numBlocks.x)%numBlocks.y;
+  c_gid.z = (((blkIdx-c_gid.x)/numBlocks.x)-c_gid.y)/numBlocks.y;
 
   uint3 gridPos = c_gid*uint3(B_DIM_X-1, B_DIM_Y-1, B_DIM_Z-1) + gtid;
 

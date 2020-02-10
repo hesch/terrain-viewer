@@ -113,7 +113,7 @@ public class PMB : IDisposable
         PMBShader.Dispatch(minMaxKernelIndex, numBlocks.x, numBlocks.y, numBlocks.z);
 
         PMBShader.SetFloat("isoValue", isoValue);
-        PMBShader.Dispatch(compactActiveBlocksKernelIndex, Mathf.CeilToInt((float)numBlocks.x / 8), Mathf.CeilToInt((float)numBlocks.y / 4), Mathf.CeilToInt((float)numBlocks.z / 4));
+        PMBShader.Dispatch(compactActiveBlocksKernelIndex, Mathf.CeilToInt((float)numBlocks.x*numBlocks.y*numBlocks.z / 128), 1, 1);
 
         int[] numActiveBlocks = new int[1];
         activeBlkNum.GetData(numActiveBlocks);
@@ -129,10 +129,11 @@ public class PMB : IDisposable
             };
         }
 
-        ComputeBuffer vertexBuffer = new ComputeBuffer(numActiveBlocks[0] * blockSize.x * blockSize.y * blockSize.z * 3, sizeof(float) * 3);
-        ComputeBuffer normalBuffer = new ComputeBuffer(numActiveBlocks[0] * blockSize.x * blockSize.y * blockSize.z * 3, sizeof(float) * 3);
+        int blockVoxelCount = blockSize.x * blockSize.y * blockSize.z;
+        ComputeBuffer vertexBuffer = new ComputeBuffer(numActiveBlocks[0] * blockVoxelCount * 3, sizeof(float) * 3);
+        ComputeBuffer normalBuffer = new ComputeBuffer(numActiveBlocks[0] * blockVoxelCount * 3, sizeof(float) * 3);
         // TODO: evaluate this size
-        ComputeBuffer indexBuffer = new ComputeBuffer(numActiveBlocks[0] * blockSize.x * blockSize.y * blockSize.z * 3 * 5, sizeof(int));
+        ComputeBuffer indexBuffer = new ComputeBuffer(numActiveBlocks[0] * blockVoxelCount * 5 * 3, sizeof(int));
         ComputeBuffer globalIndexOffset = new ComputeBuffer(4, sizeof(int), ComputeBufferType.IndirectArguments);
         globalIndexOffset.SetData(new int[] { 0, 1, 0, 0 });
 
