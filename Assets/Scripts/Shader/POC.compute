@@ -5,8 +5,15 @@
 #define B_DIM_X 8
 #define B_DIM_Y 4
 #define B_DIM_Z 4
-#define B_DIM B_DIM_X*B_DIM_Y*B_DIM_Z
+#define B_DIM_SIZE B_DIM_X*B_DIM_Y*B_DIM_Z
 #define WARP_SIZE 32
+
+static const uint3 B_DIM = uint3(8, 4, 4);
+
+int vecToIdx(int3 vec, uint3 stride) {
+    uint3 clampedVec = clamp(vec, uint3(0, 0, 0), stride - uint3(1, 1, 1));
+    return clampedVec.z*stride.x*stride.y + clampedVec.y*stride.x + clampedVec.x;
+}
 
 struct MinMaxPair {
   float min;
@@ -15,10 +22,9 @@ struct MinMaxPair {
 
 int3 size;
 int3 numBlocks;
-int3 c_numBlocks;
 RWStructuredBuffer<MinMaxPair> minMaxBuffer;
 
-groupshared MinMaxPair sharedMinMaxBuffer[B_DIM];
+groupshared MinMaxPair sharedMinMaxBuffer[B_DIM_SIZE];
 
 RWStructuredBuffer<float> voxelBuffer;
 
@@ -29,14 +35,14 @@ void minMax (
   uint gidx : SV_GroupIndex
 )
 {
-  uint gridPos = (gid.z*(B_DIM_Z-1)+gtid.z)*size.x*size.y + (gid.y*(B_DIM_Y-1)+gtid.y)*size.x + (gid.x*(B_DIM_X-1)+gtid.x);
+    uint3 gridPos = gid * (B_DIM - int3(1, 1, 1)) + gtid;
 
-  float val1 = voxelBuffer[gridPos];
+  float val1 = voxelBuffer[vecToIdx(gridPos, size)];
   sharedMinMaxBuffer[gidx].min = val1;
   sharedMinMaxBuffer[gidx].max = val1;
 
   GroupMemoryBarrierWithGroupSync();
-  for(uint i=B_DIM/2; i > 0; i>>=1) {
+  for(uint i=B_DIM_SIZE/2; i > 0; i>>=1) {
     MinMaxPair pair1 = sharedMinMaxBuffer[gidx];
     MinMaxPair pair2 = sharedMinMaxBuffer[gidx+i];
     GroupMemoryBarrierWithGroupSync();
@@ -48,16 +54,16 @@ void minMax (
   }
 
   if(gidx == 0) {
-    minMaxBuffer[gid.z*numBlocks.x*numBlocks.y + gid.y*numBlocks.x + gid.x] = sharedMinMaxBuffer[gidx];
+    minMaxBuffer[vecToIdx(gid, numBlocks)] = sharedMinMaxBuffer[gidx];
   }
 }
 
 extern float isoValue;
 RWStructuredBuffer<uint> activeBlkNum;
 RWStructuredBuffer<int> compactedBlkArray;
-groupshared int sharedCompactedBlkArray[B_DIM];
+groupshared int sharedCompactedBlkArray[B_DIM_SIZE];
 
-[numthreads(B_DIM, 1, 1)]
+[numthreads(B_DIM_SIZE, 1, 1)]
 void compactActiveBlocks(
   uint3 dtid : SV_DispatchThreadID,
   uint3 gid : SV_GroupID,
@@ -68,8 +74,7 @@ void compactActiveBlocks(
     uint minMaxLength = 0;
     minMaxBuffer.GetDimensions(minMaxLength, stride);
 
-  uint maxValidGidx = (minMaxLength > (gid.x+1)*B_DIM ? B_DIM : minMaxLength - gid.x*B_DIM) - 1;
-
+  uint maxValidGidx = (minMaxLength > (gid.x+1)*B_DIM_SIZE ? B_DIM_SIZE : minMaxLength - gid.x*B_DIM_SIZE) - 1;
   bool valid = gidx <= maxValidGidx;
 
   MinMaxPair pair = minMaxBuffer[dtid.x];
@@ -78,7 +83,7 @@ void compactActiveBlocks(
 
   GroupMemoryBarrierWithGroupSync();
 
-  for (uint offset = 1; offset < B_DIM; offset <<= 1) {
+  for (uint offset = 1; offset < B_DIM_SIZE; offset <<= 1) {
     uint otherActive = sharedCompactedBlkArray[gidx-offset];
     GroupMemoryBarrierWithGroupSync();
     if (gidx >= offset) {
@@ -94,7 +99,7 @@ void compactActiveBlocks(
 
   AllMemoryBarrierWithGroupSync();
 
-  if (valid && active) {
+  if (active) {
       compactedBlkArray[index + sharedCompactedBlkArray[maxValidGidx] - 1] = dtid.x;
   }
 }
@@ -141,38 +146,16 @@ RWStructuredBuffer<int> indexBuffer;
 RWStructuredBuffer<int> globalVertexOffset;
 RWStructuredBuffer<int> globalIndexOffset;
 
-groupshared float sharedVoxelBuffer[B_DIM];
-groupshared bool3 sharedXyzEdges[B_DIM];
-groupshared int numVerts[B_DIM];
-groupshared int numIndices[B_DIM];
-
-int vecToIdx(uint3 vec) {
-  return vec.z*B_DIM_X*B_DIM_Y + vec.y*B_DIM_X + vec.x;
-}
-
-float accessSharedVoxelBuffer(uint3 val) {
-  if (val.x >= B_DIM_X || val.y >= B_DIM_Y || val.z >= B_DIM_Z ||
-      val.x < 0 || val.y < 0 || val.z < 0) {
-    return 0.0f;
-  } else {
-    return sharedVoxelBuffer[vecToIdx(val)];
-  }
-}
-
-float accessGlobalVoxelBuffer(int3 val) {
-  if (val.x >= size.x || val.y >= size.y || val.z >= size.z ||
-      val.x < 0 || val.y < 0 || val.z < 0) {
-    return 0.0f;
-  } else {
-    return voxelBuffer[val.z*size.x*size.y + val.y*size.x + val.x];
-  }
-}
+groupshared float sharedVoxelBuffer[B_DIM_SIZE];
+groupshared bool3 sharedXyzEdges[B_DIM_SIZE];
+groupshared int numVerts[B_DIM_SIZE];
+groupshared int numIndices[B_DIM_SIZE];
 
 float3 calcNormalFor(uint3 val) {
   float3 normal = float3(
-    (accessGlobalVoxelBuffer(val + int3(1, 0, 0)) - accessGlobalVoxelBuffer(val - int3(1, 0, 0)))/2.0f,
-    (accessGlobalVoxelBuffer(val + int3(0, 1, 0)) - accessGlobalVoxelBuffer(val - int3(0, 1, 0)))/2.0f,
-    (accessGlobalVoxelBuffer(val + int3(0, 0, 1)) - accessGlobalVoxelBuffer(val - int3(0, 0, 1)))/2.0f
+    (voxelBuffer[vecToIdx(val + int3(1, 0, 0), size)] - voxelBuffer[vecToIdx(val - int3(1, 0, 0), size)])/2.0f,
+    (voxelBuffer[vecToIdx(val + int3(0, 1, 0), size)] - voxelBuffer[vecToIdx(val - int3(0, 1, 0), size)])/2.0f,
+    (voxelBuffer[vecToIdx(val + int3(0, 0, 1), size)] - voxelBuffer[vecToIdx(val - int3(0, 0, 1), size)])/2.0f
   );
   if (length(normal) == 0) {
     return normal;
@@ -188,35 +171,33 @@ void generateTriangles(
   uint3 gtid : SV_GroupThreadID
 )
 {
-  uint3 c_gid = uint3(0, 0, 0);
-
+  uint3 blockPos = uint3(0, 0, 0);
   uint blkIdx = compactedBlkArray[gid.x];
-  c_gid.x = blkIdx%numBlocks.x;
-  c_gid.y = ((blkIdx-c_gid.x)/numBlocks.x)%numBlocks.y;
-  c_gid.z = (((blkIdx-c_gid.x)/numBlocks.x)-c_gid.y)/numBlocks.y;
+  blockPos.x = blkIdx%numBlocks.x;
+  blockPos.y = ((blkIdx-blockPos.x)/numBlocks.x)%numBlocks.y;
+  blockPos.z = (((blkIdx-blockPos.x)/numBlocks.x)-blockPos.y)/numBlocks.y;
 
-  uint3 gridPos = c_gid*uint3(B_DIM_X-1, B_DIM_Y-1, B_DIM_Z-1) + gtid;
+  uint3 gridPos = blockPos * (B_DIM - int3(1, 1, 1)) + gtid;
 
-  int globalIndex = gridPos.z*size.x*size.y + gridPos.y*size.x + gridPos.x;
-  float myVoxelValue = voxelBuffer[globalIndex];
+  float myVoxelValue = voxelBuffer[vecToIdx(gridPos, size)];
   sharedVoxelBuffer[gidx] = myVoxelValue;
   GroupMemoryBarrierWithGroupSync();
-
+   
   float3 edgeVoxels = {
-    accessSharedVoxelBuffer(gtid + uint3(1, 0, 0)),
-    accessSharedVoxelBuffer(gtid + uint3(0, 1, 0)),
-    accessSharedVoxelBuffer(gtid + uint3(0, 0, 1))
+    sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 0, 0), B_DIM)],
+    sharedVoxelBuffer[vecToIdx(gtid + uint3(0, 1, 0), B_DIM)],
+    sharedVoxelBuffer[vecToIdx(gtid + uint3(0, 0, 1), B_DIM)]
   };
 
   uint cubeCase = 0;
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(0, 1, 1)) < isoValue);
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 1, 1)) < isoValue);
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 0, 1)) < isoValue);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(0, 1, 1), B_DIM)] < isoValue);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 1, 1), B_DIM)] < isoValue);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 0, 1), B_DIM)] < isoValue);
   cubeCase = (cubeCase<<1)|(edgeVoxels.z < isoValue);
   cubeCase = (cubeCase<<1)|(edgeVoxels.y < isoValue);
-  cubeCase = (cubeCase<<1)|(accessSharedVoxelBuffer(gtid + uint3(1, 1, 0)) < isoValue);
-  cubeCase = (cubeCase<<1)|(edgeVoxels.x < isoValue ? 1 : 0);
-  cubeCase = (cubeCase<<1)|(myVoxelValue < isoValue ? 1 : 0);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 1, 0), B_DIM)] < isoValue);
+  cubeCase = (cubeCase<<1)|(edgeVoxels.x < isoValue);
+  cubeCase = (cubeCase<<1)|(myVoxelValue < isoValue);
 
   uint myNumIndices = gtid.x < B_DIM_X - 1 && gtid.y < B_DIM_Y - 1 && gtid.z < B_DIM_Z - 1 ? numTrisLookup[cubeCase]*3 : 0;
   numIndices[gidx] = myNumIndices;
@@ -242,12 +223,12 @@ void generateTriangles(
 
   GroupMemoryBarrierWithGroupSync();
 
-  for (uint offset = 1; offset < B_DIM; offset <<= 1) {
-    int t = numIndices[gidx-offset];
+  for (uint offset = 1; offset < B_DIM_SIZE; offset <<= 1) {
+    int i = numIndices[gidx-offset];
     int v = numVerts[gidx-offset];
     GroupMemoryBarrierWithGroupSync();
     if (gidx >= offset) {
-      numIndices[gidx] += t;
+      numIndices[gidx] += i;
       numVerts[gidx] += v;
     }
     GroupMemoryBarrierWithGroupSync();
@@ -255,15 +236,15 @@ void generateTriangles(
 
   uint indicesOffset = numIndices[gidx];
   uint vertsOffset = numVerts[gidx];
-  if (gidx == B_DIM-1) {
+  if (gidx == B_DIM_SIZE-1) {
     InterlockedAdd(globalVertexOffset[0], numVerts[gidx], numVerts[gidx]);
     InterlockedAdd(globalIndexOffset[0], numIndices[gidx], numIndices[gidx]);
   }
 
   AllMemoryBarrierWithGroupSync();
 
-  uint sharedIndicesOffset = numIndices[B_DIM-1];
-  uint sharedVertsOffset = numVerts[B_DIM-1];
+  uint sharedIndicesOffset = numIndices[B_DIM_SIZE-1];
+  uint sharedVertsOffset = numVerts[B_DIM_SIZE-1];
 
   GroupMemoryBarrierWithGroupSync();
 
@@ -302,14 +283,11 @@ void generateTriangles(
     vertexBuffer[vertexOffset] = lerp(gridPos, zVoxel, lerpFactor);
   }
 
-  // indexBuffer[globalIndex] = numVerts[gidx];
-  // return;
-
   uint indexBufferBaseOffset = numIndices[gidx]-myNumIndices;
   for (uint indexOffset = 0; indexOffset < myNumIndices; indexOffset++) {
     uint4 edgeMap = neighborMappingTable[marchingCubesEdgeTable[cubeCase*16+indexOffset]];
     uint3 edgeCellOffset = gtid + edgeMap.xyz;
-    uint edgeCellOffsetIdx = vecToIdx(edgeCellOffset);
+    uint edgeCellOffsetIdx = vecToIdx(edgeCellOffset, B_DIM);
 
     bool3 neighborXyzEdges = sharedXyzEdges[edgeCellOffsetIdx];
     uint edgeSum = 0;
@@ -318,9 +296,6 @@ void generateTriangles(
     }
     uint edgeVertexIndex = numVerts[edgeCellOffsetIdx]+edgeSum;
     indexBuffer[indexBufferBaseOffset+indexOffset] = edgeVertexIndex;
-    //indexBuffer[indexBufferBaseOffset+indexOffset] = gidx; edgeMap.x * 1000 + edgeMap.y *100+edgeMap.z*10 + edgeMap.w;
-    // indexBuffer[indexBufferBaseOffset+indexOffset] = marchingCubesEdgeTable[cubeCase*16+indexOffset];
-    // indexBuffer[1000+indexBufferBaseOffset+indexOffset] = edgeCellOffset;
   }
 }
 
