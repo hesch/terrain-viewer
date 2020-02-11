@@ -119,7 +119,6 @@ public class PMB : IDisposable
         activeBlkNum.GetData(numActiveBlocks);
         if(numActiveBlocks[0] == 0)
         {
-            Debug.Log("no triangles");
             // no triangles calculated; return empty buffers
             return new RenderBuffers
             {
