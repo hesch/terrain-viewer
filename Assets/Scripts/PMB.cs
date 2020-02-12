@@ -117,8 +117,12 @@ public class PMB : IDisposable
 
         int[] numActiveBlocks = new int[1];
         activeBlkNum.GetData(numActiveBlocks);
-        if(numActiveBlocks[0] == 0)
+        if(numActiveBlocks[0] == 0 || numActiveBlocks[0] > 65535)
         {
+            if (numActiveBlocks[0] > 65535)
+            {
+                Debug.LogError("numActiveBlocks > 65535 Unity can't handle that :(\nnumActiveBlocks: " + numActiveBlocks[0]);
+            }
             // no triangles calculated; return empty buffers
             return new RenderBuffers
             {
@@ -129,11 +133,10 @@ public class PMB : IDisposable
             };
         }
 
-        int blockVoxelCount = blockSize.x * blockSize.y * blockSize.z;
-        ComputeBuffer vertexBuffer = new ComputeBuffer(numActiveBlocks[0] * blockVoxelCount * 3, sizeof(float) * 3);
-        ComputeBuffer normalBuffer = new ComputeBuffer(numActiveBlocks[0] * blockVoxelCount * 3, sizeof(float) * 3);
-        // TODO: evaluate this size
-        ComputeBuffer indexBuffer = new ComputeBuffer(numActiveBlocks[0] * blockVoxelCount * 5 * 3, sizeof(int));
+        int voxelCount = numActiveBlocks[0] * blockSize.x * blockSize.y * blockSize.z;
+        ComputeBuffer vertexBuffer = new ComputeBuffer(voxelCount * 3, sizeof(float) * 3);
+        ComputeBuffer normalBuffer = new ComputeBuffer(voxelCount * 3, sizeof(float) * 3);
+        ComputeBuffer indexBuffer = new ComputeBuffer(voxelCount * 5 * 3, sizeof(int));
         ComputeBuffer globalIndexOffset = new ComputeBuffer(4, sizeof(int), ComputeBufferType.IndirectArguments);
         globalIndexOffset.SetData(new int[] { 0, 1, 0, 0 });
 
