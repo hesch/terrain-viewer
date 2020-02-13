@@ -70,11 +70,8 @@ void compactActiveBlocks(
   uint gidx : SV_GroupIndex
 )
 {
-    uint stride = 0;
-    uint minMaxLength = 0;
-    minMaxBuffer.GetDimensions(minMaxLength, stride);
-
-  uint maxValidGidx = (minMaxLength > (gid.x+1)*B_DIM_SIZE ? B_DIM_SIZE : minMaxLength - gid.x*B_DIM_SIZE) - 1;
+    int totalBlocks = numBlocks.x * numBlocks.y * numBlocks.z;
+  uint maxValidGidx = (totalBlocks > (gid.x+1)*B_DIM_SIZE ? B_DIM_SIZE : totalBlocks - gid.x*B_DIM_SIZE) - 1;
   bool valid = gidx <= maxValidGidx;
 
   MinMaxPair pair = minMaxBuffer[dtid.x];
