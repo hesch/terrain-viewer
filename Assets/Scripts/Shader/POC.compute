@@ -70,7 +70,7 @@ void compactActiveBlocks(
   uint gidx : SV_GroupIndex
 )
 {
-    int totalBlocks = numBlocks.x * numBlocks.y * numBlocks.z;
+    uint totalBlocks = numBlocks.x * numBlocks.y * numBlocks.z;
   uint maxValidGidx = (totalBlocks > (gid.x+1)*B_DIM_SIZE ? B_DIM_SIZE : totalBlocks - gid.x*B_DIM_SIZE) - 1;
   bool valid = gidx <= maxValidGidx;
 
