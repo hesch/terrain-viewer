@@ -247,6 +247,16 @@ public class VertexNode : Node
 
         task.wait();
 
+        if (!task.completed)
+        {
+            buffers.vertexBuffer.Release();
+            buffers.indexBuffer.Release();
+            buffers.normalBuffer.Release();
+            buffers.argsBuffer.Release();
+
+            return false;
+        }
+
         Block = block;
 
         return true;
