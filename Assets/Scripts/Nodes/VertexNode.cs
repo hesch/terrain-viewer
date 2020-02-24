@@ -135,6 +135,7 @@ public class VertexNode : Node
             return false;
         }
         VoxelBlock<Voxel> block = input.GetValue<VoxelBlock<Voxel>>();
+
         if (surfaceConnection.connected())
         {
             surface = surfaceConnection.GetValue<float>();
@@ -178,6 +179,8 @@ public class VertexNode : Node
             }
         }
 
+        UnityEngine.Debug.Log("voxels:\n" + string.Join(",", voxels));
+
         if (isPMB)
         {
             var pmbTask = MainThreadHelper.instance().scheduleOnMainThread(() =>
@@ -193,10 +196,13 @@ public class VertexNode : Node
 
             if (!pmbTask.completed)
             {
-                buffers.vertexBuffer.Dispose();
-                buffers.indexBuffer.Dispose();
-                buffers.normalBuffer.Dispose();
-                buffers.argsBuffer.Dispose();
+                MainThreadHelper.instance().scheduleOnMainThread(() =>
+                {
+                    buffers.vertexBuffer.Release();
+                    buffers.indexBuffer.Release();
+                    buffers.normalBuffer.Release();
+                    buffers.argsBuffer.Release();
+                });
 
                 return false;
             }
@@ -249,10 +255,13 @@ public class VertexNode : Node
 
         if (!task.completed)
         {
-            buffers.vertexBuffer.Release();
-            buffers.indexBuffer.Release();
-            buffers.normalBuffer.Release();
-            buffers.argsBuffer.Release();
+            MainThreadHelper.instance().scheduleOnMainThread(() =>
+            {
+                buffers.vertexBuffer.Release();
+                buffers.indexBuffer.Release();
+                buffers.normalBuffer.Release();
+                buffers.argsBuffer.Release();
+            });
 
             return false;
         }

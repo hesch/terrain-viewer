@@ -11,11 +11,22 @@ public class ProceduralRenderer : MonoBehaviour
         {
             disposeBuffers();
             _buffers = value;
+            if (_buffers.indexBuffer == null || _buffers.vertexBuffer == null || _buffers.normalBuffer == null)
+            {
+                Debug.Log("some of the buffers were null while setting");
+            }
             if (material != null)
             {
+                Vector3[] vertices = new Vector3[_buffers.vertexBuffer.count];
+                _buffers.vertexBuffer.GetData(vertices);
+                Debug.Log("The vertices:");
+                Debug.Log(string.Join(",", vertices));
                 material.SetBuffer("vertexBuffer", _buffers.vertexBuffer);
                 material.SetBuffer("indexBuffer", _buffers.indexBuffer);
                 material.SetBuffer("normalBuffer", _buffers.normalBuffer);
+            } else
+            {
+                Debug.Log("tried setting buffers, but material was null!");
             }
         }
     }
