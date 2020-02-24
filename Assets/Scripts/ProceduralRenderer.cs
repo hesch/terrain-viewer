@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Threading;
 
 public class ProceduralRenderer : MonoBehaviour
 {
@@ -17,10 +18,6 @@ public class ProceduralRenderer : MonoBehaviour
             }
             if (material != null)
             {
-                Vector3[] vertices = new Vector3[_buffers.vertexBuffer.count];
-                _buffers.vertexBuffer.GetData(vertices);
-                Debug.Log("The vertices:");
-                Debug.Log(string.Join(",", vertices));
                 material.SetBuffer("vertexBuffer", _buffers.vertexBuffer);
                 material.SetBuffer("indexBuffer", _buffers.indexBuffer);
                 material.SetBuffer("normalBuffer", _buffers.normalBuffer);
@@ -45,6 +42,11 @@ public class ProceduralRenderer : MonoBehaviour
         if (material == null || _buffers.argsBuffer == null)
         {
             Debug.LogWarning("material or argsBuffer null");
+            return;
+        }
+        if (_buffers.vertexBuffer == null || _buffers.indexBuffer == null || _buffers.normalBuffer == null)
+        {
+            Debug.LogWarning("Renderbuffers are null");
             return;
         }
         Matrix4x4 model_matrix = transform.localToWorldMatrix;
@@ -81,6 +83,7 @@ public class ProceduralRenderer : MonoBehaviour
 
     private void disposeBuffers()
     {
+        Debug.Log("disposing buffers on Thread: " + Thread.CurrentThread.ManagedThreadId);
         if (_buffers.vertexBuffer != null)
         {
             _buffers.vertexBuffer.Release();

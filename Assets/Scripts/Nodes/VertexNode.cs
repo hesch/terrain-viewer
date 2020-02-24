@@ -6,6 +6,7 @@ using MarchingCubesProject;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using System.Threading;
 
 public enum VerteGenerationMode
 {
@@ -179,8 +180,6 @@ public class VertexNode : Node
             }
         }
 
-        UnityEngine.Debug.Log("voxels:\n" + string.Join(",", voxels));
-
         if (isPMB)
         {
             var pmbTask = MainThreadHelper.instance().scheduleOnMainThread(() =>
@@ -198,6 +197,7 @@ public class VertexNode : Node
             {
                 MainThreadHelper.instance().scheduleOnMainThread(() =>
                 {
+                    UnityEngine.Debug.Log("disposing buffers on Thread: " + Thread.CurrentThread.ManagedThreadId);
                     buffers.vertexBuffer.Release();
                     buffers.indexBuffer.Release();
                     buffers.normalBuffer.Release();
@@ -257,6 +257,7 @@ public class VertexNode : Node
         {
             MainThreadHelper.instance().scheduleOnMainThread(() =>
             {
+                UnityEngine.Debug.Log("disposing buffers on Thread: " + Thread.CurrentThread.ManagedThreadId);
                 buffers.vertexBuffer.Release();
                 buffers.indexBuffer.Release();
                 buffers.normalBuffer.Release();
