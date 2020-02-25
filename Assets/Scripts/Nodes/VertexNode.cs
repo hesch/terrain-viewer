@@ -195,15 +195,6 @@ public class VertexNode : Node
 
             if (!pmbTask.completed)
             {
-                MainThreadHelper.instance().scheduleOnMainThread(() =>
-                {
-                    UnityEngine.Debug.Log("disposing buffers on Thread: " + Thread.CurrentThread.ManagedThreadId);
-                    buffers.vertexBuffer.Release();
-                    buffers.indexBuffer.Release();
-                    buffers.normalBuffer.Release();
-                    buffers.argsBuffer.Release();
-                });
-
                 return false;
             }
 
@@ -255,15 +246,6 @@ public class VertexNode : Node
 
         if (!task.completed)
         {
-            MainThreadHelper.instance().scheduleOnMainThread(() =>
-            {
-                UnityEngine.Debug.Log("disposing buffers on Thread: " + Thread.CurrentThread.ManagedThreadId);
-                buffers.vertexBuffer.Release();
-                buffers.indexBuffer.Release();
-                buffers.normalBuffer.Release();
-                buffers.argsBuffer.Release();
-            });
-
             return false;
         }
 

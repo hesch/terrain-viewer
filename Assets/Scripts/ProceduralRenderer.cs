@@ -37,7 +37,7 @@ public class ProceduralRenderer : MonoBehaviour
         material.SetBuffer("normalBuffer", _buffers.normalBuffer);
     }
 
-    void LateUpdate()
+    void OnRenderObject()
     {
         if (material == null || _buffers.argsBuffer == null)
         {
@@ -87,18 +87,22 @@ public class ProceduralRenderer : MonoBehaviour
         if (_buffers.vertexBuffer != null)
         {
             _buffers.vertexBuffer.Release();
+            _buffers.vertexBuffer = null;
         }
         if (_buffers.indexBuffer != null)
         {
             _buffers.indexBuffer.Release();
+            _buffers.indexBuffer = null;
         }
         if (_buffers.normalBuffer != null)
         {
             _buffers.normalBuffer.Release();
+            _buffers.normalBuffer = null;
         }
         if (_buffers.argsBuffer != null)
         {
             _buffers.argsBuffer.Release();
+            _buffers.argsBuffer = null;
         }
     }
 }
