@@ -101,7 +101,7 @@ void compactActiveBlocks(
   }
 }
 
-static const uint4 neighborMappingTable[] = {
+static const uint4 neighborMappingTable[12] = {
   uint4(0,0,0,0),
   uint4(1,0,0,1),
   uint4(0,1,0,0),
@@ -116,7 +116,7 @@ static const uint4 neighborMappingTable[] = {
   uint4(0,1,0,2),
 };
 
-static const uint numTrisLookup[] = {
+static const uint numTrisLookup[256] = {
 0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,2,1,
 2,2,3,2,3,3,4,2,3,3,4,3,4,4,3,1,
 2,2,3,2,3,3,4,2,3,3,4,3,4,4,3,2,
@@ -135,13 +135,13 @@ static const uint numTrisLookup[] = {
 3,3,2,3,4,2,1,3,2,4,1,2,1,1,0,
 };
 
-uniform StructuredBuffer<int> marchingCubesEdgeTable;
+Buffer<int> marchingCubesEdgeTable;
 RWStructuredBuffer<float3> vertexBuffer;
 RWStructuredBuffer<float3> normalBuffer;
 RWStructuredBuffer<int> indexBuffer;
 
-RWStructuredBuffer<int> globalVertexOffset;
-RWStructuredBuffer<int> globalIndexOffset;
+RWBuffer<uint> globalVertexOffset;
+RWBuffer<uint> globalIndexOffset;
 
 groupshared float sharedVoxelBuffer[B_DIM_SIZE];
 groupshared bool3 sharedXyzEdges[B_DIM_SIZE];
@@ -149,10 +149,11 @@ groupshared int numVerts[B_DIM_SIZE];
 groupshared int numIndices[B_DIM_SIZE];
 
 float3 calcNormalFor(uint3 val) {
+  // do not divide by 2.0f here because the vector is normalized anyway
   float3 normal = float3(
-    (voxelBuffer[vecToIdx(val + int3(1, 0, 0), size)] - voxelBuffer[vecToIdx(val - int3(1, 0, 0), size)])/2.0f,
-    (voxelBuffer[vecToIdx(val + int3(0, 1, 0), size)] - voxelBuffer[vecToIdx(val - int3(0, 1, 0), size)])/2.0f,
-    (voxelBuffer[vecToIdx(val + int3(0, 0, 1), size)] - voxelBuffer[vecToIdx(val - int3(0, 0, 1), size)])/2.0f
+    (voxelBuffer[vecToIdx(val + int3(1, 0, 0), size)] - voxelBuffer[vecToIdx(val - int3(1, 0, 0), size)]),
+    (voxelBuffer[vecToIdx(val + int3(0, 1, 0), size)] - voxelBuffer[vecToIdx(val - int3(0, 1, 0), size)]),
+    (voxelBuffer[vecToIdx(val + int3(0, 0, 1), size)] - voxelBuffer[vecToIdx(val - int3(0, 0, 1), size)])
   );
   if (length(normal) == 0) {
     return normal;
@@ -234,8 +235,8 @@ void generateTriangles(
   uint indicesOffset = numIndices[gidx];
   uint vertsOffset = numVerts[gidx];
   if (gidx == B_DIM_SIZE-1) {
-    InterlockedAdd(globalVertexOffset[0], numVerts[gidx], numVerts[gidx]);
     InterlockedAdd(globalIndexOffset[0], numIndices[gidx], numIndices[gidx]);
+    InterlockedAdd(globalVertexOffset[0], numVerts[gidx], numVerts[gidx]);
   }
 
   AllMemoryBarrierWithGroupSync();
@@ -257,7 +258,7 @@ void generateTriangles(
     float delta = edgeVoxels.x - myVoxelValue;
     float lerpFactor = (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta;
     normalBuffer[vertexOffset] = -lerp(myNormalVector, calcNormalFor(xVoxel), lerpFactor);
-    vertexBuffer[vertexOffset] = lerp(gridPos, xVoxel, lerpFactor);
+    //vertexBuffer[vertexOffset] = lerp(gridPos, xVoxel, lerpFactor);
     vertexOffset++;
   }
 
@@ -267,7 +268,7 @@ void generateTriangles(
     float delta = edgeVoxels.y - myVoxelValue;
     float lerpFactor = (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta;
     normalBuffer[vertexOffset] = -lerp(myNormalVector, calcNormalFor(yVoxel), lerpFactor);
-    vertexBuffer[vertexOffset] = lerp(gridPos, yVoxel, lerpFactor);
+    //vertexBuffer[vertexOffset] = lerp(gridPos, yVoxel, lerpFactor);
     vertexOffset++;
   }
 
@@ -277,12 +278,15 @@ void generateTriangles(
     float delta = edgeVoxels.z - myVoxelValue;
     float lerpFactor = (delta == 0.0f) ? isoValue : (isoValue - myVoxelValue) / delta;
     normalBuffer[vertexOffset] = -lerp(myNormalVector, calcNormalFor(zVoxel), lerpFactor);
-    vertexBuffer[vertexOffset] = lerp(gridPos, zVoxel, lerpFactor);
+    //vertexBuffer[vertexOffset] = lerp(gridPos, zVoxel, lerpFactor);
   }
-
+  
   uint indexBufferBaseOffset = numIndices[gidx]-myNumIndices;
+  vertexBuffer[indexBufferBaseOffset] = float3(numIndices[gidx], 1, 1);
+  indexBuffer[indexBufferBaseOffset] = myNumIndices;
+  return;
   for (uint indexOffset = 0; indexOffset < myNumIndices; indexOffset++) {
-    uint4 edgeMap = neighborMappingTable[marchingCubesEdgeTable[cubeCase*16+indexOffset]];
+    uint4 edgeMap = neighborMappingTable[marchingCubesEdgeTable[cubeCase * 16 + indexOffset]];
     uint3 edgeCellOffset = gtid + edgeMap.xyz;
     uint edgeCellOffsetIdx = vecToIdx(edgeCellOffset, B_DIM);
 

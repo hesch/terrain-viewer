@@ -146,10 +146,10 @@ public class PMB : IDisposable
         ComputeBuffer globalIndexOffset = new ComputeBuffer(4, sizeof(int), ComputeBufferType.IndirectArguments);
         globalIndexOffset.SetData(new int[] { 0, 1, 0, 0 });
 
-        PMBShader.SetBuffer(generateTrianglesKernelIndex, "vertexBuffer", vertexBuffer);
-        PMBShader.SetBuffer(generateTrianglesKernelIndex, "normalBuffer", normalBuffer);
         PMBShader.SetBuffer(generateTrianglesKernelIndex, "indexBuffer", indexBuffer);
         PMBShader.SetBuffer(generateTrianglesKernelIndex, "globalIndexOffset", globalIndexOffset);
+        PMBShader.SetBuffer(generateTrianglesKernelIndex, "vertexBuffer", vertexBuffer);
+        PMBShader.SetBuffer(generateTrianglesKernelIndex, "normalBuffer", normalBuffer);
         PMBShader.Dispatch(generateTrianglesKernelIndex, numActiveBlocks[0], 1, 1);
 
         return new RenderBuffers

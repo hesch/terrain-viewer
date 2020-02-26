@@ -20,7 +20,7 @@ Shader "Custom/BufferShader"
 
             uniform StructuredBuffer<float3> vertexBuffer;
             uniform StructuredBuffer<float3> normalBuffer;
-            uniform StructuredBuffer<int> indexBuffer;
+            uniform StructuredBuffer<uint> indexBuffer;
 
             uniform matrix model_matrix;
             uniform matrix inv_model_matrix;
@@ -28,24 +28,24 @@ Shader "Custom/BufferShader"
             struct v2f
             {
                 float4  pos : SV_POSITION;
-                float4  diff : COLOR0;
+                float4  normal : NORMAL0;
             };
  
             v2f vert(uint id : SV_VertexID)
             {
-                int index = indexBuffer[id];
+                uint index = indexBuffer[id];
                 float4 pos = float4(vertexBuffer[index], 1);
 		        float3 normal = normalize(mul(normalBuffer[index], inv_model_matrix));
  
                 v2f OUT;
                 OUT.pos = UnityObjectToClipPos(mul(model_matrix, pos));
-		        OUT.diff = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
+                OUT.normal = float4(normal, 1);
                 return OUT;
             }
  
             fixed4 frag(v2f IN) : SV_Target
             {
-                return fixed4(0,0,1,1)*IN.diff;
+                return fixed4(0,0,1,1)*max(0, dot(IN.normal.xyz, _WorldSpaceLightPos0.xyz));
             }
  
             ENDCG

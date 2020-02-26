@@ -52,7 +52,7 @@ public abstract class HeightMapNode<T> : Node where T: Voxel
                         }
                         else
                         {
-                            block[x - block.Overlap, y, z - block.Overlap].Data = 1.0f - (height - voxelHeight);
+                            block[x - block.Overlap, y, z - block.Overlap].Data = (height - voxelHeight)*(float)block.Height;
                         }
                     }
                     else
