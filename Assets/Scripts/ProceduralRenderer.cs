@@ -95,7 +95,6 @@ public class ProceduralRenderer : MonoBehaviour
 
     private void disposeBuffers()
     {
-        Debug.Log("disposing buffers on Thread: " + Thread.CurrentThread.ManagedThreadId);
         if (_buffers.vertexBuffer != null)
         {
             _buffers.vertexBuffer.Release();

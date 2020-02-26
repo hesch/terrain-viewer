@@ -197,7 +197,6 @@ public class PMB : IDisposable
 
     public void Dispose()
     {
-        Debug.Log("disposing buffers on Thread: " + Thread.CurrentThread.ManagedThreadId);
         globalVertexOffset.Release();
         activeBlkNum.Release();
         marchingCubesEdgeTableBuffer.Release();
