@@ -18,6 +18,18 @@ public class ProceduralRenderer : MonoBehaviour
             }
             if (material != null)
             {
+                Vector3[] vertices = new Vector3[_buffers.vertexBuffer.count];
+                int[] indices = new int[_buffers.indexBuffer.count];
+                int[] args = new int[_buffers.argsBuffer.count];
+
+                _buffers.vertexBuffer.GetData(vertices);
+                _buffers.indexBuffer.GetData(indices);
+                _buffers.argsBuffer.GetData(args);
+
+                Debug.Log("vertices: " + string.Join(",", vertices) + " &endverts");
+                Debug.Log("indices: " + string.Join(",", indices) + " &endindices");
+                Debug.Log("args: " + string.Join(",", args) + " &endargs");
+
                 material.SetBuffer("vertexBuffer", _buffers.vertexBuffer);
                 material.SetBuffer("indexBuffer", _buffers.indexBuffer);
                 material.SetBuffer("normalBuffer", _buffers.normalBuffer);

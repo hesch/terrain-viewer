@@ -19,8 +19,8 @@ public class Loader
 
     static Loader()
     {
-        watcher = new FileSystemWatcher();
 #if (UNITY_EDITOR)
+        watcher = new FileSystemWatcher();
         // only LazyLoad when in editor
         watch();
         loadFile("");
