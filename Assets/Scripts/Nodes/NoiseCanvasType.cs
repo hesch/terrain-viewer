@@ -144,7 +144,8 @@ public class NoiseCanvasType : NodeCanvas
         {
             if (task != null)
             {
-                while (!task.Wait(5))
+                while (!task.Wait(
+                    5))
                 {
                     if (helper != null)
                     {

@@ -3,7 +3,8 @@
     "references": [
         "ShaderAssembly",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "ScriptsAssembly"
     ],
     "includePlatforms": [
         "Editor"
@@ -18,5 +19,6 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }
