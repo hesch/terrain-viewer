@@ -214,7 +214,7 @@ public class PMB : IDisposable
         }
     }
 
-    int[,] marchingCubesEdgeTable = new int[,]{
+    public static int[,] marchingCubesEdgeTable = new int[,]{
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
