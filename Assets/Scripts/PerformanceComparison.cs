@@ -74,7 +74,7 @@ class PerformanceComparison : MonoBehaviour
 
         helper = FindObjectOfType<MainThreadHelper>();
 
-        Noise n = new PerlinNoise(42, 1.2f);
+        Noise n = new PerlinNoise(42, 5f);
         UnityEngine.Debug.Log("Starting Task");
         Task.Factory.StartNew(() => {
             if (finished)

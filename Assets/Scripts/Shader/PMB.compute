@@ -187,14 +187,14 @@ void generateTriangles(
     sharedVoxelBuffer[vecToIdx(gtid + uint3(0, 0, 1), B_DIM)]
   };
 
-  uint cubeCase = sharedVoxelBuffer[vecToIdx(gtid + uint3(0, 1, 1), B_DIM)] < isoValue;
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 1, 1), B_DIM)] < isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 0, 1), B_DIM)] < isoValue);
-  cubeCase = (cubeCase<<1)|(edgeVoxels.z < isoValue);
-  cubeCase = (cubeCase<<1)|(edgeVoxels.y < isoValue);
-  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 1, 0), B_DIM)] < isoValue);
-  cubeCase = (cubeCase<<1)|(edgeVoxels.x < isoValue);
-  cubeCase = (cubeCase<<1)|(myVoxelValue < isoValue);
+  uint cubeCase = sharedVoxelBuffer[vecToIdx(gtid + uint3(0, 1, 1), B_DIM)] < isoValue ? 1 : 0;
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 1, 1), B_DIM)] < isoValue ? 1 : 0);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 0, 1), B_DIM)] < isoValue ? 1 : 0);
+  cubeCase = (cubeCase<<1)|(edgeVoxels.z < isoValue ? 1 : 0);
+  cubeCase = (cubeCase<<1)|(edgeVoxels.y < isoValue ? 1 : 0);
+  cubeCase = (cubeCase<<1)|(sharedVoxelBuffer[vecToIdx(gtid + uint3(1, 1, 0), B_DIM)] < isoValue ? 1 : 0);
+  cubeCase = (cubeCase<<1)|(edgeVoxels.x < isoValue ? 1 : 0);
+  cubeCase = (cubeCase<<1)|(myVoxelValue < isoValue ? 1 : 0);
 
   uint myNumIndices = gtid.x < B_DIM_X - 1 && gtid.y < B_DIM_Y - 1 && gtid.z < B_DIM_Z - 1 ? numTrisLookup[cubeCase]*3 : 0;
   numIndices[gidx] = myNumIndices;

@@ -53,7 +53,7 @@ namespace NodeEditorFramework
 			if (canvasType != null && canvasType.IsSubclassOf (typeof(NodeCanvas)))
 				canvas = ScriptableObject.CreateInstance (canvasType) as NodeCanvas;
 			else
-				canvas = ScriptableObject.CreateInstance<NodeEditorFramework.Standard.CalculationCanvasType>();
+				canvas = ScriptableObject.CreateInstance<NodeCanvas>();
 			canvas.name = canvas.saveName = "New " + canvas.canvasName;
 
 			NodeEditor.BeginEditingCanvas (canvas);

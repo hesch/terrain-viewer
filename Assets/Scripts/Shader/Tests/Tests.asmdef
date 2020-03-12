@@ -4,7 +4,8 @@
         "ShaderAssembly",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "ScriptsAssembly"
+        "ScriptsAssembly",
+        "PluginsAssembly"
     ],
     "includePlatforms": [
         "Editor"

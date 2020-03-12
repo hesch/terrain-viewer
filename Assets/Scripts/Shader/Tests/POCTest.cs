@@ -1,5 +1,7 @@
-﻿using NUnit.Framework;
+﻿using MarchingCubesProject;
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Tests
@@ -473,9 +475,6 @@ namespace Tests
             int[] indices = new int[indexBuffer.count];
             indexBuffer.GetData(indices);
 
-            Debug.Log("vertices: " + string.Join(",", vertices));
-            Debug.Log("indices: " + string.Join(",", indices));
-
             //without borrowing
             Assert.AreEqual(new Vector3(0.5f, 0, 0), vertices[0]);
             Assert.AreEqual(new Vector3(0, 0.5f, 0), vertices[1]);
@@ -499,6 +498,125 @@ namespace Tests
 
             // This test case is only consistent because all the data is generated in one warp.
             // If you add more test cases make sure they all fit within the 32 threads inside a warp.
+
+            minMaxBuffer.Release();
+            voxelBuffer.Release();
+            compactedBlkArrayBuffer.Release();
+            activeBlkNumBuffer.Release();
+            marchingCubesEdgeTableBuffer.Release();
+            voxelBuffer.Release();
+            normalBuffer.Release();
+            indexBuffer.Release();
+            globalIndexOffset.Release();
+            globalVertexOffset.Release();
+        }
+
+
+        [Test]
+        public void equalTriags()
+        {
+            float isoValue = .5f;
+            int blockMultiplier = 1;
+            int width = (blockDim.x - 1) * blockMultiplier + 1;
+            int height = (blockDim.y - 1) * blockMultiplier + 1;
+            int depth = (blockDim.z - 1) * blockMultiplier + 1;
+            int size = width * height * depth;
+
+            float[] voxels = new float[size];
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    for (int z = 0; z < depth; z++)
+                    {
+                        voxels[z * width * height + y * width + x] = 0; // (x+y+z)%2;
+                    }
+                }
+            }
+
+            ComputeBuffer minMaxBuffer = new ComputeBuffer(blockMultiplier * blockMultiplier * blockMultiplier, sizeof(float) * 2);
+            ComputeBuffer voxelBuffer = new ComputeBuffer(voxels.Length, sizeof(float));
+            voxelBuffer.SetData(voxels);
+
+            shader.SetInts("numBlocks", new int[] { blockMultiplier, blockMultiplier, blockMultiplier });
+            shader.SetInts("size", new int[] { width, height, depth });
+            shader.SetBuffer(minMaxKernelIndex, "minMaxBuffer", minMaxBuffer);
+            shader.SetBuffer(minMaxKernelIndex, "voxelBuffer", voxelBuffer);
+
+            shader.Dispatch(minMaxKernelIndex, blockMultiplier, blockMultiplier, blockMultiplier);
+
+
+            shader.SetFloat("isoValue", isoValue);
+
+            ComputeBuffer compactedBlkArrayBuffer = new ComputeBuffer(blockMultiplier * blockMultiplier * blockMultiplier, sizeof(int));
+            ComputeBuffer activeBlkNumBuffer = new ComputeBuffer(1, sizeof(int));
+            activeBlkNumBuffer.SetData(new int[] { 0 });
+            shader.SetBuffer(compactActiveBlocksKernelIndex, "minMaxBuffer", minMaxBuffer);
+            shader.SetBuffer(compactActiveBlocksKernelIndex, "compactedBlkArray", compactedBlkArrayBuffer);
+            shader.SetBuffer(compactActiveBlocksKernelIndex, "activeBlkNum", activeBlkNumBuffer);
+
+            shader.Dispatch(compactActiveBlocksKernelIndex, 1, 1, 1);
+
+            int[] activeBlkNum = new int[1];
+            activeBlkNumBuffer.GetData(activeBlkNum);
+
+            ComputeBuffer vertexBuffer = new ComputeBuffer(activeBlkNum[0] * 8 * 4 * 4 * 3, sizeof(float) * 3);
+            ComputeBuffer normalBuffer = new ComputeBuffer(activeBlkNum[0] * 8 * 4 * 4 * 3, sizeof(float) * 3);
+            ComputeBuffer indexBuffer = new ComputeBuffer(activeBlkNum[0] * 8 * 4 * 4 * 3 * 5, sizeof(int));
+
+            ComputeBuffer globalVertexOffset = new ComputeBuffer(1, sizeof(int));
+            ComputeBuffer globalIndexOffset = new ComputeBuffer(1, sizeof(int));
+
+            // These buffers need to be reset because we are only doing InterlockedAdd on both
+            globalIndexOffset.SetData(new int[] { 0 });
+            globalVertexOffset.SetData(new int[] { 0 });
+
+            ComputeBuffer marchingCubesEdgeTableBuffer = new ComputeBuffer(256 * 16, sizeof(int));
+
+            int[] table = new int[PMB.marchingCubesEdgeTable.Length];
+            int k = 0;
+            for (int i = 0; i < PMB.marchingCubesEdgeTable.GetLength(0); i++)
+            {
+                for (int j = 0; j < PMB.marchingCubesEdgeTable.GetLength(1); j++)
+                {
+                    table[k++] = PMB.marchingCubesEdgeTable[i, j];
+                }
+            }
+
+            marchingCubesEdgeTableBuffer.SetData(table);
+            shader.SetBuffer(generateTrianglesKernelIndex, "voxelBuffer", voxelBuffer);
+            shader.SetBuffer(generateTrianglesKernelIndex, "compactedBlkArray", compactedBlkArrayBuffer);
+            shader.SetBuffer(generateTrianglesKernelIndex, "vertexBuffer", vertexBuffer);
+            shader.SetBuffer(generateTrianglesKernelIndex, "normalBuffer", normalBuffer);
+            shader.SetBuffer(generateTrianglesKernelIndex, "indexBuffer", indexBuffer);
+            shader.SetBuffer(generateTrianglesKernelIndex, "globalIndexOffset", globalIndexOffset);
+            shader.SetBuffer(generateTrianglesKernelIndex, "globalVertexOffset", globalVertexOffset);
+            shader.SetBuffer(generateTrianglesKernelIndex, "marchingCubesEdgeTable", marchingCubesEdgeTableBuffer);
+
+            shader.Dispatch(generateTrianglesKernelIndex, activeBlkNum[0], 1, 1);
+
+            int[] numIndices = new int[1];
+            globalIndexOffset.GetData(numIndices);
+
+            Vector3[] vertices = new Vector3[vertexBuffer.count];
+            vertexBuffer.GetData(vertices);
+
+            int[] indices = new int[numIndices[0]];
+            indexBuffer.GetData(indices);
+
+            Debug.Log("pmb vertices: " + string.Join(",", vertices));
+            Debug.Log("pmb indices: " + string.Join(",", indices));
+
+            List<Vector3> verts = new List<Vector3>();
+            List<int> cpuIndices = new List<int>();
+            List<Vector3> normals = new List<Vector3>();
+
+            Marching marching = new MarchingCubes();
+            marching.Surface = isoValue;
+            marching.Generate(voxels, width, height, depth, verts, cpuIndices, normals);
+
+            Debug.Log("cpu vertices: " + string.Join(",", verts));
+            Debug.Log("cpu indices: " + string.Join(",", cpuIndices));
 
             minMaxBuffer.Release();
             voxelBuffer.Release();

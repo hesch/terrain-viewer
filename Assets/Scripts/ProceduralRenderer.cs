@@ -18,21 +18,6 @@ public class ProceduralRenderer : MonoBehaviour
             }
             if (material != null)
             {
-                Vector3[] vertices = new Vector3[_buffers.vertexBuffer.count];
-                int[] indices = new int[_buffers.indexBuffer.count];
-                int[] args = new int[_buffers.argsBuffer.count];
-
-                _buffers.vertexBuffer.GetData(vertices);
-                _buffers.indexBuffer.GetData(indices);
-                _buffers.argsBuffer.GetData(args);
-
-                Debug.Log("vertices: " + string.Join(",", vertices) + " &endverts");
-                Debug.Log("indices: " + string.Join(",", indices) + " &endindices");
-                Debug.Log("args: " + string.Join(",", args) + " &endargs");
-
-                material.SetBuffer("vertexBuffer", _buffers.vertexBuffer);
-                material.SetBuffer("indexBuffer", _buffers.indexBuffer);
-                material.SetBuffer("normalBuffer", _buffers.normalBuffer);
             } else
             {
                 Debug.Log("tried setting buffers, but material was null!");
@@ -44,9 +29,6 @@ public class ProceduralRenderer : MonoBehaviour
     private void Awake()
     {
         material = new Material(Shader.Find("Custom/BufferShader"));
-        material.SetBuffer("vertexBuffer", _buffers.vertexBuffer);
-        material.SetBuffer("indexBuffer", _buffers.indexBuffer);
-        material.SetBuffer("normalBuffer", _buffers.normalBuffer);
     }
 
     void OnRenderObject()
@@ -61,10 +43,15 @@ public class ProceduralRenderer : MonoBehaviour
             Debug.LogWarning("Renderbuffers are null");
             return;
         }
+        
         Matrix4x4 model_matrix = transform.localToWorldMatrix;
 
         material.SetPass(0);
         material.SetMatrix("model_matrix", model_matrix);
+        material.SetBuffer("vertexBuffer", _buffers.vertexBuffer);
+        material.SetBuffer("indexBuffer", _buffers.indexBuffer);
+        material.SetBuffer("normalBuffer", _buffers.normalBuffer);
+
         //reset translation
         model_matrix[0, 3] = 0;
         model_matrix[1, 3] = 0;
@@ -78,13 +65,7 @@ public class ProceduralRenderer : MonoBehaviour
             material,
             bounds,
             MeshTopology.Triangles,
-            _buffers.argsBuffer,
-            0,
-            GetComponent<Camera>(),
-            new MaterialPropertyBlock(),
-            UnityEngine.Rendering.ShadowCastingMode.Off,
-            false,
-            0
+            _buffers.argsBuffer
         );
     }
 

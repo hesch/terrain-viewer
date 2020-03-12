@@ -70,7 +70,13 @@ public class CameraController : MonoBehaviour
       controlledCamera.transform.localPosition = oldLocalPosition;
       controlledCamera.transform.localRotation = oldLocalRotation;
       Vector3 pivot = controlledCamera.transform.position + controlledCamera.transform.forward * pivotDistance;
-      controlledCamera.transform.RotateAround(pivot, Vector3.Cross(pivot-controlledCamera.transform.position, Input.mousePosition - origin), (Input.mousePosition - origin).magnitude*rotationSpeed);
+        Vector2 rotate = Input.mousePosition - origin;
+        rotate *= rotationSpeed;
+        float tmp = rotate.x;
+        rotate.x = -rotate.y;
+        rotate.y = tmp;
+        controlledCamera.transform.Rotate(rotate);
+      //controlledCamera.transform.RotateAround(pivot, Vector3.Cross(pivot-controlledCamera.transform.position, Input.mousePosition - origin), (Input.mousePosition - origin).magnitude*rotationSpeed);
     }
 
     private void handleZoom() {
