@@ -111,18 +111,14 @@ public class PMB : IDisposable
         addPadding(ref voxels, ref width, ref height, ref depth);
         voxelBuffer.SetData(voxels);
 
-        Debug.Log("PMB minMax Dispatch: " + numBlocks);
-
         PMBShader.Dispatch(minMaxKernelIndex, numBlocks.x, numBlocks.y, numBlocks.z);
 
         PMBShader.SetFloat("isoValue", isoValue);
 
-        Debug.Log("PMB compactActiveBlocks Dispatch: " + Mathf.CeilToInt((float)numBlocks.x * numBlocks.y * numBlocks.z / 128));
         PMBShader.Dispatch(compactActiveBlocksKernelIndex, Mathf.CeilToInt((float)numBlocks.x*numBlocks.y*numBlocks.z / 128), 1, 1);
 
         int[] numActiveBlocks = new int[1];
         activeBlkNum.GetData(numActiveBlocks);
-        Debug.Log("PMB numActiveBlocks: " + numActiveBlocks[0]);
         if (numActiveBlocks[0] == 0 || numActiveBlocks[0] > 65535)
         {
             if (numActiveBlocks[0] > 65535)

@@ -223,8 +223,6 @@ class PerformanceComparison : MonoBehaviour
                         buffers.argsBuffer.GetData(args);
                         watch.Stop();
 
-                        UnityEngine.Debug.Log("args: " + string.Join(",", args));
-
                         UnityEngine.Debug.LogFormat("\tPMB took {0}ms", watch.ElapsedMilliseconds);
                         perfData[(int)type].sizes[i].pmbTime[round] = (int)watch.ElapsedMilliseconds;
                         perfData[(int)type].sizes[i].pmbTriangles = args[0] / 3;

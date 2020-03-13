@@ -28,16 +28,11 @@ public class NoiseCanvasType : NodeCanvas
     public VoxelInputNode rootNode;
 
     protected override void OnCreate()
-    {
-        UnityEngine.Debug.Log("NoiseCanvasType.OnCreate()");
+    { 
         Traversal = new NoiseTraversal(this);
         rootNode = Node.Create(rootNodeID, Vector2.zero) as VoxelInputNode;
     }
 
-    public void Awake()
-    {
-        UnityEngine.Debug.Log("NoiseCanvasType.Awake()");
-    }
 
     private void OnEnable()
     {
@@ -45,7 +40,6 @@ public class NoiseCanvasType : NodeCanvas
             Traversal = new NoiseTraversal(this);
         // Register to other callbacks
         //NodeEditorCallbacks.OnDeleteNode += CheckDeleteNode;
-        UnityEngine.Debug.Log("NoiseCanvasType.OnEnable()");
         NoiseNodeEditor editor = FindObjectOfType<NoiseNodeEditor>();
         if (editor != null)
         {
